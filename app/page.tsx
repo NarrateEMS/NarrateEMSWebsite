@@ -1403,8 +1403,11 @@ export default function HomePage() {
                 className="h-10 sm:h-12 md:h-14 w-auto hover:scale-110 transition-transform duration-300"
               />
             </div>
-            <div className="text-slate-400 text-sm text-center md:text-right animate-in fade-in slide-in-from-right duration-1000">
-              © 2025 NarrateEMS. All rights reserved.
+            <div className="flex flex-col md:flex-row items-center gap-4 text-slate-400 text-sm animate-in fade-in slide-in-from-right duration-1000">
+              <a href="/privacy-policy" className="hover:text-white transition-colors">
+                Privacy Policy
+              </a>
+              <span className="text-center md:text-right">© 2025 NarrateEMS. All rights reserved.</span>
             </div>
           </div>
         </div>
