@@ -58,6 +58,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <meta name="msapplication-TileColor" content="#14b8a6" />
         <meta name="theme-color" content="#14b8a6" />
+        <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
       </head>
       <body className={inter.className}>{children}</body>
     </html>
