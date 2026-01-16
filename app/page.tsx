@@ -1019,7 +1019,7 @@ export default function HomePage() {
       <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-white">
+      <section id="pricing" className="py-20 bg-white">
         <div className="w-full mx-auto px-8 sm:px-12 lg:px-16 xl:px-20">
           <div className="text-center mb-16">
             <div className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-6 hover:scale-105 transition-transform duration-200 animate-in fade-in slide-in-from-bottom duration-1000">
@@ -1041,133 +1041,12 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Individual Plan */}
-            <Card className="relative p-8 border-2 border-slate-200 hover:border-slate-300 transition-all duration-500 hover:shadow-lg hover:scale-105 animate-in fade-in slide-in-from-left duration-1000 delay-600">
-              <CardContent className="pt-6">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Individual</h3>
-                  <p className="text-slate-600 mb-6">Perfect for independent contractors and single users</p>
-                  <div className="mb-6">
-                    <span className="text-5xl font-bold text-slate-900">$15</span>
-                    <span className="text-slate-600 ml-2">/month</span>
-                  </div>
-                  <Button
-                    className="w-full bg-slate-600 hover:bg-slate-700 text-white hover:scale-105 transition-all duration-300 hover:shadow-lg"
-                    onClick={() => scrollToSection("contact")}
-                  >
-                    Get Started
-                  </Button>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">Voice-to-text documentation</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">Offline functionality</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">ePCR system integration</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">NEMSIS Version 3 compliance</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">HIPAA-compliant security</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">Email support</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Organization Plan */}
-            <Card className="relative p-8 border-2 border-teal-300 bg-gradient-to-br from-teal-50 to-green-50 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 animate-in fade-in slide-in-from-right duration-1000 delay-800">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="bg-teal-600 text-white px-4 py-2 rounded-full text-sm font-medium animate-pulse">
-                  Volume Discount
-                </div>
-              </div>
-              <CardContent className="pt-6">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Organization</h3>
-                  <p className="text-slate-600 mb-6">Same great product with volume pricing for teams of 5+</p>
-                  <div className="mb-6">
-                    <span className="text-5xl font-bold text-slate-900">$10</span>
-                    <span className="text-slate-600 ml-2">/user/month</span>
-                  </div>
-                  <Button
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg hover:scale-105 transition-all duration-300 hover:shadow-xl"
-                    onClick={() => scrollToSection("contact")}
-                  >
-                    Contact Sales
-                  </Button>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">Voice-to-text documentation</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">Offline functionality</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">ePCR system integration</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">NEMSIS Version 3 compliance</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">HIPAA-compliant security</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-slate-700">Email support</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Additional Info */}
-          <div className="mt-12 text-center">
-            <div className="bg-slate-50 rounded-2xl p-8 max-w-4xl mx-auto hover:shadow-md transition-shadow duration-500 animate-in fade-in slide-in-from-bottom duration-1000 delay-1000">
-              <h3 className="text-xl font-bold text-slate-900 mb-4">All Plans Include</h3>
-              <div className="grid md:grid-cols-3 gap-6 text-sm text-slate-600">
-                <div className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200">
-                  <Shield className="h-4 w-4 text-teal-600 animate-pulse" />
-                  <span>30-day money-back guarantee</span>
-                </div>
-                <div className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200">
-                  <CheckCircle className="h-4 w-4 text-teal-600 animate-pulse" />
-                  <span>No setup fees or contracts</span>
-                </div>
-                <div className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200">
-                  <Users className="h-4 w-4 text-teal-600 animate-pulse" />
-                  <span>Cancel anytime</span>
-                </div>
-              </div>
-              <div className="mt-6 pt-6 border-t border-slate-200">
-                <p className="text-slate-600 text-sm">
-                  <strong>Same product, better pricing for teams.</strong> Organization plan requires minimum 5 users.
-                  Contact us for enterprise pricing and custom integrations for large departments or regional EMS
-                  systems.
-                </p>
-              </div>
-            </div>
+          {/* Stripe Pricing Table */}
+          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom duration-1000 delay-600">
+            <stripe-pricing-table
+              pricing-table-id="prctbl_1SpJVjDGtsD3DA0qavrgSmNC"
+              publishable-key="pk_live_51SeccxDGtsD3DA0q0n6fFjEgjAQtUTrQQG8ToDfKWwFEJvGp2WPEiPis7k6YTf7JMkHGq05qnUdeGl62aNwL3ogQ00OiMYTwvC"
+            ></stripe-pricing-table>
           </div>
         </div>
       </section>
