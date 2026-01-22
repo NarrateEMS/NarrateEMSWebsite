@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get("session_id")
   const [isLoading, setIsLoading] = useState(true)
@@ -108,3 +108,14 @@ export default function CheckoutSuccessPage() {
   )
 }
 
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
+      </div>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
+  )
+}
