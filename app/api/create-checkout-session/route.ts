@@ -72,6 +72,10 @@ export async function POST(request: NextRequest) {
       userId = newUser.user.id
     }
 
+    // Determine quantity - squad plans have minimum 6 users
+    const isSquadPlan = planType === 'squad_monthly' || planType === 'squad_annual'
+    const quantity = isSquadPlan ? 6 : 1
+
     // Create Stripe checkout session with client_reference_id for webhook linking
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -81,10 +85,11 @@ export async function POST(request: NextRequest) {
       line_items: [
         {
           price: priceId,
-          quantity: 1,
+          quantity: quantity,
         },
       ],
       subscription_data: {
+        trial_period_days: 7,
         metadata: {
           supabase_user_id: userId,
           plan_type: planType,

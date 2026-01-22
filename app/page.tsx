@@ -690,9 +690,15 @@ export default function HomePage() {
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
               Simple. Transparent.
             </h2>
-            <p className="text-xl text-white/50 max-w-xl mx-auto">
+            <p className="text-xl text-white/50 max-w-xl mx-auto mb-6">
               Plans for individuals and departments.
             </p>
+            <div className="inline-flex items-center gap-2 bg-teal-400/10 border border-teal-400/30 text-teal-400 px-4 py-2 rounded-full text-sm font-medium">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              7-day free trial on all plans
+            </div>
           </div>
 
           {/* Custom Pricing Cards */}
@@ -736,12 +742,13 @@ export default function HomePage() {
               </div>
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-white mb-2">Squad Monthly</h3>
-                <p className="text-white/50 text-sm">For teams & departments</p>
+                <p className="text-white/50 text-sm">For teams & departments (6+ users)</p>
               </div>
-              <div className="mb-8">
+              <div className="mb-2">
                 <span className="text-5xl font-bold text-white">$24.99</span>
                 <span className="text-white/50">/user/month</span>
               </div>
+              <p className="text-white/40 text-sm mb-8">$149.94/month for 6 users</p>
               <ul className="space-y-4 mb-8 text-white/70">
                 <li className="flex items-center gap-3">
                   <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -771,21 +778,17 @@ export default function HomePage() {
               </div>
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-white mb-2">Squad Annual</h3>
-                <p className="text-white/50 text-sm">Save with yearly billing</p>
+                <p className="text-white/50 text-sm">Save with yearly billing (6+ users)</p>
               </div>
               <div className="mb-2">
                 <span className="text-5xl font-bold text-white">$23</span>
                 <span className="text-white/50">/user/month</span>
               </div>
-              <p className="text-white/40 text-sm mb-8">$275.99 billed yearly per user</p>
+              <p className="text-white/40 text-sm mb-8">$1,655.94/year for 6 users</p>
               <ul className="space-y-4 mb-8 text-white/70">
                 <li className="flex items-center gap-3">
                   <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   Everything in Squad Monthly
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  2 months free
                 </li>
                 <li className="flex items-center gap-3">
                   <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -994,8 +997,8 @@ export default function HomePage() {
             <h3 className="text-2xl font-bold text-white mb-2">Create Your Account</h3>
             <p className="text-white/50 mb-6">
               {selectedPlan?.type === 'individual_monthly' && 'Individual Plan - $29.99/month'}
-              {selectedPlan?.type === 'squad_monthly' && 'Squad Monthly - $24.99/user/month'}
-              {selectedPlan?.type === 'squad_annual' && 'Squad Annual - $275.99/year per user'}
+              {selectedPlan?.type === 'squad_monthly' && 'Squad Monthly - $149.94/month (6 users)'}
+              {selectedPlan?.type === 'squad_annual' && 'Squad Annual - $1,655.94/year (6 users)'}
             </p>
 
             <form onSubmit={handleCheckout} className="space-y-4">
