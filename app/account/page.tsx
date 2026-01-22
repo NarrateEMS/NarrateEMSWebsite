@@ -178,8 +178,8 @@ export default function AccountPage() {
         <div className="mt-8 text-center text-slate-500 text-sm">
           <p>
             Need help? Contact us at{" "}
-            <a href="mailto:support@narrateems.com" className="text-teal-600 hover:underline">
-              support@narrateems.com
+            <a href="mailto:narrateems@gmail.com" className="text-teal-600 hover:underline">
+              narrateems@gmail.com
             </a>
           </p>
         </div>
