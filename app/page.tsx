@@ -35,18 +35,39 @@ export default function HomePage() {
 
   // Checkout modal state
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<{ type: string; priceId: string } | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<{ type: string } | null>(null)
   const [checkoutEmail, setCheckoutEmail] = useState("")
   const [checkoutPassword, setCheckoutPassword] = useState("")
   const [checkoutError, setCheckoutError] = useState("")
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
 
-  const handlePlanSelect = (planType: string, priceId: string) => {
-    setSelectedPlan({ type: planType, priceId })
+  // Pricing tab state
+  const [pricingTab, setPricingTab] = useState<'individual' | 'squad'>('squad')
+
+  const handlePlanSelect = (planType: string) => {
+    setSelectedPlan({ type: planType })
     setCheckoutEmail("")
     setCheckoutPassword("")
     setCheckoutError("")
     setShowCheckoutModal(true)
+  }
+
+  // Plan display info for checkout modal
+  const getPlanDisplayInfo = (planType: string) => {
+    switch (planType) {
+      case 'individual_monthly':
+        return 'Individual Plan - $29.99/month'
+      case 'pilot_annual':
+        return 'Pilot Plan - $1,000/year (500 charts included)'
+      case 'small_squad_annual':
+        return 'Small Squad - $3,000/year (2,000 charts included)'
+      case 'large_squad_annual':
+        return 'Large Squad - $6,000/year (5,000 charts included)'
+      case 'high_volume_annual':
+        return 'High Volume - $10,000/year (10,000 charts included)'
+      default:
+        return ''
+    }
   }
 
   const handleCheckout = async (e: React.FormEvent) => {
@@ -61,7 +82,6 @@ export default function HomePage() {
         body: JSON.stringify({
           email: checkoutEmail,
           password: checkoutPassword,
-          priceId: selectedPlan?.priceId,
           planType: selectedPlan?.type,
         }),
       })
@@ -701,108 +721,212 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Custom Pricing Cards */}
-          <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
-            {/* Individual Monthly */}
-            <div className="relative bg-slate-900/50 border border-white/10 rounded-2xl p-8 hover:border-teal-400/30 transition-all">
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-2">Individual</h3>
-                <p className="text-white/50 text-sm">For solo providers</p>
-              </div>
-              <div className="mb-8">
-                <span className="text-5xl font-bold text-white">$29.99</span>
-                <span className="text-white/50">/month</span>
-              </div>
-              <ul className="space-y-4 mb-8 text-white/70">
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Unlimited voice narratives
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  All ePCR integrations
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Chrome extension
-                </li>
-              </ul>
+          {/* Pricing Tab Toggle */}
+          <div className="flex justify-center mb-12">
+            <div className="inline-flex bg-slate-900/80 border border-white/10 rounded-full p-1">
               <button
-                onClick={() => handlePlanSelect('individual_monthly', process.env.NEXT_PUBLIC_STRIPE_PRICE_INDIVIDUAL_MONTHLY!)}
-                className="w-full py-3 px-6 bg-white text-slate-900 font-semibold rounded-lg hover:bg-white/90 transition-colors"
+                onClick={() => setPricingTab('individual')}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                  pricingTab === 'individual'
+                    ? 'bg-teal-400 text-slate-900'
+                    : 'text-white/70 hover:text-white'
+                }`}
               >
-                Get Started
+                Individual
               </button>
-            </div>
-
-            {/* Squad Monthly */}
-            <div className="relative bg-slate-900/50 border border-teal-400/50 rounded-2xl p-8 scale-[1.02] shadow-lg shadow-teal-500/10">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-teal-400 text-slate-900 text-xs font-bold px-4 py-1 rounded-full">
-                MOST POPULAR
-              </div>
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-2">Squad Monthly</h3>
-                <p className="text-white/50 text-sm">For teams & departments (6+ users)</p>
-              </div>
-              <div className="mb-2">
-                <span className="text-5xl font-bold text-white">$24.99</span>
-                <span className="text-white/50">/user/month</span>
-              </div>
-              <p className="text-white/40 text-sm mb-8">$149.94/month for 6 users</p>
-              <ul className="space-y-4 mb-8 text-white/70">
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Everything in Individual
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Team management dashboard
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Squad billing & admin
-                </li>
-              </ul>
               <button
-                onClick={() => handlePlanSelect('squad_monthly', process.env.NEXT_PUBLIC_STRIPE_PRICE_SQUAD_MONTHLY!)}
-                className="w-full py-3 px-6 bg-teal-400 text-slate-900 font-semibold rounded-lg hover:bg-teal-300 transition-colors"
+                onClick={() => setPricingTab('squad')}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                  pricingTab === 'squad'
+                    ? 'bg-teal-400 text-slate-900'
+                    : 'text-white/70 hover:text-white'
+                }`}
               >
-                Get Started
-              </button>
-            </div>
-
-            {/* Squad Annual */}
-            <div className="relative bg-slate-900/50 border border-white/10 rounded-2xl p-8 hover:border-teal-400/30 transition-all">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white/10 text-teal-400 text-xs font-bold px-4 py-1 rounded-full border border-teal-400/30">
-                BEST VALUE
-              </div>
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-2">Squad Annual</h3>
-                <p className="text-white/50 text-sm">Save with yearly billing (6+ users)</p>
-              </div>
-              <div className="mb-2">
-                <span className="text-5xl font-bold text-white">$23</span>
-                <span className="text-white/50">/user/month</span>
-              </div>
-              <p className="text-white/40 text-sm mb-8">$1,655.94/year for 6 users</p>
-              <ul className="space-y-4 mb-8 text-white/70">
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Everything in Squad Monthly
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Priority support
-                </li>
-              </ul>
-              <button
-                onClick={() => handlePlanSelect('squad_annual', process.env.NEXT_PUBLIC_STRIPE_PRICE_SQUAD_ANNUAL!)}
-                className="w-full py-3 px-6 bg-white text-slate-900 font-semibold rounded-lg hover:bg-white/90 transition-colors"
-              >
-                Get Started
+                Squad / Department
               </button>
             </div>
           </div>
+
+          {/* Individual Plan */}
+          {pricingTab === 'individual' && (
+            <div className="max-w-md mx-auto">
+              <div className="relative bg-slate-900/50 border border-white/10 rounded-2xl p-8 hover:border-teal-400/30 transition-all">
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-white mb-2">Individual</h3>
+                  <p className="text-white/50 text-sm">For solo providers</p>
+                </div>
+                <div className="mb-8">
+                  <span className="text-5xl font-bold text-white">$29.99</span>
+                  <span className="text-white/50">/month</span>
+                </div>
+                <ul className="space-y-4 mb-8 text-white/70">
+                  <li className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Unlimited voice narratives
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    All ePCR integrations
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Chrome extension
+                  </li>
+                </ul>
+                <button
+                  onClick={() => handlePlanSelect('individual_monthly')}
+                  className="w-full py-3 px-6 bg-teal-400 text-slate-900 font-semibold rounded-lg hover:bg-teal-300 transition-colors"
+                >
+                  Get Started
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Squad Plans */}
+          {pricingTab === 'squad' && (
+            <div className="max-w-7xl mx-auto">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Pilot */}
+                <div className="relative bg-slate-900/50 border border-white/10 rounded-2xl p-6 hover:border-teal-400/30 transition-all">
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-white mb-1">Pilot</h3>
+                    <p className="text-white/50 text-xs">Getting started</p>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-4xl font-bold text-white">$1,000</span>
+                    <span className="text-white/50 text-sm">/year</span>
+                  </div>
+                  <p className="text-teal-400 text-sm font-medium mb-4">500 charts included</p>
+                  <ul className="space-y-3 mb-6 text-white/70 text-sm">
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Team management
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Squad billing
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-white/40 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                      <span className="text-white/50">$2.50/extra chart</span>
+                    </li>
+                  </ul>
+                  <button
+                    onClick={() => handlePlanSelect('pilot_annual')}
+                    className="w-full py-2.5 px-4 bg-white text-slate-900 font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
+                  >
+                    Get Started
+                  </button>
+                </div>
+
+                {/* Small Squad */}
+                <div className="relative bg-slate-900/50 border border-white/10 rounded-2xl p-6 hover:border-teal-400/30 transition-all">
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-white mb-1">Small Squad</h3>
+                    <p className="text-white/50 text-xs">Growing teams</p>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-4xl font-bold text-white">$3,000</span>
+                    <span className="text-white/50 text-sm">/year</span>
+                  </div>
+                  <p className="text-teal-400 text-sm font-medium mb-4">2,000 charts included</p>
+                  <ul className="space-y-3 mb-6 text-white/70 text-sm">
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Team management
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Squad billing
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-white/40 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                      <span className="text-white/50">$1.90/extra chart</span>
+                    </li>
+                  </ul>
+                  <button
+                    onClick={() => handlePlanSelect('small_squad_annual')}
+                    className="w-full py-2.5 px-4 bg-white text-slate-900 font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
+                  >
+                    Get Started
+                  </button>
+                </div>
+
+                {/* Large Squad - Most Popular */}
+                <div className="relative bg-slate-900/50 border border-teal-400/50 rounded-2xl p-6 shadow-lg shadow-teal-500/10">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-400 text-slate-900 text-xs font-bold px-3 py-1 rounded-full">
+                    MOST POPULAR
+                  </div>
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-white mb-1">Large Squad</h3>
+                    <p className="text-white/50 text-xs">Departments</p>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-4xl font-bold text-white">$6,000</span>
+                    <span className="text-white/50 text-sm">/year</span>
+                  </div>
+                  <p className="text-teal-400 text-sm font-medium mb-4">5,000 charts included</p>
+                  <ul className="space-y-3 mb-6 text-white/70 text-sm">
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Team management
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Squad billing
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-white/40 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                      <span className="text-white/50">$1.40/extra chart</span>
+                    </li>
+                  </ul>
+                  <button
+                    onClick={() => handlePlanSelect('large_squad_annual')}
+                    className="w-full py-2.5 px-4 bg-teal-400 text-slate-900 font-semibold rounded-lg hover:bg-teal-300 transition-colors text-sm"
+                  >
+                    Get Started
+                  </button>
+                </div>
+
+                {/* High Volume */}
+                <div className="relative bg-slate-900/50 border border-white/10 rounded-2xl p-6 hover:border-teal-400/30 transition-all">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white/10 text-teal-400 text-xs font-bold px-3 py-1 rounded-full border border-teal-400/30">
+                    BEST VALUE
+                  </div>
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-white mb-1">High Volume</h3>
+                    <p className="text-white/50 text-xs">Enterprise scale</p>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-4xl font-bold text-white">$10,000</span>
+                    <span className="text-white/50 text-sm">/year</span>
+                  </div>
+                  <p className="text-teal-400 text-sm font-medium mb-4">10,000 charts included</p>
+                  <ul className="space-y-3 mb-6 text-white/70 text-sm">
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Team management
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Priority support
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-white/40 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                      <span className="text-white/50">$1.15/extra chart</span>
+                    </li>
+                  </ul>
+                  <button
+                    onClick={() => handlePlanSelect('high_volume_annual')}
+                    className="w-full py-2.5 px-4 bg-white text-slate-900 font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
+                  >
+                    Get Started
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -996,9 +1120,7 @@ export default function HomePage() {
 
             <h3 className="text-2xl font-bold text-white mb-2">Create Your Account</h3>
             <p className="text-white/50 mb-6">
-              {selectedPlan?.type === 'individual_monthly' && 'Individual Plan - $29.99/month'}
-              {selectedPlan?.type === 'squad_monthly' && 'Squad Monthly - $149.94/month (6 users)'}
-              {selectedPlan?.type === 'squad_annual' && 'Squad Annual - $1,655.94/year (6 users)'}
+              {selectedPlan?.type && getPlanDisplayInfo(selectedPlan.type)}
             </p>
 
             <form onSubmit={handleCheckout} className="space-y-4">
