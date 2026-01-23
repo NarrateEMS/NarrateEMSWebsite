@@ -77,7 +77,7 @@ function CheckoutSuccessContent() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                  href="https://chromewebstore.google.com/detail/narrateems/cnmkcildlmjccdpkjfgodfahpljdpioo"
+                  href="https://chromewebstore.google.com/detail/narrateems-ai-medic-voice/nokdpnigpfafepjbdinggckgcdekdjkm"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-3 bg-teal-400 text-slate-900 font-semibold rounded-lg hover:bg-teal-300 transition-colors inline-flex items-center justify-center gap-2"
