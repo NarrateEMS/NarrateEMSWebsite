@@ -141,6 +141,8 @@ export default function HomePage() {
     document.getElementById(sectionId)?.scrollIntoView({
       behavior: "smooth",
     })
+    // Update URL hash for deep linking
+    window.history.pushState(null, "", `#${sectionId}`)
   }
 
   return (
@@ -174,6 +176,12 @@ export default function HomePage() {
                 className="text-white/60 hover:text-white transition-colors duration-200"
               >
                 Benefits
+              </button>
+              <button
+                onClick={() => scrollToSection("pricing")}
+                className="text-white/60 hover:text-white transition-colors duration-200"
+              >
+                Pricing
               </button>
               <button
                 onClick={() => scrollToSection("market")}
@@ -237,6 +245,15 @@ export default function HomePage() {
                   className="block px-3 py-2 text-white/60 hover:text-white transition-colors w-full text-left hover:bg-white/5 rounded-md"
                 >
                   Benefits
+                </button>
+                <button
+                  onClick={() => {
+                    scrollToSection("pricing")
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block px-3 py-2 text-white/60 hover:text-white transition-colors w-full text-left hover:bg-white/5 rounded-md"
+                >
+                  Pricing
                 </button>
                 <button
                   onClick={() => {
