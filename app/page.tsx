@@ -578,7 +578,7 @@ export default function HomePage() {
               </div>
               <div className="p-6 rounded-xl bg-slate-50">
                 <div className="text-3xl font-bold text-teal-600 mb-1">100%</div>
-                <div className="text-sm text-slate-500">HIPAA Compliant</div>
+                <div className="text-sm text-slate-500">Voice Powered</div>
               </div>
               <div className="p-6 rounded-xl bg-slate-50">
                 <div className="text-3xl font-bold text-teal-600 mb-1">&lt;2min</div>
@@ -702,7 +702,7 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-6 w-6 text-teal-600" />
               </div>
-              <h3 className="font-semibold text-slate-900 mb-1">HIPAA Secure</h3>
+              <h3 className="font-semibold text-slate-900 mb-1">Secure</h3>
               <p className="text-slate-500 text-sm">Enterprise-grade protection</p>
             </div>
 

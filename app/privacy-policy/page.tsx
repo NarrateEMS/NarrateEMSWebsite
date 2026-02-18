@@ -178,7 +178,7 @@ export default function PrivacyPolicyPage() {
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">5. HIPAA Considerations</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">5. Healthcare Data Considerations</h2>
             <p className="text-slate-700 leading-relaxed mb-4">
               NarrateEMS is designed to assist EMS providers with documentation:
             </p>
@@ -186,9 +186,6 @@ export default function PrivacyPolicyPage() {
               <li>We process voice narrations to extract information for form population</li>
               <li>Patient information populated into Zoll EMS Charts remains within the Zoll system</li>
               <li>We do not store or retain patient health information</li>
-              <li>
-                We utilize HIPAA-eligible service providers and maintain appropriate agreements where applicable
-              </li>
               <li>
                 Users are responsible for ensuring their use of NarrateEMS complies with their organization's policies
                 and applicable healthcare regulations
