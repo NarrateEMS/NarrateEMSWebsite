@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "NarrateEMS",
   description:
-    "Transform your EMS documentation with AI-driven voice-to-text technology. Built by EMS professionals for healthcare heroes. HIPAA compliant, offline capable, and ePCR ready.",
+    "Transform your EMS documentation with AI-driven voice-to-text technology. Built by EMS professionals for healthcare heroes. Offline capable and ePCR ready.",
   keywords:
     "EMS documentation, voice-to-text, paramedic software, ePCR, NEMSIS, healthcare technology, emergency medical services",
   authors: [{ name: "NarrateEMS Team" }],
