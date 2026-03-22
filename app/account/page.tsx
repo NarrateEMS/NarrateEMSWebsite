@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, User, Users, LogOut, Download, ExternalLink, CheckCircle } from "lucide-react"
+import { Loader2, User, Users, LogOut, Download, ExternalLink, CheckCircle, KeyRound } from "lucide-react"
 
 const CHROME_EXTENSION_URL = "https://chromewebstore.google.com/detail/narrateems/nokdpnigpfafepjbdinggckgcdekdjkm"
 
@@ -17,6 +17,8 @@ export default function AccountPage() {
   const [user, setUser] = useState<any>(null)
   const [squadName, setSquadName] = useState<string | null>(null)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("none")
+  const [resetSending, setResetSending] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -60,6 +62,22 @@ export default function AccountPage() {
 
     loadUserData()
   }, [router])
+
+  const handleResetPassword = async () => {
+    if (!user?.email) return
+    setResetSending(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: "https://www.narrateems.com/reset-password",
+      })
+      if (error) throw error
+      setResetSent(true)
+    } catch (err) {
+      console.error("Error sending reset email:", err)
+    } finally {
+      setResetSending(false)
+    }
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -129,6 +147,29 @@ export default function AccountPage() {
                     <span className="text-slate-600">{subscriptionStatus}</span>
                   )}
                 </div>
+              </div>
+              <div className="pt-2 border-t border-slate-100">
+                <label className="text-sm font-medium text-slate-500 flex items-center gap-1.5 mb-2">
+                  <KeyRound className="h-3.5 w-3.5" />
+                  Password
+                </label>
+                {resetSent ? (
+                  <div className="flex items-center gap-2 text-green-600 text-sm">
+                    <CheckCircle className="h-4 w-4" />
+                    Reset link sent to {user?.email}
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetPassword}
+                    disabled={resetSending}
+                    className="text-slate-600"
+                  >
+                    {resetSending && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+                    Send Password Reset Email
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
