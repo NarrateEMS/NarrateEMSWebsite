@@ -1116,6 +1116,12 @@ export default function HomePage() {
               <a href="/privacy-policy" className="hover:text-white/70 transition-colors">
                 Privacy
               </a>
+              <a href="/terms-of-service" className="hover:text-white/70 transition-colors">
+                Terms
+              </a>
+              <a href="/sla" className="hover:text-white/70 transition-colors">
+                SLA
+              </a>
               <span>© 2025 NarrateEMS</span>
             </div>
           </div>
