@@ -38,285 +38,220 @@ export default function PrivacyPolicyPage() {
         <div className="max-w-4xl mx-auto px-8 sm:px-12 lg:px-16">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Privacy Policy</h1>
           <p className="text-lg text-slate-600 mb-8">
-            <strong>Effective Date: December 25, 2024</strong>
+            <strong>Effective Date: March 1, 2025</strong> | Version 3.0 — Revised March 2026
           </p>
 
           <div className="prose prose-slate max-w-none">
             <p className="text-slate-700 leading-relaxed mb-6">
-              NarrateEMS ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains
-              how we collect, use, disclose, and safeguard your information when you use our Chrome extension.
+              NarrateEMS Inc. is committed to protecting your privacy. This Privacy Policy explains what
+              information we collect, how we use it, and how we protect it when you use our Service.
             </p>
 
             <p className="text-slate-700 leading-relaxed mb-8">
-              By installing and using NarrateEMS, you agree to the collection and use of information in accordance with
-              this policy.
+              Our Service is architected to minimize server-side data exposure. We do not store patient care
+              records or narrative content on our servers.
             </p>
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">1. Information We Collect</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">1. What We Collect — and What We Don&apos;t</h2>
 
-            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">1.1 Personally Identifiable Information</h3>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              When you create an account or subscribe to NarrateEMS, we may collect:
-            </p>
+            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">What We DO Collect (Stored Server-Side)</h3>
             <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Name</li>
-              <li>Email address</li>
-              <li>Billing address</li>
-              <li>Age or date of birth (if required for account verification)</li>
+              <li>Account information: name, email address, professional credentials.</li>
+              <li>Agency information: agency name, agency code, admin user ID.</li>
               <li>
-                Payment information (processed securely through Stripe; we do not store full payment card details)
+                Subscription and billing metadata: subscription status, Stripe customer ID. Stripe
+                processes payment card details directly — we do not store card numbers.
+              </li>
+              <li>
+                Basic technical logs for service stability. In production, no patient data or transcript
+                content is included in logs.
               </li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">1.2 Authentication Information</h3>
-            <p className="text-slate-700 leading-relaxed mb-4">To secure your account, we collect:</p>
+            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">What We Do NOT Store Server-Side</h3>
             <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Password (encrypted and hashed; never stored in plain text)</li>
-              <li>Account credentials for authentication purposes</li>
-              <li>Security questions or PINs (if applicable)</li>
+              <li>
+                <strong>Raw audio recordings:</strong> Voice input is transcribed locally within your browser. Raw audio
+                is never captured or transmitted by NarrateEMS.
+              </li>
+              <li>
+                <strong>Text transcripts and session data:</strong> Narrative transcripts and extracted clinical data
+                (including chief complaints, diagnoses, vital signs, and patient care narratives) are stored
+                temporarily in the browser&apos;s local extension storage (chrome.storage.local) on the user&apos;s
+                device during session processing. This data is stored locally on the device only — it is
+                never transmitted to or written to NarrateEMS servers or databases. It persists on the
+                device until the user manually resets their session using the Reset function in the
+                extension. NarrateEMS cannot access, retrieve, or delete this locally stored data
+                remotely.
+              </li>
+              <li>
+                <strong>Patient records:</strong> No patient identifiers, clinical information, or ePCR content is stored in
+                NarrateEMS databases.
+              </li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">1.3 Audio and Transcription Data</h3>
-            <p className="text-slate-700 leading-relaxed mb-4">When you use the voice recording feature:</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-6">
+              <p className="text-slate-700 leading-relaxed">
+                <strong>In plain terms:</strong> patient information processed through NarrateEMS lives temporarily on the
+                provider&apos;s device only. NarrateEMS does not build or maintain a database of patient
+                records.
+              </p>
+            </div>
+
+            <hr className="my-8 border-slate-200" />
+
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">2. How We Use the Information We Collect</h2>
             <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Audio recordings are captured temporarily for the sole purpose of transcription</li>
-              <li>Audio is transmitted securely to our transcription service providers</li>
-              <li>Audio recordings are not permanently stored after transcription is complete</li>
-              <li>Transcribed text is used only to populate form fields during your active session</li>
+              <li>Provision and manage your access to the Service.</li>
+              <li>Process payments and manage subscriptions via Stripe.</li>
+              <li>Communicate with you about your account, updates, and support.</li>
+              <li>Comply with legal obligations.</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">1.4 Usage Data</h3>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              We may collect non-personally identifiable information such as:
+            <p className="text-slate-700 leading-relaxed mb-6 font-semibold">
+              We do NOT use patient data or transcript content for AI model training. We do NOT sell any
+              data to third parties.
             </p>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Features used within the Extension</li>
-              <li>Error logs for troubleshooting</li>
-              <li>Session duration and frequency of use</li>
-            </ul>
 
-            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">1.5 Information We Do NOT Collect</h3>
+            <hr className="my-8 border-slate-200" />
+
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">3. How Transcript Content Is Processed</h2>
             <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Patient health information or medical records (this data remains within Zoll EMS Charts)</li>
-              <li>Your Zoll EMS Charts login credentials</li>
-              <li>Contents of completed patient care reports</li>
+              <li>
+                Your browser&apos;s Speech API converts audio to text locally on the device.
+              </li>
+              <li>
+                The text transcript is stored in the browser&apos;s local extension storage on your device and
+                transmitted through our backend infrastructure (Supabase Edge Functions), which
+                forwards it to our AI providers for documentation generation.
+              </li>
+              <li>
+                The AI providers return structured documentation fields — including chief complaints,
+                clinical assessments, vital signs, and narrative content — which are stored in
+                chrome.storage.local on your device and used to populate the ePCR form.
+              </li>
+              <li>
+                None of this data is written to NarrateEMS servers or databases at any point. It resides
+                on the local device only and persists until the user manually resets their session.
+              </li>
             </ul>
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">2. How We Use Your Information</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">We use the information we collect to:</p>
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">4. Data Storage and Security</h2>
             <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Provide, operate, and maintain NarrateEMS</li>
-              <li>Create and manage your account</li>
-              <li>Process subscriptions and payments</li>
-              <li>Authenticate your access to the Extension</li>
-              <li>Convert voice narrations into text for form population</li>
-              <li>Communicate with you about your account, updates, or support requests</li>
-              <li>Improve and optimize the Extension</li>
-              <li>Detect and prevent fraud or abuse</li>
-              <li>Comply with legal obligations</li>
+              <li><strong>Storage infrastructure:</strong> Supabase (PostgreSQL).</li>
+              <li><strong>Encryption at rest:</strong> AES-256 encryption at the infrastructure level via Supabase platform defaults.</li>
+              <li><strong>Encryption in transit:</strong> All data is encrypted using TLS/SSL.</li>
+              <li><strong>Access controls:</strong> Database access is restricted to authorized NarrateEMS personnel. Data is isolated by agency.</li>
+              <li><strong>Logging:</strong> NarrateEMS does not currently log patient data or transcript content. Any future logging of such data will be conducted exclusively through HIPAA-compliant services with appropriate safeguards.</li>
             </ul>
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">3. Data Sharing and Disclosure</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">5. Third-Party Subprocessors</h2>
+            <div className="overflow-x-auto mb-6">
+              <table className="w-full border-collapse border border-slate-300 text-sm text-slate-700">
+                <thead>
+                  <tr className="bg-slate-100">
+                    <th className="border border-slate-300 px-4 py-3 text-left font-semibold text-slate-900">Provider</th>
+                    <th className="border border-slate-300 px-4 py-3 text-left font-semibold text-slate-900">Purpose</th>
+                    <th className="border border-slate-300 px-4 py-3 text-left font-semibold text-slate-900">Data Received</th>
+                    <th className="border border-slate-300 px-4 py-3 text-left font-semibold text-slate-900">PHI Exposure</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-slate-300 px-4 py-3">Microsoft Azure OpenAI</td>
+                    <td className="border border-slate-300 px-4 py-3">Field extraction and documentation generation</td>
+                    <td className="border border-slate-300 px-4 py-3">Text transcript + system prompt</td>
+                    <td className="border border-slate-300 px-4 py-3">Yes — HIPAA DPA executed.</td>
+                  </tr>
+                  <tr className="bg-slate-50">
+                    <td className="border border-slate-300 px-4 py-3">Groq</td>
+                    <td className="border border-slate-300 px-4 py-3">Page relevance classification</td>
+                    <td className="border border-slate-300 px-4 py-3">Text transcript + system prompt</td>
+                    <td className="border border-slate-300 px-4 py-3">Yes — BAA in Groq ToS (eff. Oct 15, 2025).</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-slate-300 px-4 py-3">Supabase</td>
+                    <td className="border border-slate-300 px-4 py-3">Database, auth, API proxy</td>
+                    <td className="border border-slate-300 px-4 py-3">Account/subscription data; transcript in-memory transit only</td>
+                    <td className="border border-slate-300 px-4 py-3">Transit only — not persisted.</td>
+                  </tr>
+                  <tr className="bg-slate-50">
+                    <td className="border border-slate-300 px-4 py-3">Stripe</td>
+                    <td className="border border-slate-300 px-4 py-3">Billing and payment processing</td>
+                    <td className="border border-slate-300 px-4 py-3">User ID, email, subscription metadata only</td>
+                    <td className="border border-slate-300 px-4 py-3">No — no clinical data.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
             <p className="text-slate-700 leading-relaxed mb-6">
-              We do not sell, trade, or rent your personal information to third parties.
+              NarrateEMS does not permit subprocessors to use your data for their own purposes or for AI
+              model training.
             </p>
-
-            <p className="text-slate-700 leading-relaxed mb-4">We may share information with:</p>
-
-            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">Service Providers</h3>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>
-                <strong>Transcription Services (Groq):</strong> Processes audio to convert narrations into text
-              </li>
-              <li>
-                <strong>AI Processing (OpenAI):</strong> Extracts medical information from transcriptions for form
-                population
-              </li>
-              <li>
-                <strong>Payment Processing (Stripe):</strong> Handles subscription payments securely
-              </li>
-              <li>
-                <strong>Authentication (Supabase):</strong> Provides secure user authentication and account management
-              </li>
-            </ul>
-
-            <p className="text-slate-700 leading-relaxed mb-6">
-              These providers are contractually obligated to protect your information and use it only for the services
-              they provide to us.
-            </p>
-
-            <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">Legal Requirements</h3>
-            <p className="text-slate-700 leading-relaxed mb-6">
-              We may disclose your information if required by law, court order, or government request, or to protect
-              our rights, your safety, or the safety of others.
-            </p>
-
-            <hr className="my-8 border-slate-200" />
-
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">4. Data Security</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              We implement appropriate security measures to protect your information:
-            </p>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>All data in transit is encrypted using TLS/SSL</li>
-              <li>Passwords are hashed using industry-standard algorithms</li>
-              <li>Audio recordings are processed in real-time and discarded after transcription</li>
-              <li>Access to user data is restricted to authorized personnel only</li>
-              <li>We conduct regular security reviews</li>
-            </ul>
-
-            <p className="text-slate-700 leading-relaxed mb-6">
-              While we strive to protect your information, no method of transmission over the Internet is 100% secure.
-              We cannot guarantee absolute security.
-            </p>
-
-            <hr className="my-8 border-slate-200" />
-
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">5. Healthcare Data Considerations</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              NarrateEMS is designed to assist EMS providers with documentation:
-            </p>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>We process voice narrations to extract information for form population</li>
-              <li>Patient information populated into Zoll EMS Charts remains within the Zoll system</li>
-              <li>We do not store or retain patient health information</li>
-              <li>
-                Users are responsible for ensuring their use of NarrateEMS complies with their organization's policies
-                and applicable healthcare regulations
-              </li>
-            </ul>
 
             <hr className="my-8 border-slate-200" />
 
             <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">6. Data Retention</h2>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>
-                <strong>Account Information:</strong> Retained while your account is active and for a reasonable period
-                thereafter for legal and business purposes
-              </li>
-              <li>
-                <strong>Authentication Data:</strong> Retained while your account is active; deleted upon account
-                deletion
-              </li>
-              <li>
-                <strong>Audio Recordings:</strong> Not retained; discarded immediately after transcription
-              </li>
-              <li>
-                <strong>Transcriptions:</strong> Temporarily stored during your active session only; not retained after
-                session ends
-              </li>
-              <li>
-                <strong>Payment Records:</strong> Retained as required for financial, tax, and legal compliance
-              </li>
-            </ul>
-
-            <hr className="my-8 border-slate-200" />
-
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">7. Your Rights</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">You have the right to:</p>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>
-                <strong>Access:</strong> Request a copy of the personal information we hold about you
-              </li>
-              <li>
-                <strong>Correction:</strong> Request correction of inaccurate or incomplete information
-              </li>
-              <li>
-                <strong>Deletion:</strong> Request deletion of your account and associated personal data
-              </li>
-              <li>
-                <strong>Portability:</strong> Request your data in a portable format
-              </li>
-              <li>
-                <strong>Opt-Out:</strong> Unsubscribe from marketing communications at any time
-              </li>
-            </ul>
-
+            <p className="text-slate-700 leading-relaxed mb-4">
+              Account and subscription records are retained for the duration of your active account and for a
+              reasonable period thereafter. Transcript content and extracted clinical session data are stored
+              locally on the user&apos;s device only and are not held on NarrateEMS servers. Deletion of your
+              NarrateEMS account affects only account and subscription records.
+            </p>
             <p className="text-slate-700 leading-relaxed mb-6">
-              To exercise these rights, contact us at{" "}
+              To request deletion of your account and associated records, contact{" "}
               <a href="mailto:narrateems@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
                 narrateems@gmail.com
               </a>
-              .
+              . Requests are processed within thirty (30) days.
             </p>
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">8. Cookies and Tracking</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              NarrateEMS uses local browser storage (Chrome Storage API) to:
-            </p>
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">7. HIPAA</h2>
             <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Maintain your session state</li>
-              <li>Store temporary form-filling data during active use</li>
-              <li>Remember your preferences</li>
-            </ul>
-
-            <p className="text-slate-700 leading-relaxed mb-6">
-              We do not use third-party tracking cookies or analytics within the Extension.
-            </p>
-
-            <hr className="my-8 border-slate-200" />
-
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">9. Children's Privacy</h2>
-            <p className="text-slate-700 leading-relaxed mb-6">
-              NarrateEMS is not intended for individuals under the age of 18. We do not knowingly collect personal
-              information from children. If we learn we have collected information from a child under 18, we will
-              delete it promptly.
-            </p>
-
-            <hr className="my-8 border-slate-200" />
-
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">10. California Privacy Rights</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              If you are a California resident, you have additional rights under the California Consumer Privacy Act
-              (CCPA):
-            </p>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Right to know what personal information we collect and how it is used</li>
-              <li>Right to request deletion of your personal information</li>
-              <li>Right to opt-out of the sale of personal information (we do not sell your data)</li>
-              <li>Right to non-discrimination for exercising your privacy rights</li>
+              <li>We implement safeguards to protect PHI during transit, including TLS encryption.</li>
+              <li>We do not persist PHI in our databases.</li>
+              <li>
+                Covered Entities must execute a Business Associate Agreement (BAA) with NarrateEMS
+                before using the Service with any PHI.
+              </li>
+              <li>
+                We will notify you of any confirmed breach of unsecured PHI in accordance with the
+                HIPAA Breach Notification Rule.
+              </li>
             </ul>
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">11. International Users</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">8. Your Rights</h2>
             <p className="text-slate-700 leading-relaxed mb-6">
-              NarrateEMS is operated from the United States. If you are accessing the Extension from outside the United
-              States, your information may be transferred to and processed in the United States, where data protection
-              laws may differ from those in your jurisdiction.
+              You may request access to, correction of, or deletion of personal information we hold (account
+              and subscription data). Contact{" "}
+              <a href="mailto:narrateems@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
+                narrateems@gmail.com
+              </a>
+              . We respond within thirty (30) days.
             </p>
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">12. Changes to This Privacy Policy</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              We may update this Privacy Policy from time to time. We will notify you of material changes by:
-            </p>
-            <ul className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-              <li>Posting the updated policy on this page</li>
-              <li>Updating the "Effective Date" at the top</li>
-              <li>Sending an email notification for significant changes</li>
-            </ul>
-
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">9. Changes to This Policy</h2>
             <p className="text-slate-700 leading-relaxed mb-6">
-              Your continued use of NarrateEMS after changes are posted constitutes acceptance of the revised policy.
+              Material changes will be communicated by email or a Service notice at least 14 days before
+              taking effect.
             </p>
 
             <hr className="my-8 border-slate-200" />
 
-            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">13. Contact Us</h2>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              If you have questions about this Privacy Policy or wish to exercise your privacy rights, contact us at:
-            </p>
-
+            <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">10. Contact</h2>
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-8">
               <p className="text-slate-900 font-semibold mb-2">NarrateEMS</p>
               <p className="text-slate-700">
@@ -325,11 +260,17 @@ export default function PrivacyPolicyPage() {
                   narrateems@gmail.com
                 </a>
               </p>
+              <p className="text-slate-700">
+                Website:{" "}
+                <a href="https://www.narrateems.com" className="text-teal-600 hover:text-teal-700 underline">
+                  www.narrateems.com
+                </a>
+              </p>
             </div>
 
             <hr className="my-8 border-slate-200" />
 
-            <p className="text-center text-slate-600 text-sm mt-8">© 2024 NarrateEMS. All rights reserved.</p>
+            <p className="text-center text-slate-600 text-sm mt-8">&copy; 2025 NarrateEMS Inc. All rights reserved.</p>
           </div>
         </div>
       </main>
@@ -352,7 +293,13 @@ export default function PrivacyPolicyPage() {
               <a href="/privacy-policy" className="hover:text-white transition-colors">
                 Privacy Policy
               </a>
-              <span>© 2025 NarrateEMS. All rights reserved.</span>
+              <a href="/terms-of-service" className="hover:text-white transition-colors">
+                Terms of Service
+              </a>
+              <a href="/sla" className="hover:text-white transition-colors">
+                SLA
+              </a>
+              <span>&copy; 2025 NarrateEMS. All rights reserved.</span>
             </div>
           </div>
         </div>
@@ -360,4 +307,3 @@ export default function PrivacyPolicyPage() {
     </div>
   )
 }
-
