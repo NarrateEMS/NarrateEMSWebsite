@@ -12,7 +12,7 @@ import Link from "next/link"
 
 const CHROME_EXTENSION_URL = "https://chromewebstore.google.com/detail/narrateems-ai-medic-voice/nokdpnigpfafepjbdinggckgcdekdjkm"
 
-type PageState = "login" | "loading" | "no-account"
+type PageState = "login" | "loading" | "no-account" | "wrong-password" | "pending-invite"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,10 +33,42 @@ export default function LoginPage() {
       })
 
       if (authError) {
-        // Check if it's an invalid credentials error (user doesn't exist or wrong password)
         if (authError.message.includes("Invalid login credentials")) {
-          // Check if user exists by trying to see if it's a password issue vs no account
-          setPageState("no-account")
+          // Call check-email-exists to differentiate the error
+          try {
+            const checkResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/check-email-exists`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+                },
+                body: JSON.stringify({ email: email.trim() }),
+              }
+            )
+
+            const checkResult = await checkResponse.json()
+
+            if (checkResult.exists && checkResult.hasPendingInvite) {
+              // Account exists via invite but no password set yet
+              setPageState("pending-invite")
+            } else if (checkResult.exists) {
+              // Account exists, password is just wrong
+              setPageState("wrong-password")
+            } else if (checkResult.hasPendingInvite) {
+              // Invite exists but they haven't clicked the link yet
+              setPageState("pending-invite")
+            } else {
+              // No account at all
+              setPageState("no-account")
+            }
+          } catch (checkErr) {
+            console.error("Error checking email:", checkErr)
+            // Fallback: show generic error if the edge function is unavailable
+            setError("Invalid email or password. Please try again.")
+            setPageState("login")
+          }
           return
         }
         setError(authError.message)
@@ -54,11 +86,10 @@ export default function LoginPage() {
     }
   }
 
-  // No Account Screen - Direct to Chrome Extension
-  if (pageState === "no-account") {
+  // Wrong Password Screen
+  if (pageState === "wrong-password") {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-        {/* Subtle Grid Pattern */}
         <div className="absolute inset-0 opacity-[0.03]">
           <div className="absolute inset-0" style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
@@ -66,12 +97,10 @@ export default function LoginPage() {
           }} />
         </div>
 
-        {/* Gradient Orbs */}
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-red-500/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px]" />
 
         <div className="relative z-10 w-full max-w-md mx-auto px-6 text-center">
-          {/* Logo */}
           <Link href="/" className="inline-block mb-8">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/NarrateEMS_Logo_Transparent_White-edQRVIFGqJxTAPGBJm2kUfBX3Lctuf.png"
@@ -80,7 +109,124 @@ export default function LoginPage() {
             />
           </Link>
 
-          {/* Alert Icon */}
+          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock className="h-10 w-10 text-red-400" />
+          </div>
+
+          <h1 className="text-3xl font-bold text-white mb-4">
+            Incorrect Password
+          </h1>
+
+          <p className="text-white/60 text-lg mb-8 leading-relaxed">
+            An account exists for <span className="text-white font-medium">{email}</span>, but the password you entered is incorrect.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => {
+                setPageState("login")
+                setError(null)
+                setPassword("")
+              }}
+              className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-4 text-lg font-semibold rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-105"
+            >
+              Try Again
+            </button>
+
+            <Link
+              href="/"
+              className="text-teal-400 hover:text-teal-300 transition-colors text-sm mt-2"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Pending Invite Screen
+  if (pageState === "pending-invite") {
+    return (
+      <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px'
+          }} />
+        </div>
+
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px]" />
+
+        <div className="relative z-10 w-full max-w-md mx-auto px-6 text-center">
+          <Link href="/" className="inline-block mb-8">
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/NarrateEMS_Logo_Transparent_White-edQRVIFGqJxTAPGBJm2kUfBX3Lctuf.png"
+              alt="NarrateEMS Logo"
+              className="h-12 w-auto mx-auto"
+            />
+          </Link>
+
+          <div className="w-20 h-20 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Mail className="h-10 w-10 text-teal-400" />
+          </div>
+
+          <h1 className="text-3xl font-bold text-white mb-4">
+            Check Your Email
+          </h1>
+
+          <p className="text-white/60 text-lg mb-8 leading-relaxed">
+            You have a pending squad invitation for <span className="text-white font-medium">{email}</span>. Check your email for an invite link from NarrateEMS to set your password and join your squad.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => {
+                setPageState("login")
+                setError(null)
+                setPassword("")
+              }}
+              className="text-white/60 hover:text-white transition-colors text-sm"
+            >
+              ← Try logging in with different credentials
+            </button>
+
+            <Link
+              href="/"
+              className="text-teal-400 hover:text-teal-300 transition-colors text-sm"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // No Account Screen - Direct to Chrome Extension
+  if (pageState === "no-account") {
+    return (
+      <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px'
+          }} />
+        </div>
+
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-red-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px]" />
+
+        <div className="relative z-10 w-full max-w-md mx-auto px-6 text-center">
+          <Link href="/" className="inline-block mb-8">
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/NarrateEMS_Logo_Transparent_White-edQRVIFGqJxTAPGBJm2kUfBX3Lctuf.png"
+              alt="NarrateEMS Logo"
+              className="h-12 w-auto mx-auto"
+            />
+          </Link>
+
           <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="h-10 w-10 text-red-400" />
           </div>
@@ -88,9 +234,9 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-white mb-4">
             No Account Found
           </h1>
-          
+
           <p className="text-white/60 text-lg mb-8 leading-relaxed">
-            We couldn't find an account with those credentials. To get started with NarrateEMS, download our Chrome extension and create your account there.
+            We couldn't find an account for <span className="text-white font-medium">{email}</span>. To get started with NarrateEMS, download our Chrome extension and create your account there.
           </p>
 
           {/* Download Extension Button */}
@@ -114,7 +260,7 @@ export default function LoginPage() {
             >
               ← Try again with different credentials
             </button>
-            
+
             <Link
               href="/"
               className="text-teal-400 hover:text-teal-300 transition-colors text-sm"
@@ -253,4 +399,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
