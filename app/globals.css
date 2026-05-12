@@ -1,9 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   NarrateEMS Brand System
+   By medics. For medics.
+   Deep navy on warm paper, single hi-vis accent.
+   ============================================================ */
+
 :root {
+  /* Brand surfaces */
+  --paper: #FAFAF7;
+  --paper-tint: #F4F2EB;
+  --surface: #FFFFFF;
+  --ink: #0A1628;
+  --ink-2: #14213D;
+  --ink-muted: #4A5568;
+  --ink-soft: #6B7280;
+  --rule: #E8E6E0;
+  --rule-strong: #D6D2C7;
+
+  /* Accent — hi-vis safety yellow (EMS coded) */
+  --hi-vis: #FACC15;
+  --hi-vis-deep: #CA8A04;
+  --hi-vis-ink: #0A1628;
+
+  /* Status */
+  --danger: #B91C1C;
+  --success: #15803D;
+  --recording: #DC2626;
+
+  /* Type stacks */
+  --font-serif: 'Instrument Serif', 'Times New Roman', serif;
+  --font-sans: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
+
+  /* shadcn / radix tokens (kept for existing component library) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -28,7 +62,7 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -75,8 +109,26 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
+  --font-serif: 'Instrument Serif', 'Times New Roman', serif;
+
+  /* brand colors exposed to tailwind */
+  --color-paper: var(--paper);
+  --color-paper-tint: var(--paper-tint);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-soft: var(--ink-soft);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-hi-vis: var(--hi-vis);
+  --color-hi-vis-deep: var(--hi-vis-deep);
+  --color-hi-vis-ink: var(--hi-vis-ink);
+  --color-recording: var(--recording);
+
+  /* shadcn passthrough */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -101,8 +153,8 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 1px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-sidebar: var(--sidebar);
@@ -119,7 +171,169 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
   body {
-    @apply bg-background text-foreground;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  ::selection {
+    background: var(--hi-vis);
+    color: var(--ink);
+  }
+}
+
+@layer utilities {
+  .font-serif {
+    font-family: var(--font-serif);
+    font-feature-settings: 'liga', 'dlig';
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Subtle paper grain for hero/full-bleed sections */
+  .bg-grain {
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(10, 22, 40, 0.015) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, rgba(10, 22, 40, 0.02) 1px, transparent 1px);
+    background-size: 4px 4px, 6px 6px;
+  }
+
+  /* Marquee row of compliance badges */
+  .border-rule-soft {
+    border-color: var(--rule);
+  }
+
+  /* Hi-vis focus ring for accessibility */
+  .focus-hi-vis {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    --tw-ring-color: var(--hi-vis);
+    --tw-ring-offset-color: var(--paper);
+  }
+
+  /* Reveal animation — used sparingly */
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .reveal {
+    animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .pulse-dot {
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+
+  /* Hairline divider with brand warmth */
+  .rule-hair {
+    border-color: var(--rule);
+  }
+
+  /* Editorial prose for legal pages */
+  .legal-prose {
+    color: var(--ink-muted);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+  .legal-prose h2 {
+    font-family: var(--font-serif);
+    color: var(--ink);
+    font-size: 2rem;
+    line-height: 1.15;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+  .legal-prose h3 {
+    font-family: var(--font-sans);
+    color: var(--ink);
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .legal-prose h2 + h3 {
+    margin-top: 1.25rem;
+  }
+  .legal-prose p {
+    margin-bottom: 1.25rem;
+  }
+  .legal-prose strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .legal-prose a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  .legal-prose a:hover {
+    color: var(--hi-vis-deep);
+  }
+  .legal-prose ul {
+    margin: 0 0 1.5rem 0;
+    padding-left: 1.5rem;
+    list-style: none;
+  }
+  .legal-prose ul li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  .legal-prose ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 0.55rem;
+    height: 1px;
+    background: var(--ink);
+  }
+  .legal-prose ol {
+    margin: 0 0 1.5rem 0;
+    padding-left: 1.5rem;
+  }
+  .legal-prose ol li {
+    margin-bottom: 0.5rem;
+  }
+  .legal-prose hr {
+    border: 0;
+    height: 1px;
+    background: var(--rule);
+    margin: 2.5rem 0;
+  }
+  .legal-prose blockquote {
+    border-left: 2px solid var(--ink);
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--ink);
+  }
+  .legal-prose code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--paper-tint);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
   }
 }
