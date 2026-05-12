@@ -1,24 +1,35 @@
 import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+  display: "swap",
+  weight: ["400", "500", "600"],
+})
 
 export const metadata: Metadata = {
-  title: "NarrateEMS",
+  title: "NarrateEMS — The chart writes itself.",
   description:
-    "Transform your EMS documentation with AI-driven voice-to-text technology. Built by EMS professionals for healthcare heroes. Offline capable and ePCR ready.",
+    "Built by medics, for medics. After the call, just narrate what happened. NarrateEMS writes your Zoll ePCR for you — 70% faster, HIPAA encrypted.",
   keywords:
-    "EMS documentation, voice-to-text, paramedic software, ePCR, NEMSIS, healthcare technology, emergency medical services",
-  authors: [{ name: "NarrateEMS Team" }],
+    "EMS documentation, voice ePCR, paramedic charting, Zoll integration, EMS software, ambulance charting, voice to text EMS, post-call charting",
+  authors: [{ name: "NarrateEMS" }],
   creator: "NarrateEMS",
   publisher: "NarrateEMS",
   robots: "index, follow",
   openGraph: {
-    title: "NarrateEMS",
+    title: "NarrateEMS — The chart writes itself.",
     description:
-      "Transform your EMS documentation with AI-driven voice-to-text technology. Built by EMS professionals for healthcare heroes.",
+      "After the call, just narrate. NarrateEMS writes your Zoll ePCR for you — 70% faster, HIPAA encrypted.",
     url: "https://narrateems.com",
     siteName: "NarrateEMS",
     type: "website",
@@ -27,21 +38,25 @@ export const metadata: Metadata = {
         url: "https://narrateems.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "NarrateEMS - Voice-Powered EMS Documentation",
+        alt: "NarrateEMS — Voice-driven ePCR charting for medics",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NarrateEMS",
+    title: "NarrateEMS — The chart writes itself.",
     description:
-      "Transform your EMS documentation with AI-driven voice-to-text technology. Built by EMS professionals for healthcare heroes.",
+      "After the call, narrate. NarrateEMS writes your Zoll ePCR — 70% faster.",
     images: ["https://narrateems.com/og-image.jpg"],
   },
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#14b8a6",
   manifest: "/manifest.json",
-    generator: 'v0.app'
+  generator: "v0.app",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0A1628",
 }
 
 export default function RootLayout({
@@ -50,17 +65,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <meta name="msapplication-TileColor" content="#14b8a6" />
-        <meta name="theme-color" content="#14b8a6" />
+        <meta name="msapplication-TileColor" content="#0A1628" />
         <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
       </head>
-      <body className={inter.className} suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }

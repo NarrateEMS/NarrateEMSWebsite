@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
+import { Wordmark } from "@/components/wordmark"
+import { Loader2, ArrowUpRight, Download } from "lucide-react"
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
@@ -11,110 +12,162 @@ function CheckoutSuccessContent() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Give the webhook a moment to process
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
+    const timer = setTimeout(() => setIsLoading(false), 2000)
     return () => clearTimeout(timer)
   }, [])
 
-  return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur-sm border-b border-white/5">
-        <div className="w-full mx-auto px-8 sm:px-12 lg:px-16 xl:px-20 py-4">
-          <Link href="/">
-            <Image
-              src="/logo.png"
-              alt="NarrateEMS"
-              width={150}
-              height={40}
-              className="h-8 w-auto brightness-0 invert"
-            />
-          </Link>
-        </div>
-      </nav>
-
-      {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-8 pt-24">
-        <div className="max-w-lg w-full text-center">
-          {isLoading ? (
-            <>
-              <div className="w-16 h-16 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin mx-auto mb-6" />
-              <h1 className="text-3xl font-bold text-white mb-4">Processing your order...</h1>
-              <p className="text-white/60">Please wait while we set up your account.</p>
-            </>
-          ) : (
-            <>
-              <div className="w-20 h-20 bg-teal-400/10 rounded-full flex items-center justify-center mx-auto mb-8">
-                <svg className="w-10 h-10 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-
-              <h1 className="text-4xl font-bold text-white mb-4">Welcome to NarrateEMS!</h1>
-              <p className="text-xl text-white/60 mb-8">
-                Your subscription is now active. You&apos;re ready to start documenting faster.
-              </p>
-
-              <div className="bg-slate-900/50 border border-white/10 rounded-2xl p-6 mb-8">
-                <h2 className="text-lg font-semibold text-white mb-4">Next Steps:</h2>
-                <ol className="text-left space-y-4 text-white/70">
-                  <li className="flex items-start gap-3">
-                    <span className="bg-teal-400 text-slate-900 font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-sm">1</span>
-                    <span>Install the <strong className="text-white">NarrateEMS Chrome Extension</strong> from the Chrome Web Store</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="bg-teal-400 text-slate-900 font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-sm">2</span>
-                    <span>Log in with the email and password you just created</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="bg-teal-400 text-slate-900 font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-sm">3</span>
-                    <span>Navigate to your ePCR system and start dictating!</span>
-                  </li>
-                </ol>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="https://chromewebstore.google.com/detail/narrateems-ai-medic-voice/nokdpnigpfafepjbdinggckgcdekdjkm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-8 py-3 bg-teal-400 text-slate-900 font-semibold rounded-lg hover:bg-teal-300 transition-colors inline-flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.5a7.5 7.5 0 110 15 7.5 7.5 0 010-15z"/>
-                  </svg>
-                  Get Chrome Extension
-                </a>
-                <Link
-                  href="/"
-                  className="px-8 py-3 border border-white/20 text-white font-semibold rounded-lg hover:bg-white/5 transition-colors"
-                >
-                  Back to Home
-                </Link>
-              </div>
-
-              {sessionId && (
-                <p className="text-white/30 text-xs mt-8">
-                  Order ID: {sessionId.slice(0, 20)}...
-                </p>
-              )}
-            </>
-          )}
-        </div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-paper text-ink antialiased flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="flex flex-col items-center gap-4 max-w-md text-center">
+            <Loader2 className="h-6 w-6 animate-spin text-ink" />
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
+              Setting up your account
+            </div>
+            <p className="text-ink-muted text-sm">
+              We're activating your subscription and provisioning your squad. Hang
+              tight — this takes a couple seconds.
+            </p>
+          </div>
+        </main>
       </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-paper text-ink antialiased flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <section className="mx-auto max-w-[1100px] px-6 lg:px-10 pt-16 lg:pt-24 pb-12">
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
+            ↳ You're in
+          </div>
+          <h1 className="font-serif text-6xl lg:text-7xl leading-[0.98] tracking-tight text-balance max-w-3xl">
+            Welcome to <span className="italic">NarrateEMS.</span>
+          </h1>
+          <p className="mt-6 text-lg text-ink-muted leading-relaxed max-w-2xl">
+            Your subscription is active. Three quick things and you're charting by voice
+            on your next call.
+          </p>
+        </section>
+
+        <section className="mx-auto max-w-[1100px] px-6 lg:px-10 pb-16 lg:pb-24">
+          <ol className="border-y border-rule">
+            {[
+              {
+                title: "Install the Chrome extension.",
+                body: "On the same laptop you use for Zoll ePCR. Takes ten seconds.",
+                cta: (
+                  <a
+                    href="https://chromewebstore.google.com/detail/narrateems-ai-medic-voice/nokdpnigpfafepjbdinggckgcdekdjkm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-hi-vis text-hi-vis-ink px-5 py-3 text-sm font-semibold rounded-md hover:bg-hi-vis-deep hover:text-paper transition-colors focus-hi-vis"
+                  >
+                    <Download className="h-4 w-4" />
+                    Install extension
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </a>
+                ),
+              },
+              {
+                title: "Sign in to the extension.",
+                body: "Use the email and password you just created. Same account works on the web.",
+                cta: null,
+              },
+              {
+                title: "Open your Zoll ePCR. Hit record. Narrate.",
+                body: "Walk through the call the way you'd brief your partner. Your chart fills in as you talk.",
+                cta: null,
+              },
+            ].map((step, i) => (
+              <li
+                key={step.title}
+                className="grid grid-cols-[auto_1fr_auto] items-start gap-6 lg:gap-10 py-8 border-b border-rule last:border-b-0"
+              >
+                <div className="font-mono text-sm text-ink-soft tabular-nums pt-1">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div>
+                  <h3 className="font-serif text-2xl lg:text-3xl text-ink leading-tight">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-ink-muted leading-relaxed max-w-xl">{step.body}</p>
+                </div>
+                <div>{step.cta}</div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-12 flex flex-wrap items-center gap-4">
+            <Link
+              href="/account"
+              className="inline-flex items-center gap-2 bg-ink text-paper px-5 py-3 text-sm font-medium rounded-md hover:bg-ink-2 transition-colors"
+            >
+              Go to your account
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+            <Link href="/" className="text-sm text-ink-muted hover:text-ink transition-colors">
+              Back to home
+            </Link>
+          </div>
+
+          {sessionId && (
+            <div className="mt-12 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">
+              Order · {sessionId.slice(0, 24)}…
+            </div>
+          )}
+        </section>
+      </main>
+
+      <footer className="border-t border-rule">
+        <div className="mx-auto max-w-[1100px] px-6 lg:px-10 h-14 flex items-center justify-between text-xs text-ink-soft">
+          <span className="font-mono uppercase tracking-[0.16em]">© 2026 NarrateEMS</span>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy-policy" className="hover:text-ink transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms-of-service" className="hover:text-ink transition-colors">
+              Terms
+            </Link>
+            <Link href="/sla" className="hover:text-ink transition-colors">
+              SLA
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
+  )
+}
+
+function Header() {
+  return (
+    <header className="border-b border-rule">
+      <div className="mx-auto max-w-[1100px] px-6 lg:px-10 h-16 flex items-center justify-between">
+        <Wordmark href="/" size="md" />
+        <Link
+          href="/account"
+          className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors"
+        >
+          Your account
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </header>
   )
 }
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-paper flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-ink" />
+        </div>
+      }
+    >
       <CheckoutSuccessContent />
     </Suspense>
   )
