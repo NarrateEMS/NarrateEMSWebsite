@@ -59,6 +59,15 @@ const PRICE_CONFIG: Record<string, PlanConfig> = {
   },
 }
 
+// Anon-key client used solely to verify a submitted password. The admin client
+// must never be used for this: its service-role key would authenticate without
+// checking the password at all.
+const supabaseAnon = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+)
+
 export async function POST(request: NextRequest) {
   try {
     const { email, password, planType } = await request.json()
@@ -79,28 +88,61 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
-    const existingUser = existingUsers?.users?.find(u => u.email === email)
+    // Look the email up by exact match rather than scanning listUsers(). That
+    // call is unpaginated (default page size 50), so with more than 50 users an
+    // existing account past the first page looked new and we attempted a
+    // duplicate createUser.
+    const normalizedEmail = email.toLowerCase().trim()
+    const { data: existingUserId, error: lookupError } = await supabaseAdmin
+      .rpc('auth_user_id_by_email', { p_email: normalizedEmail })
+
+    if (lookupError) {
+      console.error('Error looking up email:', lookupError)
+      return NextResponse.json(
+        { error: 'Could not verify that email. Please try again.' },
+        { status: 503 }
+      )
+    }
 
     let userId: string
 
-    if (existingUser) {
-      // User exists - verify they don't already have an active subscription
+    if (existingUserId) {
       const { data: existingSub } = await supabaseAdmin
         .from('user_subscriptions')
         .select('subscription_status')
-        .eq('user_id', existingUser.id)
-        .single()
+        .eq('user_id', existingUserId as string)
+        .maybeSingle()
 
-      if (existingSub?.subscription_status === 'active') {
+      if (existingSub?.subscription_status === 'active' || existingSub?.subscription_status === 'trialing') {
         return NextResponse.json(
           { error: 'You already have an active subscription. Please log in to manage it.' },
           { status: 400 }
         )
       }
 
-      userId = existingUser.id
+      // Prove ownership before attaching a payment to this account.
+      //
+      // Previously the submitted password was silently DISCARDED here and the
+      // existing user's id reused. Two consequences: paying with someone else's
+      // email attached the subscription to THEIR account, and an honest buyer who
+      // abandoned checkout and retried with a different password could never log
+      // in with the password they had just typed.
+      const { error: signInError } = await supabaseAnon.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      })
+
+      if (signInError) {
+        return NextResponse.json(
+          {
+            error: 'An account already exists for this email. Please log in first, then start your subscription.',
+            code: 'account_exists',
+          },
+          { status: 401 }
+        )
+      }
+
+      userId = existingUserId as string
     } else {
       // Create new user in Supabase
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({

@@ -25,6 +25,7 @@ export default function AcceptInvitePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState("")
   const processedRef = useRef(false)
+  const cleanupRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     const handleInviteToken = async () => {
@@ -80,7 +81,11 @@ export default function AcceptInvitePage() {
             }
           }
         }, 1000)
-        return () => {
+        // Hand teardown to the effect. Returning it from this inner async
+        // function did nothing: the effect calls handleInviteToken() bare, so
+        // the returned function was discarded and both the poll interval and
+        // the auth subscription leaked for the page's lifetime.
+        cleanupRef.current = () => {
           clearInterval(pollInterval)
           subscription.unsubscribe()
         }
@@ -111,12 +116,37 @@ export default function AcceptInvitePage() {
     }
 
     handleInviteToken()
+
+    return () => {
+      cleanupRef.current?.()
+      cleanupRef.current = null
+    }
   }, [])
 
   const acceptInvite = async () => {
     const {
       data: { session },
     } = await supabase.auth.getSession()
+
+    // The invite id arrives as ?invite=<id>, set by invite-squad-member as the
+    // redirect target. GoTrue silently DISCARDS user_metadata when it re-sends
+    // to an already-existing user, so metadata is structurally unreliable -- a
+    // second squad's invite would carry the first squad's ids. Read the query
+    // string directly rather than via useSearchParams(), which would force this
+    // page into a Suspense boundary to prerender. Metadata stays as a fallback
+    // for links issued before ?invite= existed.
+    const inviteIdFromUrl =
+      typeof window !== "undefined"
+        ? (new URLSearchParams(window.location.search).get("invite") ?? "")
+        : ""
+    const effectiveInviteId = inviteIdFromUrl || inviteId
+
+    if (!effectiveInviteId) {
+      throw new Error(
+        "This invite link is missing its invitation reference. Ask your squad admin to send a fresh one.",
+      )
+    }
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/accept-squad-invite`,
       {
@@ -125,14 +155,28 @@ export default function AcceptInvitePage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({
-          user_id: session?.user?.id,
-          squad_id: squadId,
-          invite_id: inviteId,
-        }),
+        // invite_id only. The edge function derives the caller from the verified
+        // JWT and the squad from the invite row, so user_id and squad_id were
+        // both redundant -- and trusting them was how any authenticated caller
+        // could join any active squad.
+        body: JSON.stringify({ invite_id: effectiveInviteId }),
       },
     )
-    return response.json()
+
+    const result = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      // This used to `return response.json()` unconditionally, so BOTH callers
+      // then showed the full success screen to someone who had not been added
+      // to any squad.
+      console.error("Accept invite failed:", response.status, result)
+      throw new Error(
+        result?.error ||
+          "We couldn't add you to the squad. Ask your squad admin to send a fresh invitation.",
+      )
+    }
+
+    return result
   }
 
   const handleSetPassword = async (e: React.FormEvent) => {
@@ -154,24 +198,28 @@ export default function AcceptInvitePage() {
         setPageState("set-password")
         return
       }
-      await acceptInvite()
+      const result = await acceptInvite()
+      if (result?.squad_name) setSquadName(result.squad_name)
       setPageState("success")
       setTimeout(() => router.push("/account"), 2000)
     } catch (err) {
-      setError("Something unexpected happened. Try again.")
-      setPageState("set-password")
+      setError(err instanceof Error ? err.message : "Something unexpected happened. Try again.")
+      // The password was already set, so returning them to that form would
+      // invite a pointless resubmit.
+      setPageState("error")
     }
   }
 
   const handleJoinSquad = async () => {
     setPageState("processing")
     try {
-      await acceptInvite()
+      const result = await acceptInvite()
+      if (result?.squad_name) setSquadName(result.squad_name)
       setPageState("success")
       setTimeout(() => router.push("/account"), 2000)
     } catch (err) {
-      setError("Something unexpected happened. Try again.")
-      setPageState("confirm-join")
+      setError(err instanceof Error ? err.message : "Something unexpected happened. Try again.")
+      setPageState("error")
     }
   }
 
