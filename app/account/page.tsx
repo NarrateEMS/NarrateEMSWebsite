@@ -69,11 +69,15 @@ export default function AccountPage() {
           if (subscription.squad_id) {
             setInSquad(true)
 
-            const { data: squad } = await supabase
+            const { data: squad, error: squadError } = await supabase
               .from("squads")
               .select("name, squad_code, admin_user_id")
               .eq("id", subscription.squad_id)
               .maybeSingle()
+
+            if (squadError) {
+              console.error("Error loading squad:", squadError)
+            }
 
             if (squad) {
               if (squad.squad_code) {
