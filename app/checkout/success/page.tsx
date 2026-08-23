@@ -9,6 +9,11 @@ import { Loader2, ArrowUpRight, Download } from "lucide-react"
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get("session_id")
+  // Squad plans provision a squad that is UNBOUND until its admin opens a chart
+  // on their own EMS Charts service, and members cannot be invited before that.
+  // Neither step was mentioned here, so squad admins were sent straight to
+  // "hit record" with nobody on their squad.
+  const isSquadPlan = (searchParams.get("plan") ?? "").endsWith("_annual")
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -48,8 +53,9 @@ function CheckoutSuccessContent() {
             Welcome to <span className="italic">NarrateEMS.</span>
           </h1>
           <p className="mt-6 text-lg text-ink-muted leading-relaxed max-w-2xl">
-            Your subscription is active. Three quick things and you're charting by voice
-            on your next call.
+            {isSquadPlan
+              ? "Your squad is provisioned. Four quick things and your whole crew is charting by voice."
+              : "Your subscription is active. Three quick things and you're charting by voice on your next call."}
           </p>
         </section>
 
@@ -77,6 +83,20 @@ function CheckoutSuccessContent() {
                 body: "Use the email and password you just created. Same account works on the web.",
                 cta: null,
               },
+              ...(isSquadPlan
+                ? [
+                    {
+                      title: "Open a chart on your own service.",
+                      body: "The first chart you open links your squad to that EMS Charts service code — so make sure it is your service. It cannot be relinked without support.",
+                      cta: null,
+                    },
+                    {
+                      title: "Invite your crew from the extension.",
+                      body: "Squad panel → Invite members. Each one gets an email link, sets a password, and inherits your squad's access. Do this early: the trial runs 7 days.",
+                      cta: null,
+                    },
+                  ]
+                : []),
               {
                 title: "Open your Zoll ePCR. Hit record. Narrate.",
                 body: "Walk through the call the way you'd brief your partner. Your chart fills in as you talk.",
