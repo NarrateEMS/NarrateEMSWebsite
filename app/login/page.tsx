@@ -20,7 +20,13 @@ import {
 const CHROME_EXTENSION_URL =
   "https://chromewebstore.google.com/detail/narrateems-ai-medic-voice/nokdpnigpfafepjbdinggckgcdekdjkm"
 
-type PageState = "login" | "loading" | "no-account" | "wrong-password" | "pending-invite"
+type PageState =
+  | "login"
+  | "loading"
+  | "no-account"
+  | "wrong-password"
+  | "pending-invite"
+  | "unconfirmed"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,6 +34,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "failed">(
+    "idle",
+  )
+
+  const resendConfirmation = async () => {
+    setResendState("sending")
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+    })
+    setResendState(resendError ? "failed" : "sent")
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +59,19 @@ export default function LoginPage() {
       })
 
       if (authError) {
+        // An account created in the extension stays unconfirmed until its link is
+        // clicked, and GoTrue refuses the password grant until then. Printing the
+        // raw "Email not confirmed" left people with nothing to click, so offer
+        // the resend here instead.
+        if (
+          (authError as { code?: string }).code === "email_not_confirmed" ||
+          authError.message.toLowerCase().includes("not confirmed")
+        ) {
+          setResendState("idle")
+          setPageState("unconfirmed")
+          return
+        }
+
         if (authError.message.includes("Invalid login credentials")) {
           try {
             const checkResponse = await fetch(
@@ -188,6 +219,67 @@ export default function LoginPage() {
             >
               Reset password →
             </Link>
+          </div>
+        </div>
+      </Shell>
+    )
+  }
+
+  // ----- State: UNCONFIRMED EMAIL -----
+  if (pageState === "unconfirmed") {
+    return (
+      <Shell>
+        <div className="text-center">
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
+            ↳ One step left
+          </div>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-md bg-paper-tint border border-rule mb-6">
+            <Mail className="h-6 w-6 text-ink" />
+          </div>
+          <h1 className="font-serif text-4xl text-ink mb-3 leading-tight">
+            Confirm your <span className="italic">email.</span>
+          </h1>
+          <p className="text-ink-muted leading-relaxed max-w-sm mx-auto">
+            <span className="text-ink font-medium break-all">{email}</span> was
+            registered but never confirmed, so we can't sign you in yet. Open the
+            confirmation link we sent, then come back here.
+          </p>
+          <div className="mt-8 flex flex-col gap-3">
+            <button
+              onClick={resendConfirmation}
+              disabled={resendState === "sending" || resendState === "sent"}
+              className="w-full inline-flex items-center justify-center gap-2 bg-hi-vis text-hi-vis-ink py-3.5 text-sm font-semibold rounded-md hover:bg-hi-vis-deep hover:text-paper transition-colors focus-hi-vis disabled:opacity-60"
+            >
+              {resendState === "sending" ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Sending
+                </>
+              ) : resendState === "sent" ? (
+                "Confirmation sent"
+              ) : (
+                <>
+                  Resend confirmation email
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </>
+              )}
+            </button>
+            {resendState === "failed" && (
+              <p className="text-sm text-ink-muted">
+                We couldn't send it right now. Wait a minute and try again, or
+                contact support.
+              </p>
+            )}
+            <button
+              onClick={() => {
+                setPageState("login")
+                setError(null)
+                setPassword("")
+              }}
+              className="text-sm text-ink-muted hover:text-ink transition-colors"
+            >
+              ← Use different credentials
+            </button>
           </div>
         </div>
       </Shell>

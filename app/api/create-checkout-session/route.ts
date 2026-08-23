@@ -120,6 +120,41 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // An account that was started in the extension is left UNCONFIRMED, and
+      // GoTrue refuses signInWithPassword on it -- so the password check below
+      // could never pass and the buyer was told to "log in first", which also
+      // fails. That is how 9 of the first 71 accounts ended up unconfirmed and
+      // never signed in even once.
+      //
+      // Such a row is an empty shell: never confirmed, never signed in, no
+      // subscription. Adopt it for the buyer -- set the password they just typed
+      // and confirm the address -- instead of stranding them.
+      const { data: existing } = await supabaseAdmin.auth.admin.getUserById(
+        existingUserId as string
+      )
+      const isUnusedShell =
+        !!existing?.user &&
+        !existing.user.email_confirmed_at &&
+        !existing.user.last_sign_in_at
+
+      if (isUnusedShell) {
+        const { error: adoptError } = await supabaseAdmin.auth.admin.updateUserById(
+          existingUserId as string,
+          { password, email_confirm: true, user_metadata: { plan_type: planType } }
+        )
+
+        if (adoptError) {
+          console.error('Error adopting unconfirmed account:', adoptError)
+          return NextResponse.json(
+            { error: 'Could not set up that account. Please try again.' },
+            { status: 500 }
+          )
+        }
+
+        userId = existingUserId as string
+        return await startCheckout(request, { userId, email, planType, planConfig })
+      }
+
       // Prove ownership before attaching a payment to this account.
       //
       // Previously the submitted password was silently DISCARDED here and the
@@ -165,6 +200,23 @@ export async function POST(request: NextRequest) {
       userId = newUser.user.id
     }
 
+    return await startCheckout(request, { userId, email, planType, planConfig })
+  } catch (error) {
+    console.error('Checkout session error:', error)
+    return NextResponse.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    )
+  }
+}
+
+async function startCheckout(
+  request: NextRequest,
+  args: { userId: string; email: string; planType: string; planConfig: PlanConfig }
+) {
+  const { userId, email, planType, planConfig } = args
+
+  try {
     // Build line items based on plan type
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
     let includedCharts = 0
@@ -207,7 +259,10 @@ export async function POST(request: NextRequest) {
           included_charts: includedCharts.toString(),
         },
       },
-      success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      // plan carries through so the success page can show squad admins the two
+      // steps that only apply to them: linking their EMS Charts service and
+      // inviting their members.
+      success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}`,
       cancel_url: `${request.headers.get('origin')}/#pricing`,
     })
 
