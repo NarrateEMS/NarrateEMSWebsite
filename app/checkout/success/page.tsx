@@ -54,7 +54,7 @@ function CheckoutSuccessContent() {
           </h1>
           <p className="mt-6 text-lg text-ink-muted leading-relaxed max-w-2xl">
             {isSquadPlan
-              ? "Your squad is provisioned. Four quick things and your whole crew is charting by voice."
+              ? "Your squad is provisioned. Five quick things and your whole crew is charting by voice."
               : "Your subscription is active. Three quick things and you're charting by voice on your next call."}
           </p>
         </section>

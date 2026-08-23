@@ -28,6 +28,77 @@ type PageState =
   | "pending-invite"
   | "unconfirmed"
 
+// Shared shell — paper background, decorative side rail.
+// Must stay at module scope: defined inside the component it is a new type on
+// every render, so React unmounts the form and the focused input loses focus
+// after a single keystroke.
+const Shell = ({ children }: { children: React.ReactNode }) => (
+  <div className="min-h-screen bg-paper text-ink antialiased flex flex-col">
+    <header className="border-b border-rule">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-10 h-16 flex items-center justify-between">
+        <Wordmark href="/" size="md" />
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to site
+        </Link>
+      </div>
+    </header>
+    <main className="flex-1 grid lg:grid-cols-[1fr_minmax(0,520px)_1fr] items-stretch">
+      {/* Left rail — editorial detail */}
+      <aside className="hidden lg:flex flex-col justify-between border-r border-rule bg-paper-tint p-12">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-8">
+            ↳ Welcome back
+          </div>
+          <h2 className="font-serif text-5xl leading-[1] text-ink text-balance">
+            Go back to <span className="italic">running calls,</span>
+            <br />
+            not running reports.
+          </h2>
+          <p className="mt-6 text-ink-muted leading-relaxed max-w-sm">
+            Your account, your squad, your charts. All HIPAA-encrypted and
+            waiting where you left them.
+          </p>
+        </div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft space-y-2">
+          <div className="flex items-center gap-2">
+            <Lock className="h-3 w-3" /> Encrypted end to end
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-px w-3 bg-ink-soft/60" />
+            Trusted by Kendall Park First Aid Squad
+          </div>
+        </div>
+      </aside>
+
+      {/* Center — content */}
+      <div className="flex items-center justify-center px-6 py-16 lg:py-20">
+        <div className="w-full max-w-[440px]">{children}</div>
+      </div>
+
+      {/* Right rail — paper grain */}
+      <aside className="hidden lg:block border-l border-rule bg-grain" />
+    </main>
+    <footer className="border-t border-rule">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-10 h-14 flex items-center justify-between text-xs text-ink-soft">
+        <span className="font-mono uppercase tracking-[0.16em]">© 2026 NarrateEMS</span>
+        <div className="flex items-center gap-4">
+          <Link href="/privacy-policy" className="hover:text-ink transition-colors">
+            Privacy
+          </Link>
+          <Link href="/terms-of-service" className="hover:text-ink transition-colors">
+            Terms
+          </Link>
+        </div>
+      </div>
+    </footer>
+  </div>
+)
+
+
 export default function LoginPage() {
   const router = useRouter()
   const [pageState, setPageState] = useState<PageState>("login")
@@ -114,73 +185,6 @@ export default function LoginPage() {
       setPageState("login")
     }
   }
-
-  // Shared shell — paper background, decorative side rail
-  const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen bg-paper text-ink antialiased flex flex-col">
-      <header className="border-b border-rule">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 h-16 flex items-center justify-between">
-          <Wordmark href="/" size="md" />
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to site
-          </Link>
-        </div>
-      </header>
-      <main className="flex-1 grid lg:grid-cols-[1fr_minmax(0,520px)_1fr] items-stretch">
-        {/* Left rail — editorial detail */}
-        <aside className="hidden lg:flex flex-col justify-between border-r border-rule bg-paper-tint p-12">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-8">
-              ↳ Welcome back
-            </div>
-            <h2 className="font-serif text-5xl leading-[1] text-ink text-balance">
-              Go back to <span className="italic">running calls,</span>
-              <br />
-              not running reports.
-            </h2>
-            <p className="mt-6 text-ink-muted leading-relaxed max-w-sm">
-              Your account, your squad, your charts. All HIPAA-encrypted and
-              waiting where you left them.
-            </p>
-          </div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft space-y-2">
-            <div className="flex items-center gap-2">
-              <Lock className="h-3 w-3" /> Encrypted end to end
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-px w-3 bg-ink-soft/60" />
-              Trusted by Kendall Park First Aid Squad
-            </div>
-          </div>
-        </aside>
-
-        {/* Center — content */}
-        <div className="flex items-center justify-center px-6 py-16 lg:py-20">
-          <div className="w-full max-w-[440px]">{children}</div>
-        </div>
-
-        {/* Right rail — paper grain */}
-        <aside className="hidden lg:block border-l border-rule bg-grain" />
-      </main>
-      <footer className="border-t border-rule">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 h-14 flex items-center justify-between text-xs text-ink-soft">
-          <span className="font-mono uppercase tracking-[0.16em]">© 2026 NarrateEMS</span>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy-policy" className="hover:text-ink transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms-of-service" className="hover:text-ink transition-colors">
-              Terms
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
-  )
 
   // ----- State: WRONG PASSWORD -----
   if (pageState === "wrong-password") {
