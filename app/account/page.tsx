@@ -25,6 +25,9 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [squadName, setSquadName] = useState<string | null>(null)
+  const [inSquad, setInSquad] = useState(false)
+  const [squadUnlinked, setSquadUnlinked] = useState(false)
+  const [isSquadAdmin, setIsSquadAdmin] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("none")
   const [resetSending, setResetSending] = useState(false)
   const [resetSent, setResetSent] = useState(false)
@@ -57,6 +60,33 @@ export default function AccountPage() {
           setSubscriptionStatus(subscription.subscription_status)
           if (subscription.squad_names && subscription.squad_names.length > 0) {
             setSquadName(subscription.squad_names[0])
+          }
+
+          // squad_names is only filled in once the squad is linked to an EMS
+          // Charts code, so the admin who just bought a squad plan has squad_id
+          // and nothing else -- reading the panel off squad_names alone told them
+          // they were a solo medic on an individual plan.
+          if (subscription.squad_id) {
+            setInSquad(true)
+
+            const { data: squad, error: squadError } = await supabase
+              .from("squads")
+              .select("name, squad_code, admin_user_id")
+              .eq("id", subscription.squad_id)
+              .maybeSingle()
+
+            if (squadError) {
+              console.error("Error loading squad:", squadError)
+            }
+
+            if (squad) {
+              if (squad.squad_code) {
+                if (squad.name) setSquadName(squad.name)
+              } else {
+                setSquadUnlinked(true)
+              }
+              setIsSquadAdmin(squad.admin_user_id === session.user.id)
+            }
           }
         }
       } catch (err) {
@@ -231,17 +261,29 @@ export default function AccountPage() {
               ↳ Squad
             </div>
 
-            {squadName ? (
+            {squadUnlinked ? (
+              <div>
+                <div className="font-serif text-3xl text-ink leading-tight mb-3">
+                  One step left.
+                </div>
+                <p className="text-sm text-ink-muted leading-relaxed">
+                  {isSquadAdmin
+                    ? "Your squad is set up but not yet linked to an EMS Charts service. Open a chart on your own service in the extension -- that first chart links it, and it cannot be relinked without support. Invite your crew after that."
+                    : "Your squad is set up but not yet linked to an EMS Charts service. Your squad admin needs to open a chart on your service before access turns on."}
+                </p>
+              </div>
+            ) : squadName || inSquad ? (
               <div>
                 <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft mb-2">
                   You ride with
                 </div>
                 <div className="font-serif text-3xl text-ink leading-tight mb-6">
-                  {squadName}
+                  {squadName ?? "Your squad"}
                 </div>
                 <div className="pt-5 border-t border-rule text-sm text-ink-muted leading-relaxed">
-                  Your charts roll up to this squad's billing. To leave or transfer,
-                  contact your squad admin.
+                  {isSquadAdmin
+                    ? "You are this squad's admin. Charts from every member roll up to this squad's billing; invite or remove members from the extension's squad panel."
+                    : "Your charts roll up to this squad's billing. To leave or transfer, contact your squad admin."}
                 </div>
               </div>
             ) : (
