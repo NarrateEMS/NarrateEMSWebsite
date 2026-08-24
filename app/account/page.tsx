@@ -515,8 +515,8 @@ export default function AccountPage() {
                 </div>
                 <p className="text-sm text-ink-muted leading-relaxed">
                   {isSquadAdmin
-                    ? "Your squad is set up but not yet linked to an EMS Charts service. Open a chart on your own service in the extension -- that first chart links it, and it cannot be relinked without support. Invite your crew after that."
-                    : "Your squad is set up but not yet linked to an EMS Charts service. Your squad admin needs to open a chart on your service before access turns on."}
+                    ? "Your squad is set up but not linked yet. Open a chart for your squad's service in ZOLL, then open the NarrateEMS extension in that same browser. It will link the squad automatically; return here afterward to invite your crew."
+                    : "Your squad is set up but not linked yet. Ask your squad admin to open a chart for your service in ZOLL, then open the NarrateEMS extension in that same browser."}
                 </p>
               </div>
             ) : squadName || inSquad ? (
@@ -623,8 +623,9 @@ export default function AccountPage() {
                     </>
                   ) : (
                     <p className="text-sm text-ink-muted leading-relaxed">
-                      Open an EMS Charts chart in the extension to link your squad before
-                      inviting members.
+                      Open a chart for your squad&apos;s service in ZOLL, then open the
+                      NarrateEMS extension in that same browser. It will link the squad
+                      automatically so you can invite members here.
                     </p>
                   )}
 
