@@ -19,6 +19,7 @@ import {
   RefreshCw,
   UserPlus,
   Users,
+  Trash2,
 } from "lucide-react"
 
 const CHROME_EXTENSION_URL =
@@ -91,6 +92,10 @@ export default function AccountPage() {
   const [inviteSending, setInviteSending] = useState(false)
   const [inviteMessage, setInviteMessage] = useState("")
   const [inviteMessageType, setInviteMessageType] = useState<"success" | "error">("success")
+  const [confirmingMemberId, setConfirmingMemberId] = useState<string | null>(null)
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null)
+  const [memberMessage, setMemberMessage] = useState("")
+  const [memberMessageType, setMemberMessageType] = useState<"success" | "error">("success")
 
   const callSquadFunction = useCallback(
     async <T,>(functionName: string, body: Record<string, string>): Promise<T> => {
@@ -166,7 +171,6 @@ export default function AccountPage() {
         setUser(authUser)
 
         const metadata = authUser.user_metadata || {}
-        if (metadata.squad_name) setSquadName(metadata.squad_name)
 
         const { data: subscription } = await supabase
           .from("user_subscriptions")
@@ -308,6 +312,25 @@ export default function AccountPage() {
       setInviteMessage(err instanceof Error ? err.message : "Could not resend the invite.")
     } finally {
       setInviteSending(false)
+    }
+  }
+
+  const removeSquadMember = async (member: SquadMember) => {
+    setRemovingMemberId(member.user_id)
+    setMemberMessage("")
+    try {
+      await callSquadFunction("remove-squad-member", {
+        member_user_id: member.user_id,
+      })
+      setConfirmingMemberId(null)
+      setMemberMessageType("success")
+      setMemberMessage(`${member.email} was removed from the squad.`)
+      await loadSquadAdminData()
+    } catch (err) {
+      setMemberMessageType("error")
+      setMemberMessage(err instanceof Error ? err.message : "Could not remove that member.")
+    } finally {
+      setRemovingMemberId(null)
     }
   }
 
@@ -627,6 +650,19 @@ export default function AccountPage() {
                     </h3>
                   </div>
 
+                  {memberMessage && (
+                    <div
+                      role="status"
+                      className={`mb-4 border-l-2 bg-paper-tint px-3 py-2 text-sm ${
+                        memberMessageType === "success"
+                          ? "border-[var(--success)] text-[var(--success)]"
+                          : "border-[var(--danger)] text-[var(--danger)]"
+                      }`}
+                    >
+                      {memberMessage}
+                    </div>
+                  )}
+
                   <div className="divide-y divide-rule border-y border-rule">
                     {squadAdminData?.members.map((member) => (
                       <div
@@ -634,9 +670,44 @@ export default function AccountPage() {
                         className="py-3 flex items-center justify-between gap-4"
                       >
                         <span className="text-sm break-all">{member.email}</span>
-                        <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft border border-rule-strong rounded-full px-2 py-1">
-                          {member.is_admin ? "Admin" : "Member"}
-                        </span>
+                        {member.is_admin ? (
+                          <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft border border-rule-strong rounded-full px-2 py-1">
+                            Admin
+                          </span>
+                        ) : confirmingMemberId === member.user_id ? (
+                          <div className="shrink-0 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setConfirmingMemberId(null)}
+                              disabled={removingMemberId === member.user_id}
+                              className="font-mono text-[9px] uppercase tracking-[0.12em] text-ink-soft hover:text-ink disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeSquadMember(member)}
+                              disabled={removingMemberId === member.user_id}
+                              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--danger)] text-white px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] disabled:opacity-60"
+                            >
+                              {removingMemberId === member.user_id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3 w-3" />
+                              )}
+                              Confirm remove
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setConfirmingMemberId(member.user_id)}
+                            className="shrink-0 inline-flex items-center gap-1.5 border border-rule-strong rounded-full px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-muted hover:border-[var(--danger)] hover:text-[var(--danger)] transition-colors"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Remove
+                          </button>
+                        )}
                       </div>
                     ))}
                     {squadAdminData?.pending_invites.map((invite) => (
