@@ -2,7 +2,8 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
+import type { FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
@@ -15,6 +16,9 @@ import {
   KeyRound,
   ArrowUpRight,
   Mail,
+  RefreshCw,
+  UserPlus,
+  Users,
 } from "lucide-react"
 
 const CHROME_EXTENSION_URL =
@@ -33,6 +37,41 @@ const SQUAD_PLAN_TYPES = [
 const PROVISION_POLL_MS = 3000
 const PROVISION_POLL_ATTEMPTS = 20
 
+interface SquadMember {
+  user_id: string
+  email: string
+  status: string
+  joined_at: string
+  is_admin: boolean
+}
+
+interface PendingInvite {
+  id: string
+  email: string
+  created_at: string
+  expires_at: string
+}
+
+interface SquadAdminData {
+  isAdmin: boolean
+  squad: {
+    id: string
+    name: string
+    squad_code: string | null
+    subscription_status: string
+  }
+  seats: {
+    active_members: number
+    pending_invites: number
+  }
+  members: SquadMember[]
+  pending_invites: PendingInvite[]
+}
+
+interface SquadFunctionError {
+  error?: string
+}
+
 export default function AccountPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -45,6 +84,62 @@ export default function AccountPage() {
   const [squadProvisioning, setSquadProvisioning] = useState(false)
   const [resetSending, setResetSending] = useState(false)
   const [resetSent, setResetSent] = useState(false)
+  const [squadAdminData, setSquadAdminData] = useState<SquadAdminData | null>(null)
+  const [squadAdminLoading, setSquadAdminLoading] = useState(false)
+  const [squadAdminError, setSquadAdminError] = useState("")
+  const [inviteEmail, setInviteEmail] = useState("")
+  const [inviteSending, setInviteSending] = useState(false)
+  const [inviteMessage, setInviteMessage] = useState("")
+  const [inviteMessageType, setInviteMessageType] = useState<"success" | "error">("success")
+
+  const callSquadFunction = useCallback(
+    async <T,>(functionName: string, body: Record<string, string>): Promise<T> => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        throw new Error("Your session expired. Sign in again to manage your squad.")
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/${functionName}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(body),
+        },
+      )
+      const result = (await response.json()) as T & SquadFunctionError
+
+      if (!response.ok) {
+        throw new Error(result.error || "Squad request failed. Please try again.")
+      }
+
+      return result
+    },
+    [],
+  )
+
+  const loadSquadAdminData = useCallback(async () => {
+    setSquadAdminLoading(true)
+    setSquadAdminError("")
+    try {
+      const data = await callSquadFunction<SquadAdminData>("get-squad-admin-data", {})
+      if (!data.isAdmin) {
+        throw new Error("This account is not a squad administrator.")
+      }
+      setSquadAdminData(data)
+    } catch (err) {
+      setSquadAdminError(err instanceof Error ? err.message : "Could not load your squad.")
+    } finally {
+      setSquadAdminLoading(false)
+    }
+  }, [callSquadFunction])
 
   useEffect(() => {
     let cancelled = false
@@ -167,6 +262,54 @@ export default function AccountPage() {
       cancelled = true
     }
   }, [router])
+
+  useEffect(() => {
+    if (isSquadAdmin) {
+      loadSquadAdminData()
+    }
+  }, [isSquadAdmin, loadSquadAdminData])
+
+  const sendSquadInvite = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const email = inviteEmail.trim().toLowerCase()
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setInviteMessageType("error")
+      setInviteMessage("Enter a valid email address.")
+      return
+    }
+
+    setInviteSending(true)
+    setInviteMessage("")
+    try {
+      await callSquadFunction("invite-squad-member", { email })
+      setInviteEmail("")
+      setInviteMessageType("success")
+      setInviteMessage(`Invite sent to ${email}.`)
+      await loadSquadAdminData()
+    } catch (err) {
+      setInviteMessageType("error")
+      setInviteMessage(err instanceof Error ? err.message : "Could not send the invite.")
+    } finally {
+      setInviteSending(false)
+    }
+  }
+
+  const resendSquadInvite = async (email: string) => {
+    setInviteSending(true)
+    setInviteMessage("")
+    try {
+      await callSquadFunction("invite-squad-member", { email })
+      setInviteMessageType("success")
+      setInviteMessage(`Fresh invite sent to ${email}.`)
+      await loadSquadAdminData()
+    } catch (err) {
+      setInviteMessageType("error")
+      setInviteMessage(err instanceof Error ? err.message : "Could not resend the invite.")
+    } finally {
+      setInviteSending(false)
+    }
+  }
 
   const handleResetPassword = async () => {
     if (!user?.email) return
@@ -363,7 +506,7 @@ export default function AccountPage() {
                 </div>
                 <div className="pt-5 border-t border-rule text-sm text-ink-muted leading-relaxed">
                   {isSquadAdmin
-                    ? "You are this squad's admin. Charts from every member roll up to this squad's billing; invite or remove members from the extension's squad panel."
+                    ? "You are this squad's admin. Charts from every member roll up to this squad's billing; manage your crew below or from the extension."
                     : "Your charts roll up to this squad's billing. To leave or transfer, contact your squad admin."}
                 </div>
               </div>
@@ -380,6 +523,156 @@ export default function AccountPage() {
             )}
           </section>
         </div>
+
+        {isSquadAdmin && (
+          <section className="mt-12 border border-rule bg-paper">
+            <div className="px-7 py-6 lg:px-10 border-b border-rule flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
+                  ↳ Squad administration
+                </div>
+                <h2 className="font-serif text-3xl lg:text-4xl leading-tight">
+                  Manage your <span className="italic">crew.</span>
+                </h2>
+              </div>
+              {squadAdminData && (
+                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">
+                  {squadAdminData.seats.active_members} members ·{" "}
+                  {squadAdminData.seats.pending_invites} pending
+                </div>
+              )}
+            </div>
+
+            {squadAdminLoading && !squadAdminData ? (
+              <div className="px-7 py-10 lg:px-10 flex items-center gap-3 text-sm text-ink-muted">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading squad roster
+              </div>
+            ) : squadAdminError && !squadAdminData ? (
+              <div className="px-7 py-10 lg:px-10">
+                <p className="text-sm text-[var(--danger)] mb-4">{squadAdminError}</p>
+                <button
+                  onClick={loadSquadAdminData}
+                  className="inline-flex items-center gap-2 border border-rule-strong rounded-md px-4 py-2.5 text-sm font-medium hover:bg-ink hover:text-paper transition-colors"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Try again
+                </button>
+              </div>
+            ) : (
+              <div className="grid lg:grid-cols-12">
+                <div className="lg:col-span-5 px-7 py-8 lg:px-10 border-b lg:border-b-0 lg:border-r border-rule">
+                  <div className="flex items-center gap-2 mb-4">
+                    <UserPlus className="h-4 w-4" />
+                    <h3 className="font-mono text-[10px] uppercase tracking-[0.18em]">
+                      Invite a member
+                    </h3>
+                  </div>
+
+                  {squadAdminData?.squad.squad_code ? (
+                    <>
+                      <p className="text-sm text-ink-muted leading-relaxed mb-5">
+                        They will receive a secure link to join{" "}
+                        <span className="text-ink">{squadAdminData.squad.name}</span>.
+                      </p>
+                      <form onSubmit={sendSquadInvite} className="flex flex-col sm:flex-row gap-2">
+                        <label htmlFor="squad-invite-email" className="sr-only">
+                          Member email address
+                        </label>
+                        <input
+                          id="squad-invite-email"
+                          type="email"
+                          value={inviteEmail}
+                          onChange={(event) => setInviteEmail(event.target.value)}
+                          placeholder="name@squad.org"
+                          disabled={inviteSending}
+                          className="min-w-0 flex-1 bg-paper border border-rule-strong rounded-md px-3 py-2.5 text-sm outline-none focus:border-ink focus:ring-2 focus:ring-hi-vis/40 disabled:opacity-60"
+                        />
+                        <button
+                          type="submit"
+                          disabled={inviteSending || !inviteEmail.trim()}
+                          className="inline-flex items-center justify-center gap-2 bg-hi-vis text-hi-vis-ink rounded-md px-4 py-2.5 text-sm font-semibold hover:bg-hi-vis-deep hover:text-paper transition-colors disabled:bg-paper-tint disabled:text-ink-soft"
+                        >
+                          {inviteSending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                          Send invite
+                        </button>
+                      </form>
+                    </>
+                  ) : (
+                    <p className="text-sm text-ink-muted leading-relaxed">
+                      Open an EMS Charts chart in the extension to link your squad before
+                      inviting members.
+                    </p>
+                  )}
+
+                  {inviteMessage && (
+                    <div
+                      role="status"
+                      className={`mt-4 border-l-2 px-3 py-2 text-sm ${
+                        inviteMessageType === "success"
+                          ? "border-[var(--success)] bg-paper-tint text-[var(--success)]"
+                          : "border-[var(--danger)] bg-paper-tint text-[var(--danger)]"
+                      }`}
+                    >
+                      {inviteMessage}
+                    </div>
+                  )}
+                </div>
+
+                <div className="lg:col-span-7 px-7 py-8 lg:px-10">
+                  <div className="flex items-center gap-2 mb-5">
+                    <Users className="h-4 w-4" />
+                    <h3 className="font-mono text-[10px] uppercase tracking-[0.18em]">
+                      Members and pending invites
+                    </h3>
+                  </div>
+
+                  <div className="divide-y divide-rule border-y border-rule">
+                    {squadAdminData?.members.map((member) => (
+                      <div
+                        key={member.user_id}
+                        className="py-3 flex items-center justify-between gap-4"
+                      >
+                        <span className="text-sm break-all">{member.email}</span>
+                        <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft border border-rule-strong rounded-full px-2 py-1">
+                          {member.is_admin ? "Admin" : "Member"}
+                        </span>
+                      </div>
+                    ))}
+                    {squadAdminData?.pending_invites.map((invite) => (
+                      <div
+                        key={invite.id}
+                        className="py-3 flex items-center justify-between gap-4"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-sm text-ink-muted break-all">{invite.email}</div>
+                          <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft mt-1">
+                            Invite pending
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => resendSquadInvite(invite.email)}
+                          disabled={inviteSending}
+                          className="shrink-0 inline-flex items-center gap-1.5 border border-rule-strong rounded-full px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                          Resend
+                        </button>
+                      </div>
+                    ))}
+                    {!squadAdminData?.members.length &&
+                      !squadAdminData?.pending_invites.length && (
+                        <div className="py-5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-soft">
+                          No members or pending invites yet
+                        </div>
+                      )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Extension callout */}
         <section className="mt-12 bg-ink text-paper rounded-xl p-8 lg:p-10 grid lg:grid-cols-12 gap-6 items-center">
