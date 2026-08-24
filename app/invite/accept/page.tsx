@@ -103,15 +103,26 @@ export default function AcceptInvitePage() {
       setSquadName(metadata.squad_name || "your squad")
       setSquadId(metadata.squad_id || "")
       setInviteId(metadata.invite_id || "")
-      const hasExistingPassword = user.identities?.some(
-        (i: any) => i.provider === "email" && i.identity_data?.email_verified === true,
-      )
-      if (hasExistingPassword) {
-        setIsExistingUser(true)
-        setPageState("confirm-join")
-      } else {
+      // invite-squad-member marks links it issued to people with no password:
+      // ?setup=1 on the URL, needs_password in the metadata for good measure.
+      //
+      // This used to be inferred from identity_data.email_verified, which GoTrue
+      // flips to true as soon as an invite link is opened. Every brand-new
+      // invitee therefore looked like an existing account, went straight to
+      // "Join squad", and ended up in the squad with no password they could sign
+      // in with -- while the website's own buyers, who DO have a password, come
+      // through with email_verified false.
+      const setupFlag =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("setup") === "1"
+      const needsPassword = setupFlag || metadata.needs_password === true
+
+      if (needsPassword) {
         setIsExistingUser(false)
         setPageState("set-password")
+      } else {
+        setIsExistingUser(true)
+        setPageState("confirm-join")
       }
     }
 
@@ -192,7 +203,10 @@ export default function AcceptInvitePage() {
     }
     setPageState("processing")
     try {
-      const { error: updateError } = await supabase.auth.updateUser({ password })
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+        data: { needs_password: false },
+      })
       if (updateError) {
         setError("Couldn't set password: " + updateError.message)
         setPageState("set-password")
@@ -360,6 +374,16 @@ export default function AcceptInvitePage() {
               >
                 Join {squadName}
                 <ArrowUpRight className="h-4 w-4" />
+              </button>
+
+              {/* Escape hatch for invites issued before ?setup=1 existed, and
+                  for anyone who never set a password of their own. */}
+              <button
+                type="button"
+                onClick={() => setPageState("set-password")}
+                className="mt-5 text-sm text-ink-muted hover:text-ink underline underline-offset-4"
+              >
+                I don't have a password yet -- set one
               </button>
             </div>
           )}

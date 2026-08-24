@@ -20,6 +20,19 @@ import {
 const CHROME_EXTENSION_URL =
   "https://chromewebstore.google.com/detail/narrateems/nokdpnigpfafepjbdinggckgcdekdjkm"
 
+// plan_type is stamped on the user at checkout, before Stripe is ever called,
+// so it is the one signal available while the subscription row is still being
+// provisioned by the webhook.
+const SQUAD_PLAN_TYPES = [
+  "pilot_annual",
+  "small_squad_annual",
+  "large_squad_annual",
+  "high_volume_annual",
+]
+
+const PROVISION_POLL_MS = 3000
+const PROVISION_POLL_ATTEMPTS = 20
+
 export default function AccountPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -29,11 +42,16 @@ export default function AccountPage() {
   const [squadUnlinked, setSquadUnlinked] = useState(false)
   const [isSquadAdmin, setIsSquadAdmin] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("none")
+  const [squadProvisioning, setSquadProvisioning] = useState(false)
   const [resetSending, setResetSending] = useState(false)
   const [resetSent, setResetSent] = useState(false)
 
   useEffect(() => {
-    const loadUserData = async () => {
+    let cancelled = false
+
+    // Returns true once the panel has everything it will ever get, false while
+    // a squad purchase is still waiting on the Stripe webhook to write squad_id.
+    const loadUserData = async (): Promise<boolean> => {
       try {
         const {
           data: { session },
@@ -42,12 +60,17 @@ export default function AccountPage() {
 
         if (sessionError || !session) {
           router.push("/")
-          return
+          return true
         }
 
-        setUser(session.user)
+        // getUser(), not session.user: the stored session's JWT was minted
+        // before checkout, so its user_metadata has no plan_type for anyone who
+        // was already signed in when they bought.
+        const { data: fresh } = await supabase.auth.getUser()
+        const authUser = fresh?.user ?? session.user
+        setUser(authUser)
 
-        const metadata = session.user.user_metadata || {}
+        const metadata = authUser.user_metadata || {}
         if (metadata.squad_name) setSquadName(metadata.squad_name)
 
         const { data: subscription } = await supabase
@@ -87,15 +110,62 @@ export default function AccountPage() {
               }
               setIsSquadAdmin(squad.admin_user_id === session.user.id)
             }
+
+            setSquadProvisioning(false)
+            return true
           }
         }
+
+        // No squad_id on the row. A squad buyer sits here for the seconds
+        // between checkout and the webhook write, and the panel answered "Solo
+        // medic. You're on an individual plan." to someone who had just paid for
+        // a squad. The squads row is written before the admin's link, so looking
+        // up by admin_user_id also recovers a purchase whose link write was
+        // missed entirely.
+        const { data: ownedSquad } = await supabase
+          .from("squads")
+          .select("name, squad_code, admin_user_id")
+          .eq("admin_user_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (ownedSquad) {
+          setInSquad(true)
+          setIsSquadAdmin(true)
+          if (ownedSquad.squad_code) {
+            if (ownedSquad.name) setSquadName(ownedSquad.name)
+          } else {
+            setSquadUnlinked(true)
+          }
+          setSquadProvisioning(false)
+          return true
+        }
+
+        const boughtSquadPlan = SQUAD_PLAN_TYPES.includes(metadata.plan_type)
+        setSquadProvisioning(boughtSquadPlan)
+        return !boughtSquadPlan
       } catch (err) {
         console.error("Error loading user data:", err)
+        return true
       } finally {
         setLoading(false)
       }
     }
-    loadUserData()
+    const poll = async () => {
+      for (let attempt = 0; attempt < PROVISION_POLL_ATTEMPTS; attempt++) {
+        const settled = await loadUserData()
+        if (settled || cancelled) return
+        await new Promise((resolve) => setTimeout(resolve, PROVISION_POLL_MS))
+        if (cancelled) return
+      }
+    }
+
+    poll()
+
+    return () => {
+      cancelled = true
+    }
   }, [router])
 
   const handleResetPassword = async () => {
@@ -261,7 +331,18 @@ export default function AccountPage() {
               ↳ Squad
             </div>
 
-            {squadUnlinked ? (
+            {squadProvisioning ? (
+              <div>
+                <div className="font-serif text-3xl text-ink leading-tight mb-3 inline-flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-ink-soft" />
+                  Setting up your squad.
+                </div>
+                <p className="text-sm text-ink-muted leading-relaxed">
+                  Your payment went through and we're finishing your squad now. This
+                  page updates itself within a few seconds -- no need to reload.
+                </p>
+              </div>
+            ) : squadUnlinked ? (
               <div>
                 <div className="font-serif text-3xl text-ink leading-tight mb-3">
                   One step left.

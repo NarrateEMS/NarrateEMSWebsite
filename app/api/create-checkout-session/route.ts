@@ -140,7 +140,11 @@ export async function POST(request: NextRequest) {
       if (isUnusedShell) {
         const { error: adoptError } = await supabaseAdmin.auth.admin.updateUserById(
           existingUserId as string,
-          { password, email_confirm: true, user_metadata: { plan_type: planType } }
+          {
+            password,
+            email_confirm: true,
+            user_metadata: { ...(existing?.user?.user_metadata ?? {}), plan_type: planType },
+          }
         )
 
         if (adoptError) {
@@ -178,6 +182,14 @@ export async function POST(request: NextRequest) {
       }
 
       userId = existingUserId as string
+
+      // /account reads plan_type to know a squad purchase is in flight while the
+      // webhook is still writing squad_id; without it an existing buyer sees the
+      // individual-plan panel for those seconds.
+      const { error: stampError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        user_metadata: { ...(existing?.user?.user_metadata ?? {}), plan_type: planType },
+      })
+      if (stampError) console.error('Could not stamp plan_type:', stampError)
     } else {
       // Create new user in Supabase
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
