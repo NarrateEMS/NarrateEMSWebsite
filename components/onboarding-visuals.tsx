@@ -479,7 +479,7 @@ export function SquadNameVisual() {
       <div className="grid gap-4 bg-grain p-4 sm:p-6 md:grid-cols-[0.85fr_auto_1.15fr] md:items-center">
         <div className="overflow-hidden rounded-xl border border-ink/15 bg-paper shadow-lg">
           <ExtensionHeader menuOpen />
-          <div className="h-36 p-4">
+          <div className="min-h-[230px] px-4 pb-4 pt-32">
             <div className="rounded-lg border border-rule-strong bg-surface p-3">
               <p className="font-mono text-[8px] uppercase tracking-[0.14em] text-ink-soft">
                 Admin only
