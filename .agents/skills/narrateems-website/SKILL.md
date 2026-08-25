@@ -104,6 +104,8 @@ auto-redirects to `/account` after ~2s.
   changing the pinned API version as a side effect of unrelated work; the production build succeeds.
 - `npm run lint` (`eslint .`) has no config committed and `npx next lint` drops into an interactive
   setup prompt - do not let it scaffold a config mid-task.
+- A dev server launched from a one-shot shell must use `setsid npm run dev`; plain `nohup ... &`
+  is terminated when the shell call returns.
 - Use the **sandbox** Stripe key for any checkout test and inline-assign it on the command that
   starts the server (`STRIPE_SECRET_KEY="$SBX" npm run dev`), because the login shell may export a
   live key that wins otherwise. Verify `cs_test_` / `livemode: false` before trusting a result.
@@ -134,3 +136,7 @@ There is only one Supabase project and it is production. Pin the live squads/adm
 before writing anything, never run a checkout as a live squad's admin, and re-read those rows
 afterwards to prove they are unchanged. Delete throwaway users **after** their `squad_invites` and
 `user_subscriptions` rows, otherwise the admin delete returns an opaque 500.
+
+`squads.squad_code` is UNIQUE and a live squad already owns the empty string. Use `NULL` for
+synthetic unlinked-squad fixtures; both values follow the same falsey account-page branch, and the
+live empty-string row must not be modified just to capture a screenshot.
