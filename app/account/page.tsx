@@ -20,6 +20,7 @@ import {
   UserPlus,
   Users,
   Trash2,
+  BookOpenText,
 } from "lucide-react"
 
 const CHROME_EXTENSION_URL =
@@ -385,6 +386,13 @@ export default function AccountPage() {
         <div className="mx-auto max-w-[1100px] px-6 lg:px-10 h-16 flex items-center justify-between">
           <Wordmark href="/" size="md" />
           <div className="flex items-center gap-2">
+            <Link
+              href="/onboarding"
+              className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors px-3 py-2"
+            >
+              <BookOpenText className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Guide</span>
+            </Link>
             <a
               href={CHROME_EXTENSION_URL}
               target="_blank"
@@ -548,7 +556,10 @@ export default function AccountPage() {
         </div>
 
         {isSquadAdmin && (
-          <section className="mt-12 border border-rule bg-paper">
+          <section
+            id="squad-administration"
+            className="mt-12 scroll-mt-28 border border-rule bg-paper"
+          >
             <div className="px-7 py-6 lg:px-10 border-b border-rule flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
               <div>
                 <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
