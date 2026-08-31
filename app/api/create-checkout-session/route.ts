@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { errorMessage, logEvent } from '@/lib/observability'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
@@ -98,6 +99,12 @@ export async function POST(request: NextRequest) {
 
     if (lookupError) {
       console.error('Error looking up email:', lookupError)
+      logEvent({
+        event: 'signup_email_lookup_failed',
+        level: 'error',
+        statusCode: 503,
+        properties: { plan_type: planType, reason: lookupError.message },
+      })
       return NextResponse.json(
         { error: 'Could not verify that email. Please try again.' },
         { status: 503 }
@@ -149,6 +156,13 @@ export async function POST(request: NextRequest) {
 
         if (adoptError) {
           console.error('Error adopting unconfirmed account:', adoptError)
+          logEvent({
+            event: 'shell_account_adoption_failed',
+            level: 'error',
+            userId: existingUserId as string,
+            statusCode: 500,
+            properties: { plan_type: planType, reason: adoptError.message },
+          })
           return NextResponse.json(
             { error: 'Could not set up that account. Please try again.' },
             { status: 500 }
@@ -156,6 +170,11 @@ export async function POST(request: NextRequest) {
         }
 
         userId = existingUserId as string
+        logEvent({
+          event: 'shell_account_adopted',
+          userId,
+          properties: { plan_type: planType },
+        })
         return await startCheckout(request, { userId, email, planType, planConfig })
       }
 
@@ -172,6 +191,13 @@ export async function POST(request: NextRequest) {
       })
 
       if (signInError) {
+        logEvent({
+          event: 'signup_password_rejected',
+          level: 'warn',
+          userId: existingUserId as string,
+          statusCode: 401,
+          properties: { plan_type: planType },
+        })
         return NextResponse.json(
           {
             error: 'An account already exists for this email. Please log in first, then start your subscription.',
@@ -203,6 +229,12 @@ export async function POST(request: NextRequest) {
 
       if (createError || !newUser.user) {
         console.error('Error creating user:', createError)
+        logEvent({
+          event: 'user_creation_failed',
+          level: 'error',
+          statusCode: 500,
+          properties: { plan_type: planType, reason: createError?.message },
+        })
         return NextResponse.json(
           { error: createError?.message || 'Failed to create account' },
           { status: 500 }
@@ -215,6 +247,12 @@ export async function POST(request: NextRequest) {
     return await startCheckout(request, { userId, email, planType, planConfig })
   } catch (error) {
     console.error('Checkout session error:', error)
+    logEvent({
+      event: 'checkout_route_threw',
+      level: 'error',
+      statusCode: 500,
+      properties: { reason: errorMessage(error) },
+    })
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }
@@ -278,9 +316,26 @@ async function startCheckout(
       cancel_url: `${request.headers.get('origin')}/#pricing`,
     })
 
+    logEvent({
+      event: 'checkout_session_created',
+      userId,
+      properties: {
+        plan_type: planType,
+        session_id: session.id,
+        included_charts: includedCharts,
+      },
+    })
+
     return NextResponse.json({ url: session.url, sessionId: session.id })
   } catch (error) {
     console.error('Checkout session error:', error)
+    logEvent({
+      event: 'stripe_checkout_failed',
+      level: 'error',
+      userId,
+      statusCode: 500,
+      properties: { plan_type: planType, reason: errorMessage(error) },
+    })
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }
