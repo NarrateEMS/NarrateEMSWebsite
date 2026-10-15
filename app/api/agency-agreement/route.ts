@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       signerTitle: title,
       ip: request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? null,
       userAgent: request.headers.get('user-agent'),
-      origin: request.nextUrl.origin,
+      origin: request.headers.get('origin') ?? request.nextUrl.origin,
     })
     if (!signed) return NextResponse.json(INVALID, { status: 404 })
     logEvent({ event: 'agency_agreement_signed' })
