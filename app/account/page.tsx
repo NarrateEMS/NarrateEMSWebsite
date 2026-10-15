@@ -7,6 +7,7 @@ import type { FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { clearDictateData } from "@/lib/dictate/store"
 import { Wordmark } from "@/components/wordmark"
 import {
   Loader2,
@@ -352,6 +353,7 @@ export default function AccountPage() {
   }
 
   const handleLogout = async () => {
+    await clearDictateData()
     await supabase.auth.signOut()
     router.push("/")
   }

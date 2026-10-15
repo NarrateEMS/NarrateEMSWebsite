@@ -21,6 +21,7 @@ import {
   TeamVisual,
 } from "@/components/onboarding-visuals"
 import { supabase } from "@/lib/supabase"
+import { clearDictateData } from "@/lib/dictate/store"
 
 const CHROME_EXTENSION_URL =
   "https://chromewebstore.google.com/detail/narrateems/nokdpnigpfafepjbdinggckgcdekdjkm"
@@ -73,6 +74,7 @@ export default function OnboardingPage() {
   }, [router])
 
   const handleLogout = async () => {
+    await clearDictateData()
     await supabase.auth.signOut()
     router.push("/")
   }
