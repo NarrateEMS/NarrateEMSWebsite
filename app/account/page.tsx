@@ -66,6 +66,12 @@ interface SquadAdminData {
     active_members: number
     pending_invites: number
   }
+  usage: {
+    charts_used: number
+    included_charts: number
+    overage: number
+    resets_at: string
+  } | null
   members: SquadMember[]
   pending_invites: PendingInvite[]
 }
@@ -573,6 +579,18 @@ export default function AccountPage() {
                 <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">
                   {squadAdminData.seats.active_members} members ·{" "}
                   {squadAdminData.seats.pending_invites} pending
+                  {squadAdminData.usage && (
+                    <div className="mt-1">
+                      Charts used {squadAdminData.usage.charts_used} of{" "}
+                      {squadAdminData.usage.included_charts} this year (
+                      {squadAdminData.usage.overage} overage) · resets{" "}
+                      {new Date(squadAdminData.usage.resets_at).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
