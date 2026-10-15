@@ -1,64 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { errorMessage, logEvent } from '@/lib/observability'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27.acacia',
-})
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-)
-
-// Price configuration for all plan types
-type PlanConfig = {
-  type: 'individual'
-  priceId: string
-} | {
-  type: 'squad'
-  flatPriceId: string
-  overagePriceId: string
-  includedCharts: number
-}
-
-const PRICE_CONFIG: Record<string, PlanConfig> = {
-  individual_monthly: {
-    type: 'individual',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_INDIVIDUAL_MONTHLY!,
-  },
-  pilot_annual: {
-    type: 'squad',
-    flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PILOT_FLAT!,
-    overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PILOT_OVERAGE!,
-    includedCharts: 500,
-  },
-  small_squad_annual: {
-    type: 'squad',
-    flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SMALL_SQUAD_FLAT!,
-    overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SMALL_SQUAD_OVERAGE!,
-    includedCharts: 2000,
-  },
-  large_squad_annual: {
-    type: 'squad',
-    flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_LARGE_SQUAD_FLAT!,
-    overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_LARGE_SQUAD_OVERAGE!,
-    includedCharts: 5000,
-  },
-  high_volume_annual: {
-    type: 'squad',
-    flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_HIGH_VOLUME_FLAT!,
-    overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_HIGH_VOLUME_OVERAGE!,
-    includedCharts: 10000,
-  },
-}
+import { PRICE_CONFIG, startCheckout, supabaseAdmin, type PlanConfig } from '@/lib/checkout'
+import { agencyStatus, requestAgencyAccess, validateAgencyInput } from '@/lib/agency'
 
 // Anon-key client used solely to verify a submitted password. The admin client
 // must never be used for this: its service-role key would authenticate without
@@ -71,7 +15,8 @@ const supabaseAnon = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, planType } = await request.json()
+    const body = await request.json()
+    const { email, password, planType } = body
 
     if (!email || !password || !planType) {
       return NextResponse.json(
@@ -87,6 +32,26 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid plan type' },
         { status: 400 }
       )
+    }
+
+    // Individuals must name their agency. Nothing is charged until it has signed the BAA.
+    let agency: { agencyName: string; serviceCode: string; repEmail: string } | null = null
+    if (planConfig.type === 'individual') {
+      const input = validateAgencyInput(body)
+      if ('error' in input) {
+        return NextResponse.json({ error: input.error }, { status: 400 })
+      }
+      agency = input
+      const status = await agencyStatus(input.serviceCode)
+      if (status === 'revoked') {
+        return NextResponse.json(
+          { error: "This agency's authorization was revoked. Contact support@narrateems.com." },
+          { status: 400 }
+        )
+      }
+      if (status !== 'approved' && !input.repEmail) {
+        return NextResponse.json({ status: 'needs_rep' })
+      }
     }
 
     // Look the email up by exact match rather than scanning listUsers(). That
@@ -175,7 +140,7 @@ export async function POST(request: NextRequest) {
           userId,
           properties: { plan_type: planType },
         })
-        return await startCheckout(request, { userId, email, planType, planConfig })
+        return await continueSignup(request, { userId, email, planType, planConfig }, agency)
       }
 
       // Prove ownership before attaching a payment to this account.
@@ -244,7 +209,7 @@ export async function POST(request: NextRequest) {
       userId = newUser.user.id
     }
 
-    return await startCheckout(request, { userId, email, planType, planConfig })
+    return await continueSignup(request, { userId, email, planType, planConfig }, agency)
   } catch (error) {
     console.error('Checkout session error:', error)
     logEvent({
@@ -260,86 +225,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function startCheckout(
+async function continueSignup(
   request: NextRequest,
-  args: { userId: string; email: string; planType: string; planConfig: PlanConfig }
+  args: { userId: string; email: string; planType: string; planConfig: PlanConfig },
+  agency: { agencyName: string; serviceCode: string; repEmail: string } | null
 ) {
-  const { userId, email, planType, planConfig } = args
-
-  try {
-    // Build line items based on plan type
-    let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
-    let includedCharts = 0
-
-    if (planConfig.type === 'squad') {
-      // Squad plans have two line items: flat annual fee + metered overage
-      lineItems = [
-        {
-          price: planConfig.flatPriceId,
-          quantity: 1,
-        },
-        {
-          price: planConfig.overagePriceId,
-          // No quantity for metered billing - Stripe handles this
-        },
-      ]
-      includedCharts = planConfig.includedCharts
-    } else {
-      // Individual plan has single line item
-      lineItems = [
-        {
-          price: planConfig.priceId,
-          quantity: 1,
-        },
-      ]
-    }
-
-    // Create Stripe checkout session with client_reference_id for webhook linking
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
-      customer_email: email,
-      client_reference_id: userId, // This is what the webhook uses to link payment to user!
-      line_items: lineItems,
-      subscription_data: {
-        trial_period_days: 7,
-        metadata: {
-          supabase_user_id: userId,
-          plan_type: planType,
-          included_charts: includedCharts.toString(),
-        },
-      },
-      // plan carries through so the success page can show squad admins the two
-      // steps that only apply to them: linking their EMS Charts service and
-      // inviting their members.
-      success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}`,
-      cancel_url: `${request.headers.get('origin')}/#pricing`,
-    })
-
-    logEvent({
-      event: 'checkout_session_created',
-      userId,
-      properties: {
-        plan_type: planType,
-        session_id: session.id,
-        included_charts: includedCharts,
-      },
-    })
-
-    return NextResponse.json({ url: session.url, sessionId: session.id })
-  } catch (error) {
-    console.error('Checkout session error:', error)
-    logEvent({
-      event: 'stripe_checkout_failed',
-      level: 'error',
-      userId,
-      statusCode: 500,
-      properties: { plan_type: planType, reason: errorMessage(error) },
-    })
-    return NextResponse.json(
-      { error: 'Failed to create checkout session' },
-      { status: 500 }
-    )
+  const origin = request.headers.get('origin')
+  if (agency) {
+    const result = await requestAgencyAccess({ ...agency, userId: args.userId, email: args.email, origin: origin ?? '' })
+    if (result.status === 'error') return NextResponse.json({ error: result.error }, { status: 400 })
+    logEvent({ event: 'individual_agency_request', userId: args.userId, properties: { result: result.status } })
+    if (result.status !== 'approved') return NextResponse.json({ status: result.status })
   }
+  return startCheckout(origin, args)
 }
-

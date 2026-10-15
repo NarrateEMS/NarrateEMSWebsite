@@ -36,6 +36,11 @@ export default function HomePage() {
   const [checkoutPassword, setCheckoutPassword] = useState("")
   const [checkoutError, setCheckoutError] = useState("")
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
+  const [agencyName, setAgencyName] = useState("")
+  const [serviceCode, setServiceCode] = useState("")
+  const [repEmail, setRepEmail] = useState("")
+  const [needsRep, setNeedsRep] = useState(false)
+  const [agencyPending, setAgencyPending] = useState(false)
 
   // Demo video modal
   const [showVideoModal, setShowVideoModal] = useState(false)
@@ -51,6 +56,11 @@ export default function HomePage() {
     setCheckoutEmail("")
     setCheckoutPassword("")
     setCheckoutError("")
+    setAgencyName("")
+    setServiceCode("")
+    setRepEmail("")
+    setNeedsRep(false)
+    setAgencyPending(false)
     setShowCheckoutModal(true)
   }
 
@@ -71,6 +81,8 @@ export default function HomePage() {
     }
   }
 
+  const isIndividual = selectedPlan?.type === "individual_monthly"
+
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
     setCheckoutError("")
@@ -83,10 +95,13 @@ export default function HomePage() {
           email: checkoutEmail,
           password: checkoutPassword,
           planType: selectedPlan?.type,
+          ...(isIndividual && { agencyName, serviceCode, repEmail }),
         }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || "Failed to start checkout")
+      if (data.status === "needs_rep") setNeedsRep(true)
+      if (data.status === "pending") setAgencyPending(true)
       if (data.url) window.location.href = data.url
     } catch (error) {
       setCheckoutError(error instanceof Error ? error.message : "Something went wrong")
@@ -1079,7 +1094,7 @@ export default function HomePage() {
               },
               {
                 q: "What happens during the free trial?",
-                a: "7 days, no card required upfront for individuals. Full product. If it doesn't save you time, cancel before day 7 and you're not charged.",
+                a: "7 days, full product. We take a card at checkout but don't charge it until day 7, so cancel before then and you pay nothing. Individuals check out once their agency has signed our free BAA, so your trial doesn't start until you can use it.",
               },
               {
                 q: "Can my whole squad use one account?",
@@ -1298,6 +1313,21 @@ export default function HomePage() {
               {selectedPlan?.type && getPlanDisplayInfo(selectedPlan.type)}
             </p>
 
+            {agencyPending ? (
+              <div className="space-y-4">
+                <p className="text-sm text-ink leading-relaxed">
+                  Your account is created. We emailed <b>{repEmail}</b> to sign the agreement for{" "}
+                  <b>{agencyName}</b>.
+                </p>
+                <p className="text-sm text-ink-muted leading-relaxed">
+                  You'll get an email once they sign. Then log in to finish payment. You won't be
+                  charged anything before that.
+                </p>
+                <Link href="/account" className="block w-full py-3 text-center border border-rule rounded-md hover:border-ink">
+                  Go to my account
+                </Link>
+              </div>
+            ) : (
             <form onSubmit={handleCheckout} className="space-y-4">
               <div>
                 <label className="block text-xs font-mono uppercase tracking-[0.14em] text-ink-soft mb-2">
@@ -1326,6 +1356,62 @@ export default function HomePage() {
                   className="w-full px-4 py-3 bg-paper border border-rule rounded-md text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-ink"
                 />
               </div>
+              {isIndividual && (
+                <>
+                  <div>
+                    <label className="block text-xs font-mono uppercase tracking-[0.14em] text-ink-soft mb-2">
+                      EMS agency
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={120}
+                      value={agencyName}
+                      onChange={(e) => setAgencyName(e.target.value)}
+                      placeholder="e.g. Kendall Park First Aid Squad"
+                      className="w-full px-4 py-3 bg-paper border border-rule rounded-md text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-ink"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono uppercase tracking-[0.14em] text-ink-soft mb-2">
+                      EMS Charts service code
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      pattern="[A-Za-z0-9]{2,32}"
+                      value={serviceCode}
+                      onChange={(e) => {
+                        setServiceCode(e.target.value)
+                        setNeedsRep(false)
+                      }}
+                      placeholder="e.g. S2643"
+                      className="w-full px-4 py-3 bg-paper border border-rule rounded-md text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-ink"
+                    />
+                    <p className="text-xs text-ink-soft mt-1.5">The code in brackets in your chart header.</p>
+                  </div>
+                  {needsRep && (
+                    <div>
+                      <p className="text-sm text-ink-muted mb-3 leading-relaxed">
+                        Your agency hasn't approved NarrateEMS yet. Enter your chief's or another
+                        authorized representative's email. We'll send them a free, one-minute agreement
+                        to sign. No payment until they do.
+                      </p>
+                      <label className="block text-xs font-mono uppercase tracking-[0.14em] text-ink-soft mb-2">
+                        Representative's email
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={repEmail}
+                        onChange={(e) => setRepEmail(e.target.value)}
+                        placeholder="chief@agency.org"
+                        className="w-full px-4 py-3 bg-paper border border-rule rounded-md text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-ink"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
 
               {checkoutError && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2.5 rounded-md text-sm">
@@ -1338,7 +1424,13 @@ export default function HomePage() {
                 disabled={isCheckoutLoading}
                 className="w-full py-3 bg-hi-vis text-hi-vis-ink font-semibold rounded-md hover:bg-hi-vis-deep hover:text-paper transition-colors disabled:opacity-60"
               >
-                {isCheckoutLoading ? "Processing…" : "Continue to payment →"}
+                {isCheckoutLoading
+                  ? "Processing…"
+                  : needsRep
+                    ? "Send to my agency →"
+                    : isIndividual
+                      ? "Continue →"
+                      : "Continue to payment →"}
               </button>
 
               <p className="text-xs text-ink-soft text-center pt-2">
@@ -1353,6 +1445,7 @@ export default function HomePage() {
                 .
               </p>
             </form>
+            )}
           </div>
         </div>
       )}
