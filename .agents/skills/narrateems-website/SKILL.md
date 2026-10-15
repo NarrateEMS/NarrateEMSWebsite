@@ -99,9 +99,7 @@ auto-redirects to `/account` after ~2s.
 - `NEXT_PUBLIC_*` is inlined at **build** time: export env before `npm run build`, not just before
   `npm run start`. Guard against testing a stale bundle by grepping the built chunk for a new
   string, e.g. `grep -rl "Setting up your squad" .next/static/chunks/app/account/`.
-- `npx tsc --noEmit` reports one **pre-existing** error: the `apiVersion: '2025-01-27.acacia'`
-  literal in the checkout route does not match the installed Stripe types. Do not "fix" it by
-  changing the pinned API version as a side effect of unrelated work; the production build succeeds.
+- `npx tsc --noEmit` is clean: the checkout route pins `apiVersion: '2025-12-15.clover'` with `subscription_data.billing_mode: { type: 'flexible' }`.
 - `npm run lint` (`eslint .`) has no config committed and `npx next lint` drops into an interactive
   setup prompt - do not let it scaffold a config mid-task.
 - A dev server launched from a one-shot shell must use `setsid npm run dev`; plain `nohup ... &`
