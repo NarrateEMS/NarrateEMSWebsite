@@ -70,6 +70,10 @@ Two bugs have shipped here; both are regression tests worth keeping:
 If you ever see the `"Your squad"` fallback name, the `squads` read returned null - suspect RLS, and
 check the console (the failure is logged, not swallowed).
 
+Admin usage line ("Charts used X of Y this year (Z overage) · resets <date>") comes from
+`get-squad-admin-data`'s `usage` field (server-computed; null for non-counted plans). Don't
+recompute it from `squads.charts_used`: the year rolls lazily, so that column can be stale.
+
 ## `/invite/accept`
 
 Branch selection is `?setup=1` on the URL **OR** `user_metadata.needs_password === true`:
