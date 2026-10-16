@@ -24,42 +24,52 @@ function fields(file: string, v: SignedValues): Field[] {
   const printed = `${v.signerName}, ${v.signerTitle}`
   if (file === 'agency-baa.pdf') {
     return [
-      [0, 189, 140, 549, v.legalName],
-      [0, 175, 155, 549, v.address],
-      [0, 190, 170, 549, v.email],
-      [0, 132, 184, 549, v.date],
-      [2, 114, 227, 255, v.signerName, true],
-      [2, 153, 242, 255, printed],
-      [2, 91, 256, 255, v.date],
-      [2, 305, 227, 549, NARRATEEMS_SIGNATURE, true],
-      [2, 347, 242, 549, NARRATEEMS_SIGNERS],
-      [2, 281, 256, 549, v.date],
+      [0, 189, 140, 370, v.legalName],
+      [0, 175, 155, 374, v.address],
+      [0, 190, 170, 375, v.email],
+      [0, 132, 184, 361, v.date],
+      [2, 114, 227, 234, v.signerName, true],
+      [2, 153, 242, 238, printed],
+      [2, 91, 256, 233, v.date],
+      [2, 305, 227, 425, NARRATEEMS_SIGNATURE, true],
+      [2, 347, 242, 432, NARRATEEMS_SIGNERS],
+      [2, 281, 256, 423, v.date],
     ]
   }
   return [
-    [0, 157, 140, 549, v.legalName],
-    [0, 178, 155, 549, v.address],
-    [0, 206, 170, 549, printed],
-    [0, 229, 184, 549, v.email],
-    [0, 132, 213, 549, v.date],
-    [1, 114, 339, 549, v.signerName, true],
-    [1, 153, 354, 549, printed],
-    [1, 91, 368, 549, v.date],
+    [0, 157, 140, 360, v.legalName],
+    [0, 178, 155, 364, v.address],
+    [0, 206, 170, 366, printed],
+    [0, 229, 184, 371, v.email],
+    [0, 132, 213, 348, v.date],
+    [1, 114, 339, 313, v.signerName, true],
+    [1, 153, 354, 316, printed],
+    [1, 91, 368, 307, v.date],
     [1, 67.5, 397, 549, "X"], // "domain-based enrollment"
-    [1, 143, 456, 549, NARRATEEMS_SIGNERS],
-    [1, 91, 470, 549, v.date],
+    [1, 143, 456, 324, NARRATEEMS_SIGNERS],
+    [1, 91, 470, 307, v.date],
   ]
 }
 
 export class FieldTooLongError extends Error {}
 
-function fit(font: PDFFont, text: string, start: number, width: number) {
-  let size = start
-  while (font.widthOfTextAtSize(text, size) > width) {
-    size -= 0.5
-    if (size < 6) throw new FieldTooLongError(text)
+// Shrinks to fit the printed line; below 7pt, text (not signatures) may wrap onto a second line above it.
+export function layout(font: PDFFont, text: string, start: number, width: number, wrap: boolean) {
+  const fits = (t: string, size: number) => font.widthOfTextAtSize(t, size) <= width
+  for (let size = start; size >= 6; size -= 0.5) {
+    if (fits(text, size)) return { size, lines: [text] }
+    if (!wrap || size > 7) continue
+    const words = text.split(' ')
+    for (let i = words.length - 1; i > 0; i--) {
+      const top = words.slice(0, i).join(' ')
+      const rest = words.slice(i).join(' ')
+      if (fits(top, size)) {
+        if (fits(rest, size)) return { size, lines: [top, rest] }
+        break
+      }
+    }
   }
-  return size
+  throw new FieldTooLongError(text)
 }
 
 export async function stampAgencyDocuments(v: SignedValues) {
@@ -71,7 +81,10 @@ export async function stampAgencyDocuments(v: SignedValues) {
       for (const [page, x, bottom, right, value, isSignature] of fields(file, v)) {
         const font = isSignature ? signature : text
         const p = pdf.getPage(page)
-        p.drawText(value, { x, y: p.getHeight() - bottom + 2, font, size: fit(font, value, isSignature ? 12 : 8.5, right - x) })
+        const { size, lines } = layout(font, value, isSignature ? 12 : 8.5, right - x, !isSignature)
+        lines.forEach((line, i) => {
+          p.drawText(line, { x, y: p.getHeight() - bottom + 2 + (lines.length - 1 - i) * (size + 1), font, size })
+        })
       }
       return { file, title, bytes: await pdf.save() }
     })
