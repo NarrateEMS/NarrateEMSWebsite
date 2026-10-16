@@ -13,7 +13,7 @@ import { Security } from "./home/Security"
 import { Faq } from "./home/Faq"
 import { Start } from "./home/Start"
 import { Footer } from "./home/Footer"
-import { Mail, Play, ArrowUpRight, X, Plus, Minus, Mic } from "lucide-react"
+import { Mail, Play, ArrowUpRight, X, Plus, Minus, Mic, Check } from "lucide-react"
 
 
 const TRANSCRIPT =
@@ -45,7 +45,7 @@ const PAGES = [
 ] as const
 
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
-const ease = (t: number) => t * t * (3 - 2 * t)
+const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2)
 
 // Keyframes: [progress, x, y, rotateX, rotateY, rotateZ, scale, opacity]; eased between stops.
 type Frame = number[]
@@ -62,81 +62,93 @@ function at(p: number, frames: Frame[]): number[] {
   return frames[frames.length - 1].slice(1)
 }
 
-function buildTimeline(w: number, h: number, objW: number, objH: number, heroBottom: number) {
-  const desk = w >= 1024
-  const side = w >= 1280
-  const fit = Math.min(1, (h * (side ? 0.62 : 0.42)) / objH, side ? (w * 0.36) / (objW + 32) : 1)
-  const oy = side ? 0 : h * 0.22
-  // Hero: the tilted object's top edge sits just under the CTAs.
-  const layerCenter = 64 + (h - 64) / 2
-  const heroY = Math.max(oy, heroBottom + 40 - layerCenter + ((objH * fit) / 2) * 0.55)
-  const fade = (a: number, b: number, c: number, d: number, dy = 24): Frame[] => [
+type Geo = { w: number; h: number; objW: number; objH: number; top: number; layerH: number; heroBottom: number; cardW: number; cardH: number }
+
+// Text lives in the band above the object layer, so the object and cards never cross it.
+function buildTimeline({ w, h, objW, objH, top, layerH, heroBottom, cardW, cardH }: Geo) {
+  const availW = w - 2 * Math.max(24, w * 0.05)
+  const fit = Math.min(1, (layerH * 0.94) / objH, availW / objW)
+  // Hero: the tilted object's top edge sits under the CTAs.
+  const heroY = Math.max(0, heroBottom + 40 - (top + layerH / 2 - (objH * fit) / 2))
+  const fade = (a: number, b: number, c: number, d: number, dy = 16): Frame[] => [
     [a, 0, dy, 0, 0, 0, 1, 0],
     [b, 0, 0, 0, 0, 0, 1, 1],
     [c, 0, 0, 0, 0, 0, 1, 1],
     [d, 0, -dy, 0, 0, 0, 1, 0],
   ]
-  const scatter = desk
-    ? [[-0.3, -0.3], [0.02, -0.31], [0.31, -0.27], [-0.36, 0.26], [-0.08, 0.31], [0.2, 0.29], [0.4, 0.21]]
-    : [[-0.24, -0.32], [0.24, -0.29], [-0.22, -0.17], [0.24, -0.15], [-0.24, 0.2], [0.24, 0.25], [0, 0.34]]
-  const rz = [-10, 6, 12, 8, -6, -12, 9]
-  const ry = [18, -14, 22, -20, 12, -16, 20]
-  const cs = desk ? 1 : 0.62
-  const cards: Frame[][] = scatter.map(([sx, sy], i) => {
-    const x = sx * w
-    const y = sy * h
+  // Desktop: one evenly spaced fan. Narrower: an even grid, last row centred.
+  let fan: number[][]
+  if (w >= 1024) {
+    const gap = Math.min(cardW + 24, (availW - cardW) / 6)
+    fan = PAGES.map((_, i) => [(i - 3) * gap, (i - 3) ** 2 * 5 - 22, (i - 3) * 2.5])
+  } else {
+    const cols = Math.max(2, Math.floor((availW + 16) / (cardW + 16)))
+    const rows = Math.ceil(PAGES.length / cols)
+    const gy = Math.min(cardH + 16, (layerH - cardH) / Math.max(rows - 1, 1))
+    fan = PAGES.map((_, i) => {
+      const r = Math.floor(i / cols)
+      const c = i - r * cols - (Math.min(cols, PAGES.length - r * cols) - 1) / 2
+      return [c * (cardW + 16), (r - (rows - 1) / 2) * gy, c * 1.5]
+    })
+  }
+  // Top card (N) peels first; all cards keep scale 1 throughout.
+  const cards: Frame[][] = fan.map(([x, y, rz], i) => {
     const k = i - 3
-    const stackY = desk ? -h * 0.04 : -h * 0.02
+    const stack = [k * 3, -k * 3, 0, 0, k * 0.6, 1]
+    const out = 0.6 + (PAGES.length - 1 - i) * 0.022
+    const back = 0.8 + i * 0.006
     return [
-      [0.56, 0, oy, 0, 0, 0, cs * 0.5, 0],
-      [0.63, x, y, 0, ry[i], rz[i], cs, 1],
-      [0.8, x * 1.06, y * 1.04, 0, -ry[i] * 0.4, rz[i] + 8 * Math.sign(k || 1), cs, 1],
-      [0.83, x * 1.06, y * 1.04, 0, -ry[i] * 0.4, rz[i] + 8 * Math.sign(k || 1), cs, 1],
-      [0.91, k * 7, stackY + k * -6, 0, 0, k * 1.2, cs * 0.94, 1],
-      [1, k * 7, stackY + k * -6, 0, 0, k * 1.2, cs * 0.94, 1],
+      [0.555, ...stack, 0],
+      [0.59, ...stack, 1],
+      [out, ...stack, 1],
+      [out + 0.07, x, y, 0, 0, rz, 1, 1],
+      [back, x, y, 0, 0, rz, 1, 1],
+      [back + 0.08, ...stack, 1],
     ]
   })
   return {
-    hero: [[0, 0, 0, 0, 0, 0, 1, 1], [0.07, 0, -h * 0.12, 0, 0, 0, 1, 0]] as Frame[],
+    hero: [[0, 0, 0, 0, 0, 0, 1, 1], [0.05, 0, -h * 0.05, 0, 0, 0, 1, 0]] as Frame[],
     object: [
-      [0, 0, heroY, 58, 0, -4, fit, 1],
-      [0.13, 0, oy + h * 0.02, 16, -6, -2, fit, 1],
-      [0.36, 0, oy, 8, 4, 0, fit, 1],
-      [0.44, 0, oy, 0, 0, 0, fit, 1],
-      [0.56, 0, oy, 0, 0, 0, fit, 1],
-      [0.64, 0, oy + h * 0.04, -10, 0, 0, fit * 0.5, 0],
+      [0, 0, heroY, 12, -6, 0, fit, 1],
+      [0.035, 0, heroY, 12, -6, 0, fit, 1],
+      [0.11, 0, 0, 8, -4, 0, fit, 1],
+      [0.3, 0, 0, 5, 3, 0, fit, 1],
+      [0.48, 0, 0, 0, 0, 0, fit, 1],
+      [0.56, 0, 0, 0, 0, 0, fit, 1],
+      [0.6, 0, 0, 0, 0, 0, fit, 0],
     ] as Frame[],
-    steps: [fade(0.12, 0.16, 0.25, 0.29), fade(0.27, 0.31, 0.39, 0.43), fade(0.43, 0.47, 0.53, 0.56)],
-    headline: fade(0.58, 0.63, 0.8, 0.83, 20),
+    steps: [fade(0.07, 0.1, 0.235, 0.26), fade(0.27, 0.3, 0.415, 0.44), fade(0.45, 0.48, 0.535, 0.56)],
+    headline: fade(0.57, 0.6, 0.73, 0.755),
     stats: [
-      [0.88, 0, h * 0.28 + 20, 0, 0, 0, 1, 0],
-      [0.92, 0, h * 0.28, 0, 0, 0, 1, 1],
-      [1, 0, h * 0.28, 0, 0, 0, 1, 1],
+      [0.765, 0, 16, 0, 0, 0, 1, 0],
+      [0.8, 0, 0, 0, 0, 0, 1, 1],
+      [1, 0, 0, 0, 0, 0, 1, 1],
     ] as Frame[],
     cards,
   }
 }
 
-function write(el: HTMLElement | null, v: number[]) {
-  if (!el) return
+// Opacity goes on `fade` so a 3D element can fade without flattening its preserve-3d children.
+function write(el: HTMLElement | null, v: number[], fade: HTMLElement | null = el) {
+  if (!el || !fade) return
   const [x, y, rx, ry, rz, s, o] = v
   el.style.setProperty(
     "--tf",
-    `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${s.toFixed(3)})`,
+    `perspective(2000px) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${s.toFixed(3)})`,
   )
-  el.style.setProperty("--o", o.toFixed(3))
-  el.style.visibility = o < 0.01 ? "hidden" : ""
+  fade.style.setProperty("--o", o.toFixed(3))
+  fade.style.visibility = o < 0.01 ? "hidden" : ""
 }
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="text-[#4A5568]">{label}</div>
-      <div className="mt-0.5 h-6 border border-[#C9CED6] bg-white">
+      <div className="mt-0.5 h-6 lg:h-9 border border-[#C9CED6] bg-white">
         <span
           data-field
           data-on="1"
-          className="block h-full truncate bg-hi-vis px-1.5 leading-6 font-medium transition-opacity duration-300 motion-reduce:transition-none data-[on=0]:opacity-0"
+          className="block h-full truncate bg-hi-vis px-1.5 leading-6 lg:leading-9 font-medium transition-opacity duration-300 motion-reduce:transition-none data-[on=0]:opacity-0"
         >
           {value}
         </span>
@@ -147,13 +159,13 @@ function Field({ label, value }: { label: string; value: string }) {
 
 function ChartObject() {
   return (
-    <div className="relative w-[min(560px,calc(100vw-3rem))] pb-20 [transform-style:preserve-3d]">
-      <div data-ui className="bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
+    <div className="relative w-[min(960px,calc(100vw-3rem))] pb-20 lg:pb-28 [transform-style:preserve-3d]">
+      <div data-ui className="bg-white text-ink border border-[#C9CED6] text-[12px] lg:text-[15px] leading-snug">
         <div className="flex items-center justify-between bg-[#DDE3EA] px-3 py-2 font-semibold">
           <span>emsCharts, Page 2: CC/HPI</span>
           <span className="font-normal">Sample chart</span>
         </div>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 p-3">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 p-3 lg:w-[50%] lg:gap-y-4 lg:p-5">
           {FIELDS.map(([label, value]) => (
             <Field key={label} label={label} value={value} />
           ))}
@@ -161,7 +173,7 @@ function ChartObject() {
       </div>
       <div
         data-ui
-        className="absolute right-0 bottom-0 w-[60%] min-w-[220px] bg-paper text-ink border border-ink text-[12px] sm:-right-8"
+        className="absolute right-0 bottom-0 w-[60%] min-w-[220px] lg:w-[50%] bg-paper text-ink border border-ink text-[12px] lg:text-[15px] sm:-right-8"
         style={{ transform: "translateZ(70px)" }}
       >
         <div className="flex items-center justify-between bg-ink px-3 py-2">
@@ -194,7 +206,7 @@ function ChartObject() {
           <span className="hidden group-data-[rec=1]/speak:inline">Stop narrating</span>
         </div>
         <div className="px-3 pt-2.5 font-semibold">Transcript</div>
-        <p data-transcript className="mx-3 mt-1 h-[92px] overflow-hidden border border-[#D6D2C7] bg-white p-2">
+        <p data-transcript className="mx-3 mt-1 h-[92px] lg:h-[150px] overflow-hidden border border-[#D6D2C7] bg-white p-2">
           {TRANSCRIPT}
         </p>
         <div data-actions data-on="1" className="mx-3 mt-2 mb-3 flex gap-2 transition-opacity duration-300 motion-reduce:transition-none data-[on=0]:opacity-0">
@@ -208,14 +220,15 @@ function ChartObject() {
 
 function PageCard({ title, fields }: { title: string; fields: readonly (readonly [string, string])[] }) {
   return (
-    <div data-ui className="w-[230px] h-[160px] bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
-      <div className="flex items-center justify-between bg-[#DDE3EA] px-3 py-2 font-semibold">
-        <span>{title}</span>
-        <span className="text-success">Filled</span>
+    <div data-ui className="w-[150px] sm:w-[230px] lg:w-[250px] bg-white text-ink border border-[#C9CED6] text-[12px] lg:text-[13px] leading-snug">
+      <div className="flex items-center justify-between gap-2 bg-[#DDE3EA] px-2 sm:px-3 py-2 font-semibold">
+        <span className="truncate">{title}</span>
+        <span className="hidden sm:inline text-success">Filled</span>
+        <Check className="sm:hidden h-3.5 w-3.5 shrink-0 text-success" aria-hidden />
       </div>
-      <div className="space-y-2 p-3">
-        {fields.map(([label, value]) => (
-          <div key={label}>
+      <div className="space-y-2 p-2 sm:p-3">
+        {fields.map(([label, value], i) => (
+          <div key={label} className={i > 0 ? "hidden sm:block" : undefined}>
             <div className="text-[#4A5568]">{label}</div>
             <div className="mt-0.5 truncate bg-hi-vis px-1.5 leading-6 font-medium">{value}</div>
           </div>
@@ -244,6 +257,7 @@ export default function HomePage() {
   const storyRef = useRef<HTMLElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const objectRef = useRef<HTMLDivElement>(null)
+  const objectLayerRef = useRef<HTMLDivElement>(null)
   const stepRefs = useRef<(HTMLDivElement | null)[]>([])
   const headlineRef = useRef<HTMLHeadingElement>(null)
   const statsRef = useRef<HTMLDListElement>(null)
@@ -334,11 +348,28 @@ export default function HomePage() {
     const actions = object.querySelector<HTMLElement>("[data-actions]")
     const fields = [...object.querySelectorAll<HTMLElement>("[data-field]")]
     const chips = [...object.querySelectorAll<HTMLElement>("[data-chip]")]
-    const heroBottom = () => {
+    const bands = [...story.querySelectorAll<HTMLElement>("[data-band]")]
+    // Layout reads happen only here (mount and resize), never per frame.
+    const measure = () => {
+      const w = window.innerWidth
+      const band = Math.max(...bands.map((el) => el.offsetHeight)) + (w >= 1024 ? 56 : 40)
+      story.style.setProperty("--band", `${Math.ceil(band)}px`)
+      const layer = objectLayerRef.current
       const hero = heroRef.current
-      return hero ? 64 + (window.innerWidth >= 1024 ? 80 : 48) + hero.offsetHeight : 0
+      const card = cardRefs.current[0]
+      return buildTimeline({
+        w,
+        h: window.innerHeight,
+        objW: object.offsetWidth,
+        objH: object.offsetHeight,
+        top: layer?.offsetTop ?? 0,
+        layerH: layer?.clientHeight ?? window.innerHeight,
+        heroBottom: hero ? (hero.parentElement?.offsetTop ?? 0) + hero.offsetTop + hero.offsetHeight : 0,
+        cardW: card?.offsetWidth ?? 230,
+        cardH: card?.offsetHeight ?? 160,
+      })
     }
-    let tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight, heroBottom())
+    let tl = measure()
     let current = -1
     let typed = -1
     let frame = 0
@@ -352,22 +383,22 @@ export default function HomePage() {
 
     const render = (p: number) => {
       write(heroRef.current, at(p, tl.hero))
-      write(object, at(p, tl.object))
+      write(object, at(p, tl.object), objectLayerRef.current)
       tl.steps.forEach((f, i) => write(stepRefs.current[i], at(p, f)))
       write(headlineRef.current, at(p, tl.headline))
       write(statsRef.current, at(p, tl.stats))
       tl.cards.forEach((f, i) => write(cardRefs.current[i], at(p, f)))
 
-      const chars = Math.round(clamp((p - 0.15) / 0.19) * TRANSCRIPT.length)
+      const chars = Math.round(clamp((p - 0.1) / 0.16) * TRANSCRIPT.length)
       if (transcript && chars !== typed) {
         typed = chars
         transcript.textContent = TRANSCRIPT.slice(0, chars)
       }
-      if (speak) speak.dataset.rec = p > 0.15 && p < 0.35 ? "1" : "0"
-      if (actions) actions.dataset.on = p > 0.35 ? "1" : "0"
-      fields.forEach((el, i) => (el.dataset.on = p >= 0.4 + i * 0.012 ? "1" : "0"))
+      if (speak) speak.dataset.rec = p > 0.1 && p < 0.27 ? "1" : "0"
+      if (actions) actions.dataset.on = p > 0.27 ? "1" : "0"
+      fields.forEach((el, i) => (el.dataset.on = p >= 0.3 + i * 0.01 ? "1" : "0"))
       chips.forEach((el, i) => {
-        const s = 0.4 + i * 0.018
+        const s = 0.3 + i * 0.015
         el.dataset.state = p >= s + 0.03 ? "complete" : p >= s ? "processing" : "pending"
       })
     }
@@ -377,8 +408,8 @@ export default function HomePage() {
       const dt = Math.min(now - last, 64)
       last = now
       const goal = target()
-      const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 90))
-      const settled = Math.abs(goal - next) < 0.0004
+      const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 180))
+      const settled = Math.abs(goal - next) < 0.0002
       current = settled ? goal : next
       render(current)
       if (visible || !settled) frame = requestAnimationFrame(tick)
@@ -396,7 +427,7 @@ export default function HomePage() {
     })
     io.observe(story)
     const onResize = () => {
-      tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight, heroBottom())
+      tl = measure()
       start()
     }
     window.addEventListener("resize", onResize)
@@ -407,25 +438,23 @@ export default function HomePage() {
       io.disconnect()
       window.removeEventListener("resize", onResize)
       delete story.dataset.motion
+      story.style.removeProperty("--band")
     }
   }, [])
 
   const navLink = "text-[17px] text-paper hover:underline underline-offset-4"
   const steps = [
     {
-      title: "Narrate the call.",
-      body: "Once you're clear of the call, open the extension and walk through it the way you'd brief your partner: demographics, chief complaint, vitals, interventions, transport. Talk normally.",
-      detail: "Mobile compatible. Use it on your phone or laptop.",
+      title: "After the call, just talk.",
+      body: "Brief it like your partner: demographics, complaint, vitals, interventions, transport, on phone or laptop.",
     },
     {
-      title: "AI structures the chart.",
-      body: "Medical-terminology-trained transcription parses your narration into the right Zoll ePCR fields: demographics, chief complaint, assessment, treatment, transport, each placed where it belongs.",
-      detail: "Each page fills in under 10 seconds.",
+      title: "AI puts it in the right fields.",
+      body: "Medical-terminology-trained transcription maps assessment, treatment and transport to your Zoll ePCR fields.",
     },
     {
-      title: "Chart is in Zoll. You're done.",
-      body: "Fields land directly inside your Zoll ePCR. Review, sign, submit. Done in minutes, not the hour you used to spend typing.",
-      detail: "Direct Zoll integration. HIPAA encrypted.",
+      title: "Review, sign, submit. Done.",
+      body: "Fields land directly inside Zoll, HIPAA encrypted, so a chart takes minutes, not an hour.",
     },
   ]
 
@@ -492,7 +521,7 @@ export default function HomePage() {
                 The chart writes itself.
               </h1>
               <p className="mt-6 max-w-xl text-[17px] leading-[1.6] text-paper">
-                After the call, narrate what happened. NarrateEMS writes your Zoll ePCR for you.
+                Narrate the call and NarrateEMS writes your Zoll ePCR.
               </p>
               <div className="mt-9 flex flex-col sm:flex-row items-center gap-5">
                 <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
@@ -510,8 +539,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="story-layer" aria-hidden>
-            <div ref={objectRef} data-tl>
+          <div ref={objectLayerRef} className="story-layer story-obj" aria-hidden>
+            <div ref={objectRef} data-tl className="story-object">
               <ChartObject />
             </div>
           </div>
@@ -521,31 +550,30 @@ export default function HomePage() {
           </p>
 
           {steps.map((step, i) => (
-            <div key={step.title} className={`story-layer ${i === 1 ? "story-step-r" : "story-step-l"}`}>
+            <div key={step.title} className="story-layer story-band">
               <div
                 id={i === 0 ? "how" : undefined}
-                data-progress={i === 0 ? "0.2" : undefined}
+                data-progress={i === 0 ? "0.15" : undefined}
                 ref={(el) => {
                   stepRefs.current[i] = el
                 }}
                 data-tl
-                className="max-w-xl"
+                data-band
+                className="max-w-2xl"
               >
-                {i === 0 && <h2 className={`${h2} mb-6`}>Three steps, after the call.</h2>}
-                <h3 className="text-[22px] font-semibold leading-tight">{step.title}</h3>
-                <p className="mt-3 text-[17px] leading-[1.6] text-paper">{step.body}</p>
-                <p className="mt-3 text-[13px] text-paper">{step.detail}</p>
+                <h2 className="text-[28px] lg:text-[40px] font-semibold leading-[1.1] tracking-tight text-balance">{step.title}</h2>
+                <p className="mt-3 text-[17px] leading-[1.6] text-paper text-balance">{step.body}</p>
               </div>
             </div>
           ))}
 
-          <div className="story-layer text-center">
-            <h2 ref={headlineRef} data-tl className="max-w-4xl text-[34px] lg:text-[64px] font-semibold leading-[1.02] tracking-tight text-balance">
+          <div className="story-layer story-band">
+            <h2 ref={headlineRef} data-tl data-band className="max-w-4xl text-[34px] lg:text-[56px] font-semibold leading-[1.05] tracking-tight text-balance">
               Each page filled in under 10 seconds.
             </h2>
           </div>
 
-          <div className="story-layer" aria-hidden>
+          <div className="story-layer story-obj" aria-hidden>
             <div className="story-cards">
               {PAGES.map(([chip, title, fields], i) => (
                 <div
@@ -562,16 +590,16 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="story-layer">
-            <dl ref={statsRef} data-tl className="grid grid-cols-3 gap-8 text-center">
+          <div className="story-layer story-band">
+            <dl ref={statsRef} data-tl data-band className="grid grid-cols-3 gap-6 lg:gap-16 text-center">
               {[
                 ["70%", "Faster charting"],
                 ["<10s", "Per chart page"],
                 ["1hr+", "Saved per shift"],
               ].map(([figure, label]) => (
                 <div key={label}>
-                  <dt className="text-[34px] lg:text-[44px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
-                  <dd className="mt-2 text-[13px] text-paper">{label}</dd>
+                  <dt className="text-[34px] lg:text-[56px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
+                  <dd className="mt-2 text-[13px] lg:text-[17px] text-paper">{label}</dd>
                 </div>
               ))}
             </dl>
