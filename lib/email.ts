@@ -1,5 +1,10 @@
 // Transactional email via Resend. Never put PHI in these emails.
-export async function sendEmail(to: string, subject: string, html: string) {
+export async function sendEmail(
+  to: string | string[],
+  subject: string,
+  html: string,
+  attachments?: { filename: string; content: string }[]
+) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -11,6 +16,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
       to,
       subject,
       html,
+      attachments,
     }),
   })
   if (!res.ok) throw new Error(`Email send failed (${res.status})`)

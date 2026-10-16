@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAgreementRequest, signAgreement } from '@/lib/agency'
 import { errorMessage, logEvent } from '@/lib/observability'
+import { FieldTooLongError } from '@/lib/sign-pdf'
 
 const INVALID = { error: 'This link is invalid, expired, or already used.' }
 
@@ -43,6 +44,10 @@ export async function POST(request: NextRequest) {
     logEvent({ event: 'agency_agreement_signed' })
     return NextResponse.json({ signed: true })
   } catch (error) {
+    if (error instanceof FieldTooLongError) {
+      const field = error.message === agency ? 'agency legal name' : error.message === mailing ? 'mailing address' : 'name and title'
+      return NextResponse.json({ error: `The ${field} is too long to fit on the documents. Please shorten it.` }, { status: 400 })
+    }
     logEvent({ event: 'agency_agreement_failed', level: 'error', statusCode: 500, properties: { reason: errorMessage(error) } })
     return NextResponse.json({ error: 'Could not record the signature. Please try again.' }, { status: 500 })
   }

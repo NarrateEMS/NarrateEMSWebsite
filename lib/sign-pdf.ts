@@ -51,9 +51,14 @@ function fields(file: string, v: SignedValues): Field[] {
   ]
 }
 
+export class FieldTooLongError extends Error {}
+
 function fit(font: PDFFont, text: string, start: number, width: number) {
   let size = start
-  while (size > 5 && font.widthOfTextAtSize(text, size) > width) size -= 0.5
+  while (font.widthOfTextAtSize(text, size) > width) {
+    size -= 0.5
+    if (size < 6) throw new FieldTooLongError(text)
+  }
   return size
 }
 

@@ -4,7 +4,6 @@ import { createHash, randomBytes } from 'crypto'
 import { supabaseAdmin } from '@/lib/checkout'
 import { escapeHtml, sendEmail } from '@/lib/email'
 import { AGENCY_DOCUMENTS, AGREEMENT_VERSION } from '@/lib/agreement'
-import { uploadPdfsToDrive } from '@/lib/drive'
 import { stampAgencyDocuments } from '@/lib/sign-pdf'
 
 const LIVE = ['active', 'trialing']
@@ -196,15 +195,16 @@ export async function signAgreement(args: {
     signerTitle: args.signerTitle,
     date,
   })
-  const uploaded = await uploadPdfsToDrive(
-    stamped.map((d) => ({ name: `${req.agency.service_code} - ${d.title} - ${date}.pdf`, bytes: d.bytes }))
+  const documents = await Promise.all(
+    stamped.map(async (d) => {
+      const storagePath = `${req.agency.service_code}/${req.id}/${d.file}`
+      const { error } = await supabaseAdmin.storage
+        .from('agency-agreements')
+        .upload(storagePath, d.bytes, { contentType: 'application/pdf', upsert: true })
+      if (error) throw error
+      return { title: d.title, sha256: createHash('sha256').update(d.bytes).digest('hex'), storage_path: storagePath }
+    })
   )
-  const documents = stamped.map((d, i) => ({
-    title: d.title,
-    sha256: createHash('sha256').update(d.bytes).digest('hex'),
-    drive_file_id: uploaded[i].id,
-    drive_url: uploaded[i].webViewLink,
-  }))
 
   // Flip pending -> approved first; only one concurrent signer wins.
   const { data: won, error } = await supabaseAdmin
@@ -233,6 +233,17 @@ export async function signAgreement(args: {
   if (agreementError) {
     await supabaseAdmin.from('agencies').update({ status: 'pending', approved_at: null }).eq('id', req.agency_id)
     throw agreementError
+  }
+
+  try {
+    await sendEmail(
+      [req.rep_email, 'narrateems@gmail.com'],
+      `Signed NarrateEMS agreements for ${args.legalName}`,
+      `<p>Thanks for signing. Your signed copies of the NarrateEMS agreements for <b>${escapeHtml(args.legalName)}</b> are attached.</p>`,
+      stamped.map((d) => ({ filename: `${d.title}.pdf`, content: Buffer.from(d.bytes).toString('base64') }))
+    )
+  } catch (err) {
+    console.error('agency_agreement_copy_failed', err)
   }
 
   // Everyone waiting on this agency is approved with it.
