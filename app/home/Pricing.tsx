@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react"
 import { h2, body, inkBtn } from "./shared"
 
 const SQUAD_PLANS = [
-  { id: "pilot_annual", name: "Pilot", blurb: "Test with a small crew", price: "1,000", charts: 500, overage: "$2.50" },
+  { id: "pilot_annual", name: "Pilot", blurb: "Small crews", price: "1,000", charts: 500, overage: "$2.50" },
   { id: "small_squad_annual", name: "Small Squad", blurb: "Volunteer + small services", price: "3,000", charts: 2000, overage: "$1.90", popular: true },
-  { id: "large_squad_annual", name: "Large Squad", blurb: "City + county departments", price: "6,000", charts: 5000, overage: "$1.40" },
-  { id: "high_volume_annual", name: "High Volume", blurb: "Regional + 911 contractors", price: "10,000", charts: 10000, overage: "$1.15" },
+  { id: "large_squad_annual", name: "Large Squad", blurb: "City + county", price: "6,000", charts: 5000, overage: "$1.40" },
+  { id: "high_volume_annual", name: "High Volume", blurb: "Regional + 911", price: "10,000", charts: 10000, overage: "$1.15" },
 ]
 const MAX_CHARTS = 10000
 const SQUAD_COLS = ["xl:col-start-3", "xl:col-start-4", "xl:col-start-5", "xl:col-start-6"]
@@ -58,7 +58,7 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
             <h4 className="text-[22px] font-semibold leading-tight md:col-start-1 xl:col-start-auto">Individual</h4>
             <p className="md:col-start-1 xl:col-start-auto">
               <span className={price}>$29.99</span>
-              <span className={`mt-2 block ${body}`}>per month</span>
+              <span className={body}>/mo</span>
             </p>
             <ul className="space-y-1.5 md:col-start-2 md:row-span-3 md:row-start-1 md:self-center xl:col-start-auto xl:row-span-1 xl:row-start-auto xl:self-auto">
               {["Unlimited narrations", "Direct Zoll ePCR", "Chrome + mobile", "HIPAA, end-to-end encrypted", "Cancel any time"].map((line) => (
@@ -85,7 +85,7 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
               <h4 className="text-[22px] font-semibold leading-tight">{p.name}</h4>
               <p>
                 <span className={price}>${p.price}</span>
-                <span className={`mt-2 block ${body}`}>per year</span>
+                <span className={body}>/yr</span>
               </p>
               <div>
                 <p className="mb-4 text-[17px] leading-snug">
