@@ -86,6 +86,7 @@ async function connect(
 
   let finalText = ""
   let stopped = false
+  let ended = false
   let refreshTimer: number | undefined
 
   const scheduleRefresh = (ttl: number) => {
@@ -107,6 +108,7 @@ async function connect(
     onText(finalText)
   }
   recognizer.canceled = () => {
+    ended = true
     mic.close()
     if (!stopped) onDrop()
   }
@@ -119,7 +121,13 @@ async function connect(
   return async () => {
     stopped = true
     window.clearTimeout(refreshTimer)
+    // Ending the push stream lets Azure finish the buffered backlog before we stop.
+    const drained = new Promise<void>((resolve) => {
+      recognizer.sessionStopped = () => resolve()
+      window.setTimeout(resolve, 5000)
+    })
     mic.close()
+    if (!ended) await drained
     await new Promise<void>((resolve) => recognizer.stopContinuousRecognitionAsync(resolve, () => resolve()))
     recognizer.close()
     return finalText.trim()

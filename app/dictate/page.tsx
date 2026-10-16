@@ -294,7 +294,8 @@ export default function DictatePage() {
     setLiveReady(false)
     setRecording(rec)
     setStarting(false)
-    await putRecording(rec)
+    // Already recording; stopRecording writes the record again if this fails.
+    await putRecording(rec).catch(() => undefined)
     wakeLockRef.current = (await navigator.wakeLock?.request("screen").catch(() => null)) ?? null
 
     if (!live) return
