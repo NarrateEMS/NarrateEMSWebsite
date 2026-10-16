@@ -1,29 +1,50 @@
+"use client"
+
 import Link from "next/link"
-import { Wordmark } from "@/components/wordmark"
+import { rv, useReveal } from "./Faq"
+
+const links = [
+  ["/privacy-policy", "Privacy"],
+  ["/terms-of-service", "Terms"],
+  ["/sla", "SLA"],
+  ["mailto:narrateems@gmail.com", "Contact"],
+] as const
 
 export function Footer() {
+  const ref = useReveal<HTMLElement>()
   return (
-    <>
-      {/* FOOTER */}
-      <footer className="bg-ink text-paper">
-        <div className="mx-auto max-w-[1400px] px-6 py-14 lg:px-10">
-          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-            <Wordmark variant="paper" size="md" />
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-[17px]">
-              <Link href="/privacy-policy" className="hover:underline underline-offset-4">Privacy</Link>
-              <Link href="/terms-of-service" className="hover:underline underline-offset-4">Terms</Link>
-              <Link href="/sla" className="hover:underline underline-offset-4">SLA</Link>
-              <a href="mailto:narrateems@gmail.com" className="hover:underline underline-offset-4">Contact</a>
-            </div>
-          </div>
-          <p className="mt-10 max-w-[60ch] text-[13px] leading-relaxed text-paper">
-            Photos: &ldquo;Ambulance at night&rdquo; by JumpV, CC BY 2.0, via Flickr. &ldquo;Fontainebleau ambulance
-            soir 2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0, and &ldquo;Bags of medical supplies and defibrillators&rdquo;
-            by Hillelfrei, CC BY-SA 4.0 (cropped), both via Wikimedia Commons.
-          </p>
-          <p className="mt-4 text-[13px] text-paper">© 2026 NarrateEMS</p>
+    <footer ref={ref} className="overflow-hidden bg-paper text-ink">
+      <div className="mx-auto max-w-[1400px] px-6 pt-16 pb-10 lg:px-10 lg:pt-20">
+        <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
+          <p className="max-w-[22ch] text-[22px] font-semibold leading-tight tracking-tight lg:text-[32px]">By medics. For medics.</p>
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-8 gap-y-3 text-[17px] font-semibold">
+            {links.map(([href, label]) =>
+              href.startsWith("mailto:") ? (
+                <a key={label} href={href} className="underline-offset-4 hover:underline focus-hi-vis">{label}</a>
+              ) : (
+                <Link key={label} href={href} className="underline-offset-4 hover:underline focus-hi-vis">{label}</Link>
+              ),
+            )}
+          </nav>
         </div>
-      </footer>
-    </>
+
+        <Link href="/" aria-label="NarrateEMS home" className={`mt-14 flex items-end gap-[2vw] leading-[0.8] tracking-tight focus-hi-vis ${rv}`}>
+          <span aria-hidden className="text-[18vw] font-semibold lg:text-[248px]">narrate</span>
+          <span aria-hidden className="mb-[1.2vw] bg-ink px-[1.4vw] py-[0.4vw] text-[8.5vw] font-semibold leading-none text-paper lg:mb-4 lg:px-5 lg:py-1 lg:text-[118px]">
+            ems
+          </span>
+        </Link>
+
+        <div className="mt-12 flex flex-col gap-4 text-[13px] leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">
+          <p className="max-w-[60ch]">
+            Photos: &ldquo;Ambulance at night&rdquo; by JumpV, CC BY 2.0, via Flickr. &ldquo;Fontainebleau ambulance soir
+            2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0, &ldquo;Bags of medical supplies and defibrillators&rdquo; by
+            Hillelfrei, CC BY-SA 4.0 (cropped), and &ldquo;Doctors stethoscope 1&rdquo; by Stethoscopes, CC BY-SA 3.0
+            (cropped), all via Wikimedia Commons.
+          </p>
+          <p className="shrink-0">© 2026 NarrateEMS</p>
+        </div>
+      </div>
+    </footer>
   )
 }
