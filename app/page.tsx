@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Wordmark } from "@/components/wordmark"
+import { LEGAL_DOCUMENTS } from "@/lib/agreement"
 import {
   Mic,
   FileText,
@@ -39,6 +40,7 @@ export default function HomePage() {
   const [agencyName, setAgencyName] = useState("")
   const [serviceCode, setServiceCode] = useState("")
   const [repEmail, setRepEmail] = useState("")
+  const [legalAccepted, setLegalAccepted] = useState(false)
   const [needsRep, setNeedsRep] = useState(false)
   const [agencyPending, setAgencyPending] = useState(false)
 
@@ -95,6 +97,7 @@ export default function HomePage() {
           email: checkoutEmail,
           password: checkoutPassword,
           planType: selectedPlan?.type,
+          legalAccepted,
           ...(isIndividual && { agencyName, serviceCode, repEmail }),
         }),
       })
@@ -1433,17 +1436,20 @@ export default function HomePage() {
                       : "Continue to payment →"}
               </button>
 
-              <p className="text-xs text-ink-soft text-center pt-2">
-                By continuing, you agree to our{" "}
-                <Link href="/terms-of-service" className="underline hover:text-ink">
-                  Terms
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy-policy" className="underline hover:text-ink">
-                  Privacy Policy
-                </Link>
-                .
-              </p>
+              <label className="flex gap-3 text-xs text-ink-soft pt-2">
+                <input type="checkbox" required checked={legalAccepted} onChange={(e) => setLegalAccepted(e.target.checked)} />
+                <span>
+                  I agree to the{" "}
+                  {LEGAL_DOCUMENTS.filter((doc) => isIndividual || !doc.individualOnly).map((doc, i, docs) => (
+                    <span key={doc.href}>
+                      <a href={doc.href} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+                        {doc.title}
+                      </a>
+                      {i < docs.length - 2 ? ", " : i === docs.length - 2 ? " and " : "."}
+                    </span>
+                  ))}
+                </span>
+              </label>
             </form>
             )}
           </div>

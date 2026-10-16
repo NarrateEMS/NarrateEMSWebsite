@@ -12,12 +12,17 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { token, signerName, signerTitle, authorityConfirmed, agreed } = await request.json().catch(() => ({}))
+  const { token, legalName, address, signerName, signerTitle, authorityConfirmed, agreed } = await request.json().catch(() => ({}))
+  const agency = typeof legalName === 'string' ? legalName.trim() : ''
+  const mailing = typeof address === 'string' ? address.trim() : ''
   const name = typeof signerName === 'string' ? signerName.trim() : ''
   const title = typeof signerTitle === 'string' ? signerTitle.trim() : ''
   if (typeof token !== 'string' || !token) return NextResponse.json(INVALID, { status: 404 })
   if (!name || !title || name.length > 120 || title.length > 120) {
     return NextResponse.json({ error: 'Enter your full name and title.' }, { status: 400 })
+  }
+  if (!agency || !mailing || agency.length > 160 || mailing.length > 300) {
+    return NextResponse.json({ error: "Enter the agency's legal name and mailing address." }, { status: 400 })
   }
   if (authorityConfirmed !== true || agreed !== true) {
     return NextResponse.json({ error: 'Both boxes must be checked to sign.' }, { status: 400 })
@@ -26,6 +31,8 @@ export async function POST(request: NextRequest) {
   try {
     const signed = await signAgreement({
       token,
+      legalName: agency,
+      address: mailing,
       signerName: name,
       signerTitle: title,
       ip: request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? null,

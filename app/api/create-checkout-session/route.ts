@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { errorMessage, logEvent } from '@/lib/observability'
 import { PRICE_CONFIG, startCheckout, supabaseAdmin, type PlanConfig } from '@/lib/checkout'
 import { agencyStatus, requestAgencyAccess, validateAgencyInput } from '@/lib/agency'
+import { AGREEMENT_VERSION } from '@/lib/agreement'
 
 // Anon-key client used solely to verify a submitted password. The admin client
 // must never be used for this: its service-role key would authenticate without
@@ -24,6 +25,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    if (body.legalAccepted !== true) {
+      return NextResponse.json({ error: 'Please accept the terms to continue.' }, { status: 400 })
+    }
+    const legalAccepted = { version: AGREEMENT_VERSION, at: new Date().toISOString() }
 
     // Get price configuration for this plan type
     const planConfig = PRICE_CONFIG[planType]
@@ -115,7 +121,7 @@ export async function POST(request: NextRequest) {
           {
             password,
             email_confirm: true,
-            user_metadata: { ...(existing?.user?.user_metadata ?? {}), plan_type: planType },
+            user_metadata: { ...(existing?.user?.user_metadata ?? {}), plan_type: planType, legal_accepted: legalAccepted },
           }
         )
 
@@ -178,7 +184,7 @@ export async function POST(request: NextRequest) {
       // webhook is still writing squad_id; without it an existing buyer sees the
       // individual-plan panel for those seconds.
       const { error: stampError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-        user_metadata: { ...(existing?.user?.user_metadata ?? {}), plan_type: planType },
+        user_metadata: { ...(existing?.user?.user_metadata ?? {}), plan_type: planType, legal_accepted: legalAccepted },
       })
       if (stampError) console.error('Could not stamp plan_type:', stampError)
     } else {
@@ -189,6 +195,7 @@ export async function POST(request: NextRequest) {
         email_confirm: true, // Auto-confirm email for paying customers
         user_metadata: {
           plan_type: planType,
+          legal_accepted: legalAccepted,
         },
       })
 

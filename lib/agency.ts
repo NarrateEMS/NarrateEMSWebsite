@@ -3,7 +3,9 @@
 import { createHash, randomBytes } from 'crypto'
 import { supabaseAdmin } from '@/lib/checkout'
 import { escapeHtml, sendEmail } from '@/lib/email'
-import { AGREEMENT_TEXT, AGREEMENT_VERSION } from '@/lib/agreement'
+import { AGENCY_DOCUMENTS, AGREEMENT_VERSION } from '@/lib/agreement'
+import { uploadPdfsToDrive } from '@/lib/drive'
+import { stampAgencyDocuments } from '@/lib/sign-pdf'
 
 const LIVE = ['active', 'trialing']
 const TOKEN_TTL_MS = 14 * 24 * 60 * 60 * 1000
@@ -167,12 +169,14 @@ export async function getAgreementRequest(token: string) {
     serviceCode: req.agency.service_code,
     repEmail: req.rep_email,
     agreementVersion: AGREEMENT_VERSION,
-    agreementText: AGREEMENT_TEXT,
+    documents: AGENCY_DOCUMENTS.map((d) => ({ title: d.title, href: `/legal/${d.file}` })),
   }
 }
 
 export async function signAgreement(args: {
   token: string
+  legalName: string
+  address: string
   signerName: string
   signerTitle: string
   ip: string | null
@@ -181,6 +185,26 @@ export async function signAgreement(args: {
 }): Promise<boolean> {
   const req = await findPendingRequest(args.token)
   if (!req) return false
+
+  // Store the signed PDFs before approving, so an approved agency always has its documents.
+  const date = new Date().toISOString().slice(0, 10)
+  const stamped = await stampAgencyDocuments({
+    legalName: args.legalName,
+    address: args.address,
+    email: req.rep_email,
+    signerName: args.signerName,
+    signerTitle: args.signerTitle,
+    date,
+  })
+  const uploaded = await uploadPdfsToDrive(
+    stamped.map((d) => ({ name: `${req.agency.service_code} - ${d.title} - ${date}.pdf`, bytes: d.bytes }))
+  )
+  const documents = stamped.map((d, i) => ({
+    title: d.title,
+    sha256: createHash('sha256').update(d.bytes).digest('hex'),
+    drive_file_id: uploaded[i].id,
+    drive_url: uploaded[i].webViewLink,
+  }))
 
   // Flip pending -> approved first; only one concurrent signer wins.
   const { data: won, error } = await supabaseAdmin
@@ -195,7 +219,10 @@ export async function signAgreement(args: {
   const { error: agreementError } = await supabaseAdmin.from('agency_agreements').insert({
     agency_id: req.agency_id,
     agreement_version: AGREEMENT_VERSION,
-    document_sha256: hashToken(`${AGREEMENT_VERSION}\n${AGREEMENT_TEXT}`),
+    document_sha256: hashToken(documents.map((d) => d.sha256).join('\n')),
+    agency_legal_name: args.legalName,
+    agency_address: args.address,
+    documents,
     signer_name: args.signerName,
     signer_title: args.signerTitle,
     signer_email: req.rep_email,
