@@ -41,6 +41,7 @@ function fields(file: string, v: SignedValues): Field[] {
     [0, 178, 155, 364, v.address],
     [0, 206, 170, 366, printed],
     [0, 229, 184, 371, v.email],
+    [0, 292, 199, 386, v.email.split('@')[1]],
     [0, 132, 213, 348, v.date],
     [1, 114, 339, 313, v.signerName, true],
     [1, 153, 354, 316, printed],
