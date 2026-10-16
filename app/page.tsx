@@ -856,8 +856,8 @@ export default function HomePage() {
         </div>
         <div className="mt-14 grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
           <img
-            src="/photos/hi-vis-vest.jpg"
-            alt="Close-up of a yellow high-visibility vest with reflective stripes"
+            src="/photos/light-trail-detail.jpg"
+            alt="Close-up of a blue emergency light streak on a dark road"
             className="h-full min-h-[280px] w-full object-cover lg:row-span-2"
             loading="lazy"
           />
@@ -987,7 +987,7 @@ export default function HomePage() {
                     value={formData[key]}
                     onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
                     required
-                    className="w-full bg-paper px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
+                    className="w-full bg-paper-tint border-b-2 border-ink px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
                   />
                 ))}
                 <textarea
@@ -997,7 +997,7 @@ export default function HomePage() {
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   required
                   rows={3}
-                  className="w-full bg-paper px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink resize-none"
+                  className="w-full bg-paper-tint border-b-2 border-ink px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink resize-none"
                 />
                 <button type="submit" disabled={isSubmitting} className={`${inkBtn} w-full disabled:opacity-60`}>
                   {isSubmitting ? "Sending…" : "Send message"}
@@ -1011,7 +1011,7 @@ export default function HomePage() {
             </div>
             <img
               src="/photos/jump-bags.jpg"
-              alt="Rows of navy medical jump bags with reflective stripes on storage shelves"
+              alt="A row of navy medical jump bags with reflective stripes on a shelf"
               className="h-full min-h-[280px] w-full object-cover"
               loading="lazy"
             />
@@ -1033,9 +1033,8 @@ export default function HomePage() {
           </div>
           <p className="mt-10 max-w-[60ch] text-[13px] leading-relaxed text-paper">
             Photos: &ldquo;Ambulance at night&rdquo; by JumpV, CC BY 2.0, via Flickr. &ldquo;Fontainebleau ambulance
-            soir 2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0. &ldquo;Warnweste gelb&rdquo; by Magnus Mertens, CC BY-SA
-            2.0. &ldquo;Bags of medical supplies and defibrillators&rdquo; by Hillelfrei, CC BY-SA 4.0. The last three via
-            Wikimedia Commons.
+            soir 2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0, and &ldquo;Bags of medical supplies and defibrillators&rdquo;
+            by Hillelfrei, CC BY-SA 4.0 (cropped), both via Wikimedia Commons.
           </p>
           <p className="mt-4 text-[13px] text-paper">© 2026 NarrateEMS</p>
         </div>
