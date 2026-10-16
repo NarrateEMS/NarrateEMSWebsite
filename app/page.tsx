@@ -415,7 +415,7 @@ export default function HomePage() {
           </nav>
 
           {/* HERO */}
-          <section data-scene="chart" className="px-6 pt-14 pb-20 lg:px-12 lg:pt-24 lg:pb-32">
+          <section data-scene="chart" className="px-6 pt-12 pb-16 lg:px-12 lg:pt-20 lg:pb-20">
             <h1 className="reveal text-[44px] lg:text-[64px] font-semibold leading-[1.0] tracking-tight text-balance">
               The chart writes itself.
             </h1>
@@ -436,7 +436,19 @@ export default function HomePage() {
                 Watch the demo
               </button>
             </div>
-            <ul className="reveal mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink" style={{ animationDelay: "240ms" }}>
+            <dl className="reveal mt-20 grid grid-cols-3 gap-6" style={{ animationDelay: "240ms" }}>
+              {[
+                ["70%", "Faster charting"],
+                ["<10s", "Per chart page"],
+                ["1hr+", "Saved per shift"],
+              ].map(([figure, label]) => (
+                <div key={label}>
+                  <dt className="text-[34px] lg:text-[44px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
+                  <dd className="mt-2 text-[13px] text-ink">{label}</dd>
+                </div>
+              ))}
+            </dl>
+            <ul className="reveal mt-12 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink" style={{ animationDelay: "320ms" }}>
               <li className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" /> HIPAA compliant</li>
               <li className="inline-flex items-center gap-1.5"><Lock className="h-4 w-4" /> End-to-end encrypted</li>
               <li className="inline-flex items-center gap-1.5"><FileText className="h-4 w-4" /> Direct Zoll ePCR</li>
@@ -451,7 +463,7 @@ export default function HomePage() {
           </div>
 
           {/* HOW IT WORKS */}
-          <section id="how" data-scene="chart" className="px-6 py-20 lg:px-12 lg:py-28">
+          <section id="how" data-scene="chart" className="px-6 py-20 lg:px-12 lg:py-20">
             <h2 className={h2}>Three steps, after the call.</h2>
             <p className={`mt-6 max-w-xl ${body}`}>
               You worked the call. Now talk it through once, into your phone or laptop, and NarrateEMS handles the
@@ -482,7 +494,7 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <figure className="mt-16">
+            <figure className="mt-12">
               <img
                 src="/photos/ambulance-interior.jpg"
                 alt="Patient compartment inside an ambulance, stretcher and equipment"
@@ -493,33 +505,21 @@ export default function HomePage() {
           </section>
 
           {/* FROM THE FIELD */}
-          <section id="field" data-scene="chart" className="bg-paper-tint px-6 py-20 lg:px-12 lg:py-28">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Image.jpg-zZeluLIQJ3rB3PKe7tKcfoKfekukF6.jpeg"
-              alt="EMT providing patient care in the field"
-              className="w-full aspect-[3/2] object-cover"
-              loading="lazy"
-            />
-            <blockquote className="mt-12 text-[34px] lg:text-[44px] font-semibold leading-[1.1] tracking-tight text-balance">
+          <section id="field" data-scene="chart" className="bg-paper-tint px-6 py-20 lg:px-12 lg:py-20">
+            <blockquote className="text-[34px] lg:text-[44px] font-semibold leading-[1.1] tracking-tight text-balance">
               &ldquo;Saved me hours of documentation.&rdquo;
             </blockquote>
             <p className={`mt-5 ${body}`}>Kendall Park First Aid Squad, New Jersey EMS provider</p>
-            <dl className="mt-14 grid grid-cols-3 gap-6">
-              {[
-                ["70%", "Faster charting"],
-                ["<10s", "Per chart page"],
-                ["1hr+", "Saved per shift"],
-              ].map(([figure, label]) => (
-                <div key={label}>
-                  <dt className="text-[34px] lg:text-[44px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
-                  <dd className="mt-2 text-[13px] text-ink">{label}</dd>
-                </div>
-              ))}
-            </dl>
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Image.jpg-zZeluLIQJ3rB3PKe7tKcfoKfekukF6.jpeg"
+              alt="EMT providing patient care in the field"
+              className="mt-10 w-full aspect-[3/2] object-cover"
+              loading="lazy"
+            />
           </section>
 
           {/* BUILT BY MEDICS */}
-          <section id="why" data-scene="chart" className="px-6 py-20 lg:px-12 lg:py-28">
+          <section id="why" data-scene="chart" className="px-6 py-20 lg:px-12 lg:py-20">
             <h2 className={h2}>We built it for ourselves first.</h2>
             <p className={`mt-6 max-w-xl ${body}`}>
               Six-plus years working calls. We know what charting feels like at the end of a sixteen-hour shift,
@@ -552,7 +552,7 @@ export default function HomePage() {
           </section>
 
           {/* FOR SQUADS */}
-          <section id="squads" data-scene="squads" className="bg-paper-tint px-6 py-20 lg:px-12 lg:py-28">
+          <section id="squads" data-scene="squads" className="bg-paper-tint px-6 py-20 lg:px-12 lg:py-20">
             <h2 className={h2}>Run a department? We&apos;ve got you.</h2>
             <p className={`mt-6 max-w-xl ${body}`}>
               One squad code. One bill. Every medic charting faster from day one. No per-seat math, no
@@ -597,7 +597,7 @@ export default function HomePage() {
 
       {/* PRICING: the one section that breaks the split */}
       <section id="pricing" className="lg:grid lg:grid-cols-2">
-        <div className="bg-ink text-paper px-6 py-20 lg:px-12 lg:py-28">
+        <div className="bg-ink text-paper px-6 py-20 lg:px-12 lg:py-20">
           <h2 className={h2}>Pay for charts. Not seats.</h2>
           <p className="mt-6 max-w-md text-[17px] leading-[1.6] text-paper">
             Individuals get a flat monthly rate. Squads pay annually with a chart bundle that fits your call volume.
@@ -626,7 +626,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="px-6 py-20 lg:px-12 lg:py-28">
+        <div className="px-6 py-20 lg:px-12 lg:py-20">
           {pricingTab === "individual" && (
             <div className="max-w-md">
               <h3 className="text-[22px] font-semibold">Individual</h3>
@@ -711,7 +711,7 @@ export default function HomePage() {
 
         <div>
           {/* SECURITY */}
-          <section id="security" className="px-6 py-20 lg:px-12 lg:py-28">
+          <section id="security" className="px-6 py-20 lg:px-12 lg:py-20">
             <h2 className={h2}>Patient data is sacred.</h2>
             <p className={`mt-6 max-w-xl ${body}`}>
               We built this for the same patients we used to treat. The security posture matches the trust the badge
@@ -740,7 +740,7 @@ export default function HomePage() {
           </section>
 
           {/* FAQ */}
-          <section id="faq" className="bg-paper-tint px-6 py-20 lg:px-12 lg:py-28">
+          <section id="faq" className="bg-paper-tint px-6 py-20 lg:px-12 lg:py-20">
             <h2 className={h2}>Things medics actually ask us.</h2>
             <p className={`mt-6 max-w-xl ${body}`}>
               Can&apos;t find what you&apos;re looking for?{" "}
@@ -799,7 +799,7 @@ export default function HomePage() {
           </section>
 
           {/* FINAL CTA + CONTACT */}
-          <section id="start" className="px-6 py-20 lg:px-12 lg:py-28">
+          <section id="start" className="px-6 py-20 lg:px-12 lg:py-20">
             <h2 className={h2}>Go home an hour earlier tonight.</h2>
             <p className={`mt-6 max-w-xl ${body}`}>
               Install the Chrome extension, run your next call, and narrate it on the way back. Your Zoll chart will
