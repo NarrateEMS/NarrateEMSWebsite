@@ -1,0 +1,72 @@
+[
+  {
+    "file": "public/photos/ramsey-ambulance-corps-2001.jpg",
+    "media": "image",
+    "ref": "openverse:79a27ac9-87b1-4ec6-a9ce-058601c81733",
+    "title": "Ramsey Ambulance Corps 2001",
+    "creator": "Captain-tucker",
+    "creatorUrl": null,
+    "date": null,
+    "license": "CC BY-SA 3.0",
+    "licenseCode": "by-sa",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "creditRequired": true,
+    "page": "https://commons.wikimedia.org/w/index.php?curid=7021403",
+    "via": "Wikimedia Commons",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Ramsey_Ambulance_Corps_2001.JPG/1920px-Ramsey_Ambulance_Corps_2001.JPG",
+    "width": 1920,
+    "height": 1275,
+    "bytes": 381018,
+    "credit": "\"Ramsey Ambulance Corps 2001\" by Captain-tucker, CC BY-SA 3.0, via Wikimedia Commons",
+    "notes": [
+      "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+    ],
+    "saved": "2026-10-16T18:35:27.442Z"
+  },
+  {
+    "file": "public/photos/ewing-ambulance.jpg",
+    "media": "image",
+    "ref": "openverse:1c19f756-f11a-4d36-8921-4947a14bd041",
+    "title": "2023-05-20 15 50 02 Ewing Township Emergency Medical Services ambulance along Forest Lane in the Mountainview section of Ewing Township, Mercer County, New Jersey",
+    "creator": "Famartin",
+    "creatorUrl": "https://commons.wikimedia.org/wiki/User:Famartin",
+    "date": null,
+    "license": "CC BY-SA 4.0",
+    "licenseCode": "by-sa",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "creditRequired": true,
+    "page": "https://commons.wikimedia.org/w/index.php?curid=132152147",
+    "via": "Wikimedia Commons",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/2023-05-20_15_50_02_Ewing_Township_Emergency_Medical_Services_ambulance_along_Forest_Lane_in_the_Mountainview_section_of_Ewing_Township%2C_Mercer_County%2C_New_Jersey.jpg/1920px-thumbnail.jpg",
+    "width": 1920,
+    "height": 1440,
+    "bytes": 981814,
+    "credit": "\"2023-05-20 15 50 02 Ewing Township Emergency Medical Services ambulance along Forest Lane\u2026\" by Famartin, CC BY-SA 4.0, via Wikimedia Commons",
+    "notes": [
+      "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+    ],
+    "saved": "2026-10-16T18:35:43.859Z"
+  },
+  {
+    "file": "public/photos/ambulance-interior.jpg",
+    "media": "image",
+    "ref": "commons:3069534",
+    "title": "Ambulance-interior",
+    "creator": "Ypy31",
+    "creatorUrl": null,
+    "date": "2007-08-03",
+    "license": "public domain",
+    "licenseCode": "pd",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "creditRequired": false,
+    "page": "https://commons.wikimedia.org/wiki/File:Ambulance-interior.jpg",
+    "via": "Wikimedia Commons",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Ambulance-interior.jpg/1920px-Ambulance-interior.jpg",
+    "width": 1920,
+    "height": 1486,
+    "bytes": 619091,
+    "credit": "\"Ambulance-interior\" by Ypy31, public domain, via Wikimedia Commons",
+    "notes": [],
+    "saved": "2026-10-16T18:35:44.036Z"
+  }
+]

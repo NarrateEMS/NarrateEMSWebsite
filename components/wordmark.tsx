@@ -9,9 +9,9 @@ type WordmarkProps = {
 }
 
 const sizeMap = {
-  sm: { serif: "text-xl", chip: "text-[9px] px-1.5 py-[2px]" },
-  md: { serif: "text-2xl", chip: "text-[10px] px-1.5 py-[3px]" },
-  lg: { serif: "text-3xl", chip: "text-[11px] px-2 py-[3px]" },
+  sm: { serif: "text-xl", chip: "px-1 py-px" },
+  md: { serif: "text-2xl", chip: "px-1.5 py-0.5" },
+  lg: { serif: "text-3xl", chip: "px-1.5 py-0.5" },
 } as const
 
 export function Wordmark({ href = "/", className, variant = "ink", size = "md" }: WordmarkProps) {
@@ -21,15 +21,14 @@ export function Wordmark({ href = "/", className, variant = "ink", size = "md" }
   const inner = (
     <span
       className={cn(
-        "inline-flex items-baseline gap-1.5 tracking-tight leading-none select-none",
+        "inline-flex items-baseline gap-1 font-extrabold tracking-[-0.04em] leading-none select-none",
+        s.serif,
         className,
       )}
       aria-label="NarrateEMS"
     >
       <span
         className={cn(
-          "font-serif italic",
-          s.serif,
           isPaper ? "text-paper" : "text-ink",
         )}
       >
@@ -37,11 +36,11 @@ export function Wordmark({ href = "/", className, variant = "ink", size = "md" }
       </span>
       <span
         className={cn(
-          "font-mono uppercase tracking-[0.18em] font-medium rounded-sm",
+          "rounded-[4px]",
           s.chip,
           isPaper
-            ? "bg-paper text-ink"
-            : "bg-ink text-paper",
+            ? "bg-paper text-blue"
+            : "bg-blue text-white",
         )}
       >
         ems
@@ -51,7 +50,7 @@ export function Wordmark({ href = "/", className, variant = "ink", size = "md" }
 
   if (!href) return inner
   return (
-    <Link href={href} className="inline-flex focus-hi-vis rounded-sm">
+    <Link href={href} className="inline-flex focus-hi-vis rounded-[4px]">
       {inner}
     </Link>
   )
