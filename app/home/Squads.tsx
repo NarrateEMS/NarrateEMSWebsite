@@ -1,93 +1,183 @@
-import { ArrowUpRight } from "lucide-react"
-import { CALENDLY_URL, h2, body, inkBtn } from "./shared"
+"use client"
+
+import { useEffect, useRef } from "react"
+import { ArrowUpRight, Copy, Lock, RefreshCw, Trash2, UserPlus, Users } from "lucide-react"
+import { CALENDLY_URL, h2, primaryBtn } from "./shared"
+
+// Reveals [data-reveal] children once as they scroll in; content stays visible without JS or with reduced motion.
+export function useReveal<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  useEffect(() => {
+    const root = ref.current
+    if (!root || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue
+          e.target.removeAttribute("data-pending")
+          io.unobserve(e.target)
+        }
+      },
+      { rootMargin: "0px 0px -12% 0px" },
+    )
+    root.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
+      if (el.getBoundingClientRect().top < window.innerHeight) return
+      el.setAttribute("data-pending", "")
+      io.observe(el)
+    })
+    return () => io.disconnect()
+  }, [])
+  return ref
+}
+
+export const reveal =
+  "transition-[opacity,translate] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] data-[pending]:opacity-0 data-[pending]:translate-y-6 motion-reduce:transition-none"
+
+const members: [string, "admin" | "member" | "pending"][] = [
+  ["medic.a@squad.org", "admin"],
+  ["medic.b@squad.org", "member"],
+  ["medic.c@squad.org", "member"],
+  ["medic.d@squad.org", "pending"],
+]
 
 function SquadStage() {
-  const members = [
-    ["Medic A", "Admin"],
-    ["Medic B", "Member"],
-    ["Medic C", "Member"],
-  ]
   return (
-    <div data-ui className="mx-auto w-full max-w-[360px] bg-paper text-ink border border-ink text-[12px]">
-      <div className="flex items-center justify-between bg-ink px-3 py-2 text-paper">
-        <span className="text-[15px] font-semibold">Manage squad</span>
-        <span aria-hidden>×</span>
+    <div
+      data-ui
+      data-reveal
+      role="img"
+      aria-label="Sample squad admin screen with squad code, chart usage, invite form and member list"
+      className={`group w-full bg-paper text-ink ${reveal}`}
+    >
+      <div className="flex items-center gap-3 bg-ink-2 px-4 py-3 text-[13px] text-paper">
+        <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        <span className="truncate">narrateems.com/account</span>
       </div>
-      <div className="space-y-1.5 p-3">
-        <div className="flex justify-between"><span className="font-semibold">Squad name</span><span>Sample squad</span></div>
-        <div className="flex justify-between"><span className="font-semibold">Squad code</span><span>SAMPLE</span></div>
+
+      <div className="flex flex-wrap items-end justify-between gap-2 px-5 pt-6 lg:px-8">
+        <span className="text-[24px] font-semibold leading-none lg:text-[28px]">Manage your crew</span>
+        <span className="text-[14px]">3 members, 1 pending</span>
       </div>
-      <div className="px-3 font-semibold">Invite a team member</div>
-      <div className="mx-3 mt-1 flex">
-        <span className="flex-1 border border-[#D6D2C7] bg-white px-2 py-1.5 text-[#4A5568]">name@squad.org</span>
-        <span className="bg-ink px-3 py-1.5 font-semibold text-paper">Invite</span>
+
+      <div className="grid gap-3 p-5 lg:grid-cols-12 lg:px-8 lg:pb-8">
+        <div className="grid gap-3 sm:grid-cols-3 lg:col-span-4 lg:grid-cols-1">
+          <div className="bg-ink p-4 text-paper">
+            <span className="block text-[14px]">Squad code</span>
+            <span className="mt-2 flex items-center justify-between text-[26px] font-semibold leading-none tracking-tight">
+              SAMPLE42
+              <Copy className="h-4 w-4 text-hi-vis" aria-hidden />
+            </span>
+          </div>
+          <div className="bg-surface p-4">
+            <span className="block text-[14px]">Charts this period</span>
+            <span className="mt-2 block text-[26px] font-semibold leading-none tabular-nums tracking-tight">
+              1,284 <span className="text-[15px] font-normal">of 2,000</span>
+            </span>
+            <span className="mt-3 block h-2 bg-paper-tint">
+              <span className="block h-full w-[64%] origin-left bg-hi-vis transition-transform delay-300 duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[pending]:scale-x-0 motion-reduce:transition-none" />
+            </span>
+          </div>
+          <div className="bg-surface p-4">
+            <span className="block text-[14px]">Plan</span>
+            <span className="mt-2 block text-[20px] font-semibold leading-none">Small Squad</span>
+            <span className="mt-2 block text-[14px]">One bill, billed annually</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 lg:col-span-8">
+          <div className="bg-surface p-4">
+            <span className="flex items-center gap-2 text-[15px] font-semibold">
+              <UserPlus className="h-4 w-4" aria-hidden />
+              Invite a member
+            </span>
+            <span className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <span className="flex min-w-0 flex-1">
+                <span className="min-w-0 flex-1 truncate bg-paper px-3 py-2.5 text-[14px] text-ink-muted">name@squad.org</span>
+                <span className="bg-hi-vis px-3 py-2.5 text-[14px] font-semibold text-hi-vis-ink">Send invite</span>
+              </span>
+              <span className="bg-paper-tint px-3 py-2.5 text-[14px] text-success">Invite sent to medic.d@squad.org</span>
+            </span>
+          </div>
+          <div className="flex-1 bg-surface p-4">
+            <span className="flex items-center gap-2 text-[15px] font-semibold">
+              <Users className="h-4 w-4" aria-hidden />
+              Members and pending invites
+            </span>
+            <span className="mt-2 block">
+              {members.map(([email, status]) => (
+                <span key={email} className="flex items-center justify-between gap-3 px-2 py-2 text-[14px] even:bg-paper">
+                  <span className={`truncate ${status === "pending" ? "text-ink-muted" : ""}`}>{email}</span>
+                  {status === "admin" && <span className="shrink-0 bg-ink px-2 py-1 text-[13px] text-paper">Admin</span>}
+                  {status === "member" && (
+                    <span className="inline-flex shrink-0 items-center gap-1 bg-paper-tint px-2 py-1 text-[13px]">
+                      <Trash2 className="h-3 w-3" aria-hidden />
+                      Remove
+                    </span>
+                  )}
+                  {status === "pending" && (
+                    <span className="inline-flex shrink-0 items-center gap-1 bg-paper-tint px-2 py-1 text-[13px]">
+                      <RefreshCw className="h-3 w-3" aria-hidden />
+                      Resend
+                    </span>
+                  )}
+                </span>
+              ))}
+            </span>
+          </div>
+        </div>
       </div>
-      <div className="px-3 pt-3 font-semibold">Members {members.length}</div>
-      <ul className="m-3 mt-1 border border-[#D6D2C7] bg-white">
-        {members.map(([name, role]) => (
-          <li key={name} className="flex justify-between px-2 py-1.5 even:bg-[#F5F4F0]">
-            <span>{name}</span>
-            <span className="text-[#4A5568]">{role}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }
 
+const facts = [
+  ["Squad codes", "Hand out one code. Medics join in a click."],
+  ["Chart bundles", "500 to 10,000+ charts, with simple overage."],
+  ["Real-time usage", "Charts filed this period. No renewal surprises."],
+  ["HIPAA from day one", "Every recording and chart encrypted end to end."],
+  ["Works on what you've got", "Rig laptop, phone or tablet. Same login."],
+  ["Admin controls", "Promote leads, revoke former members, transfer billing."],
+]
+
 export function Squads({ scrollToSection }: { scrollToSection: (id: string) => void }) {
+  const ref = useReveal<HTMLDivElement>()
   return (
-    <>
-      {/* FOR SQUADS */}
-      <section id="squads" className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className={h2}>Run a department? We&apos;ve got you.</h2>
-          <p className={`mt-6 ${body}`}>
-            One squad code. One bill. Every medic charting faster from day one. No per-seat math, no provisioning
-            meetings.
-          </p>
-        </div>
-        <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_400px_1fr] lg:items-center">
-          {[0, 1].map((col) => (
-            <dl key={col} className={`space-y-10 ${col === 1 ? "lg:order-3" : ""}`}>
-              {[
-                ["Squad codes", "Hand out one code at orientation. New medics join your plan in a click, no email back-and-forth."],
-                ["Chart bundles", "Plans start at 500 charts and scale to 10,000+. Pay for what your squad actually runs, with simple overage pricing."],
-                ["Real-time usage", "See how many charts your squad has filed this period. No surprises at renewal."],
-                ["HIPAA from day one", "End-to-end encryption on every recording and chart. Patient data never leaves the secure pipeline."],
-                ["Works on what you've got", "Chrome on the rig laptop, phone on the bench, tablet at the station. Same login, same workflow."],
-                ["Squad admin controls", "Promote leads, revoke former members, transfer billing. Run it like you run shifts."],
-              ]
-                .slice(col * 3, col * 3 + 3)
-                .map(([title, text]) => (
-                  <div key={title}>
-                    <dt className="text-[22px] font-semibold leading-tight">{title}</dt>
-                    <dd className={`mt-2 ${body}`}>{text}</dd>
-                  </div>
-                ))}
-            </dl>
-          ))}
-          <div className="bg-ink px-6 py-10 lg:order-2">
-            <SquadStage />
+    <section id="squads" className="bg-ink text-paper">
+      <div ref={ref} className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div data-reveal className={`max-w-2xl ${reveal}`}>
+            <h2 className={h2}>One code. One bill. Every medic.</h2>
+            <p className="mt-5 text-[17px] leading-[1.6] text-paper">No per-seat math and no provisioning meetings.</p>
+          </div>
+          <div data-reveal className={`flex flex-col gap-5 sm:flex-row sm:items-center ${reveal}`} style={{ transitionDelay: "80ms" }}>
+            <button onClick={() => scrollToSection("pricing")} className={primaryBtn}>
+              See squad pricing
+              <ArrowUpRight className="h-4 w-4" />
+            </button>
+            <a
+              href={CALENDLY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[17px] font-semibold text-paper underline underline-offset-4 hover:text-hi-vis focus-hi-vis"
+            >
+              Book a squad walkthrough
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
           </div>
         </div>
-        <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-5">
-          <button onClick={() => scrollToSection("pricing")} className={inkBtn}>
-            See squad pricing
-            <ArrowUpRight className="h-4 w-4" />
-          </button>
-          <a
-            href={CALENDLY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[17px] font-semibold text-ink underline underline-offset-4"
-          >
-            Book a squad walkthrough
-            <ArrowUpRight className="h-4 w-4" />
-          </a>
-        </div>
-      </section>
 
-    </>
+        <div className="mt-14">
+          <SquadStage />
+          <dl className="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+            {facts.map(([title, text], i) => (
+              <div key={title} data-reveal className={reveal} style={{ transitionDelay: `${120 + i * 70}ms` }}>
+                <dt className="text-[20px] font-semibold leading-tight">{title}</dt>
+                <dd className="mt-1 text-[17px] leading-[1.5] text-paper">{text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </section>
   )
 }
