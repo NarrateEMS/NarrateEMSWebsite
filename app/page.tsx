@@ -55,10 +55,14 @@ function at(p: number, frames: Frame[]): number[] {
   return frames[frames.length - 1].slice(1)
 }
 
-function buildTimeline(w: number, h: number, objW: number, objH: number) {
+function buildTimeline(w: number, h: number, objW: number, objH: number, heroBottom: number) {
   const desk = w >= 1024
-  const fit = Math.min(1, (h * (desk ? 0.62 : 0.42)) / objH, desk ? (w * 0.4) / objW : 1)
-  const oy = desk ? 0 : h * 0.22
+  const side = w >= 1280
+  const fit = Math.min(1, (h * (side ? 0.62 : 0.42)) / objH, side ? (w * 0.36) / (objW + 32) : 1)
+  const oy = side ? 0 : h * 0.22
+  // Hero: the tilted object's top edge sits just under the CTAs.
+  const layerCenter = 64 + (h - 64) / 2
+  const heroY = Math.max(oy, heroBottom + 40 - layerCenter + ((objH * fit) / 2) * 0.55)
   const fade = (a: number, b: number, c: number, d: number, dy = 24): Frame[] => [
     [a, 0, dy, 0, 0, 0, 1, 0],
     [b, 0, 0, 0, 0, 0, 1, 1],
@@ -82,14 +86,13 @@ function buildTimeline(w: number, h: number, objW: number, objH: number) {
       [0.8, x * 1.06, y * 1.04, 0, -ry[i] * 0.4, rz[i] + 8 * Math.sign(k || 1), cs, 1],
       [0.83, x * 1.06, y * 1.04, 0, -ry[i] * 0.4, rz[i] + 8 * Math.sign(k || 1), cs, 1],
       [0.91, k * 7, stackY + k * -6, 0, 0, k * 1.2, cs * 0.94, 1],
-      [0.95, k * 7, stackY + k * -6, 0, 0, k * 1.2, cs * 0.94, 1],
-      [0.995, k * 7, stackY - h * 0.12, 0, 0, k * 1.2, cs * 0.8, 0],
+      [1, k * 7, stackY + k * -6, 0, 0, k * 1.2, cs * 0.94, 1],
     ]
   })
   return {
     hero: [[0, 0, 0, 0, 0, 0, 1, 1], [0.07, 0, -h * 0.12, 0, 0, 0, 1, 0]] as Frame[],
     object: [
-      [0, 0, desk ? h * 0.32 : h * 0.3, 58, 0, -4, fit * 1.06, 1],
+      [0, 0, heroY, 58, 0, -4, fit, 1],
       [0.13, 0, oy + h * 0.02, 16, -6, -2, fit, 1],
       [0.36, 0, oy, 8, 4, 0, fit, 1],
       [0.44, 0, oy, 0, 0, 0, fit, 1],
@@ -101,8 +104,7 @@ function buildTimeline(w: number, h: number, objW: number, objH: number) {
     stats: [
       [0.88, 0, h * 0.28 + 20, 0, 0, 0, 1, 0],
       [0.92, 0, h * 0.28, 0, 0, 0, 1, 1],
-      [0.95, 0, h * 0.28, 0, 0, 0, 1, 1],
-      [0.98, 0, h * 0.24, 0, 0, 0, 1, 0],
+      [1, 0, h * 0.28, 0, 0, 0, 1, 1],
     ] as Frame[],
     cards,
   }
@@ -389,7 +391,11 @@ export default function HomePage() {
     const actions = object.querySelector<HTMLElement>("[data-actions]")
     const fields = [...object.querySelectorAll<HTMLElement>("[data-field]")]
     const chips = [...object.querySelectorAll<HTMLElement>("[data-chip]")]
-    let tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight)
+    const heroBottom = () => {
+      const hero = heroRef.current
+      return hero ? 64 + (window.innerWidth >= 1024 ? 80 : 48) + hero.offsetHeight : 0
+    }
+    let tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight, heroBottom())
     let current = -1
     let typed = -1
     let frame = 0
@@ -447,7 +453,7 @@ export default function HomePage() {
     })
     io.observe(story)
     const onResize = () => {
-      tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight)
+      tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight, heroBottom())
       start()
     }
     window.addEventListener("resize", onResize)
@@ -850,8 +856,8 @@ export default function HomePage() {
         </div>
         <div className="mt-14 grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
           <img
-            src="/photos/gloved-hand.jpg"
-            alt="A gloved hand holding assorted capsules against a dark background"
+            src="/photos/hi-vis-vest.jpg"
+            alt="Close-up of a yellow high-visibility vest with reflective stripes"
             className="h-full min-h-[280px] w-full object-cover lg:row-span-2"
             loading="lazy"
           />
@@ -1004,8 +1010,8 @@ export default function HomePage() {
               </a>
             </div>
             <img
-              src="/photos/patient-monitor.jpg"
-              alt="A patient vital-signs monitor mounted on a wall"
+              src="/photos/jump-bags.jpg"
+              alt="Rows of navy medical jump bags with reflective stripes on storage shelves"
               className="h-full min-h-[280px] w-full object-cover"
               loading="lazy"
             />
@@ -1027,8 +1033,9 @@ export default function HomePage() {
           </div>
           <p className="mt-10 max-w-[60ch] text-[13px] leading-relaxed text-paper">
             Photos: &ldquo;Ambulance at night&rdquo; by JumpV, CC BY 2.0, via Flickr. &ldquo;Fontainebleau ambulance
-            soir 2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0. &ldquo;Assorted Medications&rdquo; by NIAID, CC BY 2.0.
-            &ldquo;Hospital Patient Monitor&rdquo; by Tony Webster, CC BY 2.0. The last three via Wikimedia Commons.
+            soir 2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0. &ldquo;Warnweste gelb&rdquo; by Magnus Mertens, CC BY-SA
+            2.0. &ldquo;Bags of medical supplies and defibrillators&rdquo; by Hillelfrei, CC BY-SA 4.0. The last three via
+            Wikimedia Commons.
           </p>
           <p className="mt-4 text-[13px] text-paper">© 2026 NarrateEMS</p>
         </div>
