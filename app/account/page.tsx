@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { Wordmark } from "@/components/wordmark"
+import { AgencyPanel } from "@/components/agency-panel"
 import {
   Loader2,
   LogOut,
@@ -550,6 +551,7 @@ export default function AccountPage() {
                   You're on an individual plan. Want to roll up under a squad? Have
                   your captain send you an invite.
                 </p>
+                <AgencyPanel subscriptionStatus={subscriptionStatus} />
               </div>
             )}
           </section>
