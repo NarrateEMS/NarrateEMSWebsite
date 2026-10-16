@@ -9,9 +9,9 @@ type WordmarkProps = {
 }
 
 const sizeMap = {
-  sm: { serif: "text-xl", chip: "text-[9px] px-1.5 py-[2px]" },
-  md: { serif: "text-2xl", chip: "text-[10px] px-1.5 py-[3px]" },
-  lg: { serif: "text-3xl", chip: "text-[11px] px-2 py-[3px]" },
+  sm: { word: "text-xl", chip: "text-[13px] px-1.5 py-[1px]" },
+  md: { word: "text-[22px]", chip: "text-[13px] px-1.5 py-[2px]" },
+  lg: { word: "text-3xl", chip: "text-[16px] px-2 py-[2px]" },
 } as const
 
 export function Wordmark({ href = "/", className, variant = "ink", size = "md" }: WordmarkProps) {
@@ -20,30 +20,11 @@ export function Wordmark({ href = "/", className, variant = "ink", size = "md" }
 
   const inner = (
     <span
-      className={cn(
-        "inline-flex items-baseline gap-1.5 tracking-tight leading-none select-none",
-        className,
-      )}
+      className={cn("inline-flex items-baseline gap-1.5 tracking-tight leading-none select-none", className)}
       aria-label="NarrateEMS"
     >
-      <span
-        className={cn(
-          "font-serif italic",
-          s.serif,
-          isPaper ? "text-paper" : "text-ink",
-        )}
-      >
-        narrate
-      </span>
-      <span
-        className={cn(
-          "font-mono uppercase tracking-[0.18em] font-medium rounded-sm",
-          s.chip,
-          isPaper
-            ? "bg-paper text-ink"
-            : "bg-ink text-paper",
-        )}
-      >
+      <span className={cn("font-sans font-semibold", s.word, isPaper ? "text-paper" : "text-ink")}>narrate</span>
+      <span className={cn("font-sans font-semibold", s.chip, isPaper ? "bg-paper text-ink" : "bg-ink text-paper")}>
         ems
       </span>
     </span>
@@ -51,7 +32,7 @@ export function Wordmark({ href = "/", className, variant = "ink", size = "md" }
 
   if (!href) return inner
   return (
-    <Link href={href} className="inline-flex focus-hi-vis rounded-sm">
+    <Link href={href} className="inline-flex focus-hi-vis">
       {inner}
     </Link>
   )
