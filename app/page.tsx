@@ -411,15 +411,15 @@ export default function HomePage() {
             <div className="cc-cell cc-cell-e bg-quarters" aria-hidden />
           </div>
 
-          <div className="cc-grid pt-10 lg:pt-14 pb-16 lg:pb-24">
+          <div className="cc-grid pt-8 lg:pt-8 pb-16 lg:pb-12">
             <div className="col-span-12 cc-mask">
               <h1 className="cc-display cc-rise">The chart writes itself.</h1>
             </div>
-            <p className="col-span-12 lg:col-span-6 mt-8 cc-lead">
+            <p className="col-span-12 lg:col-span-8 mt-6 cc-lead">
               After the call, just narrate what happened. NarrateEMS writes your Zoll ePCR for you:
               70% faster on average, each page filled in under 10 seconds.
             </p>
-            <div className="col-span-12 lg:col-span-6 lg:col-start-7 mt-8 flex flex-wrap items-center gap-4 lg:justify-end lg:self-end">
+            <div className="col-span-12 mt-6 flex flex-wrap items-center gap-4">
               <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="cc-btn cc-btn-paper">
                 Install Chrome extension
                 <ArrowUpRight className="h-5 w-5" />
@@ -429,7 +429,7 @@ export default function HomePage() {
                 Watch the demo
               </button>
             </div>
-            <p className="col-span-12 mt-10 cc-small text-paper">
+            <p className="col-span-12 mt-6 cc-small text-paper">
               HIPAA compliant. End-to-end encrypted. Direct Zoll ePCR. Mobile compatible.
             </p>
           </div>
@@ -440,7 +440,7 @@ export default function HomePage() {
       <section id="how" className="cc-chapter bg-scene text-ink" data-chapter="scene" ref={howRef}>
         <div className="cc-wrap cc-grid py-20 lg:py-28">
           <div className="col-span-12 lg:col-span-6 hidden lg:block">
-            <div className="sticky top-28">
+            <div className="cc-pin">
               <Replica f={f} turn={howTurn} />
             </div>
           </div>
