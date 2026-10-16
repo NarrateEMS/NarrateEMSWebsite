@@ -19,9 +19,59 @@ async function takeToken(): Promise<SpeechToken> {
   return t && Date.now() - w.at < (t.expiresInSeconds - 60) * 1000 ? t : getSpeechToken()
 }
 
+/** Float32 mic samples at `rate` to 16 kHz 16-bit mono PCM, the push stream's default format. */
+export function toPcm16k(input: Float32Array, rate: number): ArrayBuffer {
+  const ratio = rate / 16000
+  const out = new Int16Array(Math.floor(input.length / ratio))
+  for (let i = 0; i < out.length; i++) {
+    const start = Math.floor(i * ratio)
+    const end = Math.min(input.length, Math.max(start + 1, Math.floor((i + 1) * ratio)))
+    let sum = 0
+    for (let j = start; j < end; j++) sum += input[j]
+    const v = Math.max(-1, Math.min(1, sum / (end - start)))
+    out[i] = v < 0 ? v * 0x8000 : v * 0x7fff
+  }
+  return out.buffer
+}
+
+// Buffers mic audio from the tap; Azure reads the backlog once connected, so opening words survive.
+// shortcut: ScriptProcessorNode runs on the main thread, move to AudioWorklet if audio glitches show up.
+function capture(stream: MediaStream) {
+  const push = SpeechSDK.AudioInputStream.createPushStream()
+  const ctx = new AudioContext()
+  const node = ctx.createScriptProcessor(4096, 1, 1)
+  node.onaudioprocess = (e) => push.write(toPcm16k(e.inputBuffer.getChannelData(0), ctx.sampleRate))
+  ctx.createMediaStreamSource(stream).connect(node)
+  node.connect(ctx.destination)
+  ctx.resume().catch(() => undefined)
+  let open = true
+  const close = () => {
+    if (!open) return
+    open = false
+    node.disconnect()
+    ctx.close().catch(() => undefined)
+    push.close()
+  }
+  return { push, close }
+}
+
 /** Streams the shared mic to Azure. Resolves to a stop() that returns the final text. */
 export async function startLive(
   stream: MediaStream,
+  onText: (text: string) => void,
+  onDrop: () => void,
+): Promise<() => Promise<string>> {
+  const mic = capture(stream)
+  try {
+    return await connect(mic, onText, onDrop)
+  } catch (e) {
+    mic.close()
+    throw e
+  }
+}
+
+async function connect(
+  mic: ReturnType<typeof capture>,
   onText: (text: string) => void,
   onDrop: () => void,
 ): Promise<() => Promise<string>> {
@@ -31,8 +81,7 @@ export async function startLive(
   config.setProfanity(SpeechSDK.ProfanityOption.Raw)
   config.setProperty(SpeechSDK.PropertyId.Speech_SegmentationSilenceTimeoutMs, "1200")
 
-  // A MediaStream input leaves the tracks running on close; MediaRecorder still needs them.
-  const recognizer = new SpeechSDK.SpeechRecognizer(config, SpeechSDK.AudioConfig.fromStreamInput(stream))
+  const recognizer = new SpeechSDK.SpeechRecognizer(config, SpeechSDK.AudioConfig.fromStreamInput(mic.push))
   SpeechSDK.PhraseListGrammar.fromRecognizer(recognizer).addPhrases(EMS_PHRASES)
 
   let finalText = ""
@@ -58,6 +107,7 @@ export async function startLive(
     onText(finalText)
   }
   recognizer.canceled = () => {
+    mic.close()
     if (!stopped) onDrop()
   }
 
@@ -69,6 +119,7 @@ export async function startLive(
   return async () => {
     stopped = true
     window.clearTimeout(refreshTimer)
+    mic.close()
     await new Promise<void>((resolve) => recognizer.stopContinuousRecognitionAsync(resolve, () => resolve()))
     recognizer.close()
     return finalText.trim()

@@ -73,6 +73,7 @@ export default function DictatePage() {
   const [liveText, setLiveText] = useState("")
   const [liveReady, setLiveReady] = useState(false)
   const [dropped, setDropped] = useState(false)
+  const [starting, setStarting] = useState(false)
   const [local, setLocal] = useState<LocalRecording[]>([])
   const [saved, setSaved] = useState<NarrationMeta[] | null>(null)
   const [busy, setBusy] = useState<Record<string, string>>({})
@@ -240,10 +241,12 @@ export default function DictatePage() {
       setError("This browser can't record audio. Update iOS/Chrome or try another browser.")
       return
     }
+    setStarting(true)
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     } catch (e) {
+      setStarting(false)
       setError(
         e instanceof DOMException && e.name === "NotAllowedError"
           ? "Microphone access denied. Allow the microphone for this site in your browser settings."
@@ -265,8 +268,8 @@ export default function DictatePage() {
       text: "",
       label: "",
     }
-    await putRecording(rec)
 
+    // Start capture before any other awaits so nothing said after the tap is lost.
     writesRef.current = []
     recorder.ondataavailable = (e) => {
       if (e.data.size) writesRef.current.push(addChunk(rec.clientId, e.data))
@@ -274,26 +277,29 @@ export default function DictatePage() {
     // iPhone ends the mic when the screen locks or the app is switched; keep what we have.
     stream.getAudioTracks()[0].onended = () => stopRecording()
     recorder.start(1000)
+    droppedRef.current = rec.source === "offline"
+    const markDropped = () => {
+      droppedRef.current = true
+      setDropped(true)
+    }
+    const live = droppedRef.current ? null : import("@/lib/dictate/live").then((m) => m.startLive(stream, setLiveText, markDropped))
+    live?.catch(() => undefined)
 
     recorderRef.current = recorder
     streamRef.current = stream
     recordingRef.current = rec
     startedAtRef.current = Date.now()
-    droppedRef.current = rec.source === "offline"
     setDropped(droppedRef.current)
     setLiveText("")
     setLiveReady(false)
     setRecording(rec)
+    setStarting(false)
+    await putRecording(rec)
     wakeLockRef.current = (await navigator.wakeLock?.request("screen").catch(() => null)) ?? null
 
-    if (droppedRef.current) return
-    const markDropped = () => {
-      droppedRef.current = true
-      setDropped(true)
-    }
+    if (!live) return
     try {
-      const { startLive } = await import("@/lib/dictate/live")
-      const stopLive = await startLive(stream, setLiveText, markDropped)
+      const stopLive = await live
       if (recordingRef.current?.clientId === rec.clientId) {
         stopLiveRef.current = stopLive
         setLiveReady(true)
@@ -410,12 +416,20 @@ export default function DictatePage() {
             <section className="text-center space-y-4">
               <button
                 onClick={recording ? stopRecording : startRecording}
-                className={`w-full inline-flex items-center justify-center gap-2 py-5 text-lg font-semibold rounded-md transition-colors ${
-                  recording ? "bg-ink text-paper" : "bg-hi-vis text-hi-vis-ink hover:bg-hi-vis-deep"
+                disabled={starting}
+                className={`w-full inline-flex flex-col items-center justify-center py-5 text-lg font-semibold rounded-md transition-colors ${
+                  recording
+                    ? "bg-[var(--danger)] text-white"
+                    : starting
+                      ? "bg-ink text-paper opacity-70"
+                      : "bg-hi-vis text-hi-vis-ink hover:bg-hi-vis-deep"
                 }`}
               >
-                {recording ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                {recording ? "Stop" : "Record"}
+                <span className="inline-flex items-center gap-2">
+                  {recording ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                  {recording ? "Recording, speak now" : starting ? "Starting…" : "Record"}
+                </span>
+                {recording && <span className="text-xs font-normal opacity-90">Tap to stop</span>}
               </button>
               <p className="text-xs text-ink-soft">
                 Keep this screen open. On iPhone, locking the phone or switching apps stops the recording.
@@ -427,7 +441,7 @@ export default function DictatePage() {
                       Live words unavailable. Still recording; the audio will be transcribed when you stop.
                     </span>
                   ) : (
-                    liveText || <span className="text-ink-soft">{liveReady ? "Listening…" : "Connecting…"}</span>
+                    liveText || <span className="text-ink-soft">{liveReady ? "Listening…" : "Recording. Live words will catch up in a moment…"}</span>
                   )}
                 </div>
               )}
