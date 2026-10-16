@@ -1,8 +1,23 @@
-// Loaded with import() only when Record is tapped, so /dictate does not ship the
-// Speech SDK up front.
+// Loaded with import() after sign-in, so the Speech SDK stays out of the first-load
+// bundle but is ready before Record is tapped.
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk"
 import { EMS_PHRASES } from "./ems-phrases"
 import { getSpeechToken } from "./api"
+
+type SpeechToken = Awaited<ReturnType<typeof getSpeechToken>>
+let warm: { token: Promise<SpeechToken | null>; at: number } | null = null
+
+/** Fetches a speech token ahead of Record so the first words are not lost. */
+export function warmUp() {
+  warm = { token: getSpeechToken().catch(() => null), at: Date.now() }
+}
+
+async function takeToken(): Promise<SpeechToken> {
+  const w = warm
+  warm = null
+  const t = w && (await w.token)
+  return t && Date.now() - w.at < (t.expiresInSeconds - 60) * 1000 ? t : getSpeechToken()
+}
 
 /** Streams the shared mic to Azure. Resolves to a stop() that returns the final text. */
 export async function startLive(
@@ -10,7 +25,7 @@ export async function startLive(
   onText: (text: string) => void,
   onDrop: () => void,
 ): Promise<() => Promise<string>> {
-  const first = await getSpeechToken()
+  const first = await takeToken()
   const config = SpeechSDK.SpeechConfig.fromAuthorizationToken(first.token, first.region)
   config.speechRecognitionLanguage = "en-US"
   config.setProfanity(SpeechSDK.ProfanityOption.Raw)

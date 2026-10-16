@@ -198,6 +198,7 @@ export default function DictatePage() {
     if (!online || !userId) return
     refreshSaved()
     processWaiting()
+    import("@/lib/dictate/live").then((m) => m.warmUp()).catch(() => undefined)
   }, [online, userId, refreshSaved, processWaiting])
 
   const stopRecording = async () => {
