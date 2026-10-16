@@ -4,10 +4,17 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Wordmark } from "@/components/wordmark"
+import { STORE_URL, h2, body, primaryBtn } from "./home/shared"
+import { Testimonial } from "./home/Testimonial"
+import { Why } from "./home/Why"
+import { Squads } from "./home/Squads"
+import { Pricing } from "./home/Pricing"
+import { Security } from "./home/Security"
+import { Faq } from "./home/Faq"
+import { Start } from "./home/Start"
+import { Footer } from "./home/Footer"
 import { Mail, Play, ArrowUpRight, X, Plus, Minus, Mic } from "lucide-react"
 
-const STORE_URL = "https://chromewebstore.google.com/detail/narrateems-ai-medic-voice/nokdpnigpfafepjbdinggckgcdekdjkm"
-const CALENDLY_URL = "https://calendly.com/narrateems/narrateems"
 
 const TRANSCRIPT =
   "Sample call, fictional patient. Called for a fall at home. Adult male, alert and oriented times four, left wrist pain, no head strike. BP 138 over 84, pulse 88, respirations 16, SpO2 98 percent on room air. Splinted the left wrist, transported BLS, no change en route."
@@ -218,44 +225,7 @@ function PageCard({ title, fields }: { title: string; fields: readonly (readonly
   )
 }
 
-function SquadStage() {
-  const members = [
-    ["Medic A", "Admin"],
-    ["Medic B", "Member"],
-    ["Medic C", "Member"],
-  ]
-  return (
-    <div data-ui className="mx-auto w-full max-w-[360px] bg-paper text-ink border border-ink text-[12px]">
-      <div className="flex items-center justify-between bg-ink px-3 py-2 text-paper">
-        <span className="text-[15px] font-semibold">Manage squad</span>
-        <span aria-hidden>×</span>
-      </div>
-      <div className="space-y-1.5 p-3">
-        <div className="flex justify-between"><span className="font-semibold">Squad name</span><span>Sample squad</span></div>
-        <div className="flex justify-between"><span className="font-semibold">Squad code</span><span>SAMPLE</span></div>
-      </div>
-      <div className="px-3 font-semibold">Invite a team member</div>
-      <div className="mx-3 mt-1 flex">
-        <span className="flex-1 border border-[#D6D2C7] bg-white px-2 py-1.5 text-[#4A5568]">name@squad.org</span>
-        <span className="bg-ink px-3 py-1.5 font-semibold text-paper">Invite</span>
-      </div>
-      <div className="px-3 pt-3 font-semibold">Members {members.length}</div>
-      <ul className="m-3 mt-1 border border-[#D6D2C7] bg-white">
-        {members.map(([name, role]) => (
-          <li key={name} className="flex justify-between px-2 py-1.5 even:bg-[#F5F4F0]">
-            <span>{name}</span>
-            <span className="text-[#4A5568]">{role}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 export default function HomePage() {
-  // Contact form
-  const [formData, setFormData] = useState({ name: "", email: "", company: "", message: "" })
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Mobile nav
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -270,12 +240,6 @@ export default function HomePage() {
 
   // Demo video modal
   const [showVideoModal, setShowVideoModal] = useState(false)
-
-  // Pricing tab
-  const [pricingTab, setPricingTab] = useState<"individual" | "squad">("squad")
-
-  // FAQ open state
-  const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   const storyRef = useRef<HTMLElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
@@ -334,27 +298,6 @@ export default function HomePage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    try {
-      const response = await fetch("https://formspree.io/f/xblynzkd", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-      if (response.ok) {
-        alert("Thank you. We'll be in touch.")
-        setFormData({ name: "", email: "", company: "", message: "" })
-      } else {
-        alert("Something went wrong. Please try again.")
-      }
-    } catch {
-      alert("Something went wrong. Please try again.")
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId)
@@ -468,12 +411,6 @@ export default function HomePage() {
   }, [])
 
   const navLink = "text-[17px] text-paper hover:underline underline-offset-4"
-  const h2 = "text-[34px] lg:text-[44px] font-semibold leading-[1.05] tracking-tight text-balance"
-  const body = "text-[17px] leading-[1.6] text-ink"
-  const primaryBtn =
-    "inline-flex items-center justify-center gap-2 bg-hi-vis text-hi-vis-ink px-6 py-3.5 text-[17px] font-semibold hover:bg-paper active:translate-y-px transition-colors focus-hi-vis"
-  const inkBtn =
-    "inline-flex items-center justify-center gap-2 bg-ink text-paper px-6 py-3.5 text-[17px] font-semibold hover:bg-ink-2 active:translate-y-px transition-colors focus-hi-vis"
   const steps = [
     {
       title: "Narrate the call.",
@@ -642,403 +579,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* TESTIMONIAL */}
-      <section id="field" className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28 lg:grid lg:grid-cols-2 lg:items-center lg:gap-16">
-        <img
-          src="/photos/night-light-trail.jpg"
-          alt="Blue emergency light trail along a highway at night"
-          className="w-full aspect-[4/3] object-cover"
-          loading="lazy"
-        />
-        <div className="mt-10 lg:mt-0">
-          <blockquote className="text-[34px] lg:text-[44px] font-semibold leading-[1.1] tracking-tight text-balance">
-            &ldquo;Saved me hours of documentation.&rdquo;
-          </blockquote>
-          <p className={`mt-5 ${body}`}>Kendall Park First Aid Squad, New Jersey EMS provider</p>
-        </div>
-      </section>
+      <Testimonial />
+      <Why />
+      <Squads scrollToSection={scrollToSection} />
+      <Pricing onSelectPlan={handlePlanSelect} />
+      <Security />
+      <Faq />
+      <Start />
 
-      {/* BUILT BY MEDICS */}
-      <section id="why" className="bg-paper-tint">
-        <div className="mx-auto max-w-3xl px-6 py-20 text-center lg:py-28">
-          <h2 className={h2}>We built it for ourselves first.</h2>
-          <p className={`mx-auto mt-6 max-w-xl ${body}`}>
-            Six-plus years working calls. We know what charting feels like at the end of a sixteen-hour shift, because
-            we lived it. NarrateEMS is the tool we wished we had when we were the ones typing.
-          </p>
-          <dl className="mt-12 grid grid-cols-3 gap-6">
-            {[
-              ["6+ yrs", "Field experience on the team"],
-              ["1hr", "Old way: typing per call"],
-              ["<3min", "New way: narrate, sign, done"],
-            ].map(([figure, label]) => (
-              <div key={label}>
-                <dt className="text-[34px] lg:text-[44px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
-                <dd className="mt-2 text-[13px] text-ink">{label}</dd>
-              </div>
-            ))}
-          </dl>
-          <p className={`mt-12 ${body}`}>The NarrateEMS team. Made in New Jersey.</p>
-        </div>
-        <img
-          src="/photos/ambulance-night-blur.jpg"
-          alt="An ambulance passing at night, motion-blurred"
-          className="w-full h-[52svh] object-cover"
-          loading="lazy"
-        />
-      </section>
-
-      {/* FOR SQUADS */}
-      <section id="squads" className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className={h2}>Run a department? We&apos;ve got you.</h2>
-          <p className={`mt-6 ${body}`}>
-            One squad code. One bill. Every medic charting faster from day one. No per-seat math, no provisioning
-            meetings.
-          </p>
-        </div>
-        <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_400px_1fr] lg:items-center">
-          {[0, 1].map((col) => (
-            <dl key={col} className={`space-y-10 ${col === 1 ? "lg:order-3" : ""}`}>
-              {[
-                ["Squad codes", "Hand out one code at orientation. New medics join your plan in a click, no email back-and-forth."],
-                ["Chart bundles", "Plans start at 500 charts and scale to 10,000+. Pay for what your squad actually runs, with simple overage pricing."],
-                ["Real-time usage", "See how many charts your squad has filed this period. No surprises at renewal."],
-                ["HIPAA from day one", "End-to-end encryption on every recording and chart. Patient data never leaves the secure pipeline."],
-                ["Works on what you've got", "Chrome on the rig laptop, phone on the bench, tablet at the station. Same login, same workflow."],
-                ["Squad admin controls", "Promote leads, revoke former members, transfer billing. Run it like you run shifts."],
-              ]
-                .slice(col * 3, col * 3 + 3)
-                .map(([title, text]) => (
-                  <div key={title}>
-                    <dt className="text-[22px] font-semibold leading-tight">{title}</dt>
-                    <dd className={`mt-2 ${body}`}>{text}</dd>
-                  </div>
-                ))}
-            </dl>
-          ))}
-          <div className="bg-ink px-6 py-10 lg:order-2">
-            <SquadStage />
-          </div>
-        </div>
-        <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-5">
-          <button onClick={() => scrollToSection("pricing")} className={inkBtn}>
-            See squad pricing
-            <ArrowUpRight className="h-4 w-4" />
-          </button>
-          <a
-            href={CALENDLY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[17px] font-semibold text-ink underline underline-offset-4"
-          >
-            Book a squad walkthrough
-            <ArrowUpRight className="h-4 w-4" />
-          </a>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="bg-paper-tint">
-        <div className="mx-auto max-w-4xl px-6 py-20 lg:py-28">
-          <div className="text-center">
-            <h2 className={h2}>Pay for charts. Not seats.</h2>
-            <p className={`mx-auto mt-6 max-w-xl ${body}`}>
-              Individuals get a flat monthly rate. Squads pay annually with a chart bundle that fits your call volume.
-              Simple overage if you go over.
-            </p>
-            <p className="mt-4 text-[17px] font-semibold">7-day free trial on every plan.</p>
-            <div className="mt-8 inline-flex bg-paper p-1" role="group" aria-label="Plan type">
-              {(
-                [
-                  ["individual", "Individual medic"],
-                  ["squad", "Squad / Department"],
-                ] as const
-              ).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setPricingTab(key)}
-                  aria-pressed={pricingTab === key}
-                  className={`px-5 py-2.5 text-[17px] font-semibold transition-colors focus-hi-vis ${
-                    pricingTab === key ? "bg-ink text-paper" : "text-ink hover:bg-paper-tint"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {pricingTab === "individual" && (
-            <div className="mx-auto mt-14 max-w-md bg-paper p-8">
-              <h3 className="text-[22px] font-semibold">Individual</h3>
-              <p className={`mt-1 ${body}`}>For solo medics</p>
-              <p className="mt-8 flex items-baseline gap-2">
-                <span className="text-[44px] lg:text-[64px] font-semibold leading-none tracking-tight tabular-nums">$29.99</span>
-                <span className={body}>/ month</span>
-              </p>
-              <ul className="mt-8 space-y-2.5">
-                {[
-                  "Unlimited voice narrations",
-                  "Direct Zoll ePCR integration",
-                  "Chrome extension + mobile",
-                  "HIPAA encrypted, end to end",
-                  "Cancel any time",
-                ].map((line) => (
-                  <li key={line} className={body}>{line}</li>
-                ))}
-              </ul>
-              <button onClick={() => handlePlanSelect("individual_monthly")} className={`${inkBtn} mt-10 w-full`}>
-                Start 7-day free trial
-                <ArrowUpRight className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          {pricingTab === "squad" && (
-            <div className="mt-14 space-y-3">
-              {[
-                { id: "pilot_annual", name: "Pilot", blurb: "Test it with a small crew", price: "1,000", charts: "500", overage: "$2.50", popular: false },
-                { id: "small_squad_annual", name: "Small Squad", blurb: "Volunteer + small services", price: "3,000", charts: "2,000", overage: "$1.90", popular: true },
-                { id: "large_squad_annual", name: "Large Squad", blurb: "City and county departments", price: "6,000", charts: "5,000", overage: "$1.40", popular: false },
-                { id: "high_volume_annual", name: "High Volume", blurb: "Regional and 911 contractors", price: "10,000", charts: "10,000", overage: "$1.15", popular: false },
-              ].map((p) => (
-                <div key={p.id} className="grid gap-4 bg-paper p-6 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-8">
-                  <div>
-                    <h3 className="text-[22px] font-semibold leading-tight">{p.name}</h3>
-                    <p className={body}>
-                      {p.blurb}
-                      {p.popular && <span className="font-semibold">. Most chosen</span>}
-                    </p>
-                    <p className="mt-2 text-[13px] text-ink">
-                      {p.charts} charts included, {p.overage} per extra chart. Squad codes &amp; admin controls. One
-                      bill, billed annually.
-                    </p>
-                  </div>
-                  <p className="sm:text-right">
-                    <span className="text-[34px] lg:text-[44px] font-semibold leading-none tracking-tight tabular-nums">${p.price}</span>
-                    <span className="block text-[13px]">/ year</span>
-                  </p>
-                  <button
-                    onClick={() => handlePlanSelect(p.id)}
-                    className="inline-flex items-center justify-center gap-1.5 bg-ink text-paper px-4 py-2.5 text-[17px] font-semibold hover:bg-ink-2 focus-hi-vis"
-                  >
-                    Start free trial
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <p className={`mt-12 text-center ${body}`}>
-            Need a custom plan or county-wide contract?{" "}
-            <a href="mailto:narrateems@gmail.com" className="font-semibold underline underline-offset-4">
-              Talk to a medic
-            </a>
-          </p>
-        </div>
-      </section>
-
-      {/* SECURITY */}
-      <section id="security" className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28">
-        <div className="max-w-2xl">
-          <h2 className={h2}>Patient data is sacred.</h2>
-          <p className={`mt-6 ${body}`}>
-            We built this for the same patients we used to treat. The security posture matches the trust the badge
-            carries.
-          </p>
-          <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-2 text-[17px] font-semibold text-ink">
-            <li>HIPAA compliant</li>
-            <li>End-to-end encrypted</li>
-            <li>Direct Zoll ePCR</li>
-            <li>Mobile compatible</li>
-          </ul>
-        </div>
-        <div className="mt-14 grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
-          <img
-            src="/photos/light-trail-detail.jpg"
-            alt="Close-up of a blue emergency light streak on a dark road"
-            className="h-full min-h-[280px] w-full object-cover lg:row-span-2"
-            loading="lazy"
-          />
-          {[
-            ["HIPAA compliant", "Built to HIPAA standards from day one. We sign BAAs with squads and services."],
-            ["Encrypted end to end", "Recordings, transcripts, and chart data are encrypted in transit and at rest."],
-            ["Your data, your account", "Only you and your authorized squad members can see your charts. Period."],
-            ["Never sold. Never trained on.", "Patient data is not sold and is not used to train third-party models."],
-          ].map(([title, text], i) => (
-            <div key={title} className={`p-8 ${i === 0 || i === 3 ? "bg-ink text-paper" : "bg-paper-tint"}`}>
-              <h3 className="text-[22px] font-semibold leading-tight">{title}</h3>
-              <p className={`mt-2 text-[17px] leading-[1.6] ${i === 0 || i === 3 ? "text-paper" : "text-ink"}`}>{text}</p>
-            </div>
-          ))}
-        </div>
-        <a
-          href="mailto:narrateems@gmail.com?subject=Security%20questions"
-          className="mt-12 inline-flex items-center gap-1.5 text-[17px] font-semibold underline underline-offset-4"
-        >
-          Security questions? Email a medic
-          <ArrowUpRight className="h-4 w-4" />
-        </a>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="bg-paper-tint">
-        <div className="mx-auto max-w-3xl px-6 py-20 lg:py-28">
-          <h2 className={h2}>Things medics actually ask us.</h2>
-          <p className={`mt-6 ${body}`}>
-            Can&apos;t find what you&apos;re looking for?{" "}
-            <a href="mailto:narrateems@gmail.com" className="font-semibold underline underline-offset-4">
-              Email us
-            </a>
-            . A real medic from the team writes back.
-          </p>
-          <ul className="mt-12 space-y-2">
-              {[
-                {
-                  q: "Do I have to narrate during the call?",
-                  a: "No, and you shouldn't. Work the call. Once you're clear, open NarrateEMS and narrate what happened the way you'd brief your partner. The chart writes from your post-call narration.",
-                },
-                {
-                  q: "Does it actually work with my service's Zoll setup?",
-                  a: "Yes. The Chrome extension sits on top of your active Zoll ePCR session and writes directly into the same fields you'd type into. No custom integration, no IT ticket.",
-                },
-                {
-                  q: "Who can hear my recordings?",
-                  a: "Only you. Recordings are end-to-end encrypted, stored against your account, and never sold or used to train third-party models. Squad admins see usage counts, not recordings.",
-                },
-                {
-                  q: "What if I'm on my phone, not the rig laptop?",
-                  a: "Use it. NarrateEMS works on mobile browsers too. Narrate from your phone, sign off later from your laptop, or stay on mobile the whole time. Same account, same chart.",
-                },
-                {
-                  q: "How much faster is it really?",
-                  a: "Squads we work with report 70% faster charting on average, with each chart page filling in under 10 seconds. That's the difference between an hour of typing after a shift and getting home on time.",
-                },
-                {
-                  q: "What happens during the free trial?",
-                  a: "7 days, no card required upfront for individuals. Full product. If it doesn't save you time, cancel before day 7 and you're not charged.",
-                },
-                {
-                  q: "Can my whole squad use one account?",
-                  a: "No. Every medic gets their own login (records belong to them), but a squad code lets all your medics roll up to a single annual plan and one bill.",
-                },
-              ].map((item, i) => {
-                const isOpen = openFaq === i
-                return (
-                  <li key={item.q} className={isOpen ? "bg-paper" : ""}>
-                    <button
-                      onClick={() => setOpenFaq(isOpen ? null : i)}
-                      aria-expanded={isOpen}
-                      className="flex w-full items-start justify-between gap-6 px-4 py-4 text-left text-[17px] font-semibold focus-hi-vis"
-                    >
-                      {item.q}
-                      {isOpen ? <Minus className="mt-1 h-4 w-4 shrink-0" /> : <Plus className="mt-1 h-4 w-4 shrink-0" />}
-                    </button>
-                    {isOpen && <p className={`px-4 pb-5 ${body}`}>{item.a}</p>}
-                  </li>
-                )
-              })}
-            </ul>
-        </div>
-      </section>
-
-      {/* FINAL CTA + CONTACT */}
-      <section id="start" className="bg-ink text-paper">
-        <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className={h2}>Go home an hour earlier tonight.</h2>
-            <p className="mt-6 text-[17px] leading-[1.6] text-paper">
-              Install the Chrome extension, run your next call, and narrate it on the way back. Your Zoll chart will be
-              ready by the time you sit down.
-            </p>
-            <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-5">
-              <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
-                Install Chrome extension
-                <ArrowUpRight className="h-4 w-4" />
-              </a>
-              <a
-                href={CALENDLY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[17px] font-semibold text-paper underline underline-offset-4"
-              >
-                Or book a squad walkthrough
-                <ArrowUpRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-          <div className="mt-16 grid gap-4 lg:grid-cols-2">
-            <div className="bg-paper p-6 text-ink lg:p-8">
-              <h3 className="text-[22px] font-semibold">Or send us a note</h3>
-              <form onSubmit={handleSubmit} className="mt-6 space-y-3">
-                {(
-                  [
-                    ["name", "text", "Name"],
-                    ["email", "email", "Email"],
-                    ["company", "text", "Squad / Department"],
-                  ] as const
-                ).map(([key, type, label]) => (
-                  <input
-                    key={key}
-                    type={type}
-                    placeholder={label}
-                    aria-label={label}
-                    value={formData[key]}
-                    onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
-                    required
-                    className="w-full bg-paper-tint border-b-2 border-ink px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
-                  />
-                ))}
-                <textarea
-                  placeholder="What does your charting workflow look like today?"
-                  aria-label="What does your charting workflow look like today?"
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  required
-                  rows={3}
-                  className="w-full bg-paper-tint border-b-2 border-ink px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink resize-none"
-                />
-                <button type="submit" disabled={isSubmitting} className={`${inkBtn} w-full disabled:opacity-60`}>
-                  {isSubmitting ? "Sending…" : "Send message"}
-                  <ArrowUpRight className="h-4 w-4" />
-                </button>
-              </form>
-              <a href="mailto:narrateems@gmail.com" className="mt-5 inline-flex items-center gap-2 text-[17px] underline underline-offset-4">
-                <Mail className="h-4 w-4" />
-                narrateems@gmail.com
-              </a>
-            </div>
-            <img
-              src="/photos/jump-bags.jpg"
-              alt="A row of navy medical jump bags with reflective stripes on a shelf"
-              className="h-full min-h-[280px] w-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-ink text-paper">
-        <div className="mx-auto max-w-[1400px] px-6 py-14 lg:px-10">
-          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-            <Wordmark variant="paper" size="md" />
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-[17px]">
-              <Link href="/privacy-policy" className="hover:underline underline-offset-4">Privacy</Link>
-              <Link href="/terms-of-service" className="hover:underline underline-offset-4">Terms</Link>
-              <Link href="/sla" className="hover:underline underline-offset-4">SLA</Link>
-              <a href="mailto:narrateems@gmail.com" className="hover:underline underline-offset-4">Contact</a>
-            </div>
-          </div>
-          <p className="mt-10 max-w-[60ch] text-[13px] leading-relaxed text-paper">
-            Photos: &ldquo;Ambulance at night&rdquo; by JumpV, CC BY 2.0, via Flickr. &ldquo;Fontainebleau ambulance
-            soir 2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0, and &ldquo;Bags of medical supplies and defibrillators&rdquo;
-            by Hillelfrei, CC BY-SA 4.0 (cropped), both via Wikimedia Commons.
-          </p>
-          <p className="mt-4 text-[13px] text-paper">© 2026 NarrateEMS</p>
-        </div>
-      </footer>
+      <Footer />
 
       {/* VIDEO MODAL */}
       {showVideoModal && (
