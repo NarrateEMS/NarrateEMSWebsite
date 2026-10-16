@@ -373,29 +373,38 @@
 
 /* Hero: the sentence and its slot */
 .slot {
-  display: inline-block; position: relative; width: 2.2em; height: 0.8em;
-  margin-left: 0.06em; vertical-align: -0.03em; border-radius: 4px; background: var(--ink);
+  display: inline-block; position: relative; width: 2.2em; height: 0.8em; padding: 0.05em;
+  margin-left: 0.06em; vertical-align: -0.03em; border-radius: 4px; background: var(--paper-tint); overflow: hidden;
 }
-.slot-mini { position: absolute; inset: 0.12em 0.14em; display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.05em; }
-.slot-mini i { border-radius: 2px; background: var(--blue); }
-.slot-mini i:last-child { background: #15803D; }
+.slot-chart {
+  display: grid; grid-auto-rows: 1fr; gap: 4px; height: 100%; padding: 5px; border-radius: 4px; overflow: hidden;
+  background: #fff; color: #fff; font-size: clamp(13px, 0.085em, 15px); line-height: 1; letter-spacing: 0; font-weight: 500;
+}
+.slot-f { display: flex; align-items: center; gap: 0.4em; min-width: 0; padding: 0 0.6em; border-radius: 4px; background: var(--blue); white-space: nowrap; overflow: hidden; }
+.slot-f::before { content: attr(data-l); }
+.slot-f::after { content: attr(data-v); font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 639px) {
+  .slot { padding: 3px; }
+  .slot-chart { padding: 3px; }
+  .slot-f:not(:first-child), .slot-f::before { display: none; }
+  .slot-f::after { content: attr(data-s); }
+}
 
 .stage { position: relative; perspective: 1800px; margin-top: 3rem; }
 .stage-3d { position: relative; transform-style: preserve-3d; }
 .stage-pop { margin-top: 1rem; }
 @media (min-width: 900px) {
-  .stage { width: 100%; max-width: 75rem; aspect-ratio: 1200 / 680; margin-left: auto; margin-right: auto; }
-  .stage-3d { height: 100%; }
-  .stage-3d .zc { position: absolute; inset: 0 26% 0 0; }
-  .stage-3d .stage-pop { position: absolute; right: 0; top: 4%; width: 35%; margin: 0; z-index: 1; }
+  .stage { width: 100%; max-width: 75rem; margin-left: auto; margin-right: auto; }
+  .stage-3d { display: flex; align-items: center; justify-content: space-between; height: 100%; }
+  .stage-3d .zc { flex: 0 0 62%; }
+  .stage-3d .stage-pop { flex: 0 0 35%; margin: 0; }
 }
 .hero.is-live { height: 250svh; }
 .hero.is-live .hero-pin { position: sticky; top: 0; height: 100svh; overflow: hidden; }
 .hero.is-live .stage {
-  position: absolute; left: 50%; top: 50%; width: 1200px; max-width: none; height: 680px; aspect-ratio: auto;
-  margin: -340px 0 0 -600px; transform-origin: 50% 50%; opacity: 0; will-change: transform;
+  position: absolute; left: 50%; top: 50%; width: 1200px; max-width: none; height: 540px;
+  margin: -270px 0 0 -600px; transform-origin: 50% 50%; opacity: 0;
 }
-.hero.is-live .slot-mini { opacity: 0; }
 .hero.is-live .hero-after { position: absolute; left: 0; right: 0; bottom: 3vh; opacity: 0; }
 
 /* Product replicas (data-ui): popup + emsCharts page */

@@ -327,7 +327,7 @@ export default function HomePage() {
     }
   }, [showCheckoutModal, showVideoModal, isMobileMenuOpen])
 
-  // The live thing: the stage grows out of the sentence, flattens, and the chart fills as you scroll.
+  // The live thing: the stage rises from under the sentence, flattens, and the chart fills as you scroll.
   // Without JS or with reduced motion, nothing here runs and the markup shows the filled chart.
   useEffect(() => {
     const hero = heroRef.current
@@ -335,14 +335,13 @@ export default function HomePage() {
     const pin = hero.querySelector<HTMLElement>(".hero-pin")!
     const stage = hero.querySelector<HTMLElement>(".stage")!
     const inner = hero.querySelector<HTMLElement>(".stage-3d")!
-    const slot = hero.querySelector<HTMLElement>(".slot")!
     const fade = hero.querySelector<HTMLElement>(".hero-fade")!
     const after = hero.querySelector<HTMLElement>(".hero-after")!
     const wide = window.matchMedia("(min-width: 1024px) and (min-height: 640px)")
     hero.classList.add("is-motion")
 
     let live = false
-    let geo = { sx: 0, sy: 0, s0: 0.05, s1: 1, ty: 0, lift: 0 }
+    let geo = { sy: 0, s0: 0.9, s1: 1, ty: 0, lift: 0 }
     let text = ""
     let typed = -1
     let replayFrom: number | null = null
@@ -367,15 +366,12 @@ export default function HomePage() {
       fade.style.transform = ""
       if (!live) return
       const pr = pin.getBoundingClientRect()
-      const sr = slot.getBoundingClientRect()
-      geo = {
-        sx: sr.left + sr.width / 2 - (pr.left + pr.width / 2),
-        sy: sr.top + sr.height / 2 - (pr.top + pr.height / 2),
-        s0: Math.min(sr.height / 680, sr.width / 1200) * 0.8,
-        s1: Math.min(1, (pr.width * 0.92) / 1200, (pr.height * 0.78) / 680),
-        ty: -pr.height * 0.05,
-        lift: pr.height,
-      }
+      const textBottom = fade.getBoundingClientRect().bottom - pr.top
+      const s1 = Math.min(1, (pr.width * 0.92) / 1200, (pr.height * 0.8) / 540)
+      const s0 = s1 * 0.9
+      // The stage starts peeking under the CTAs and rises into place.
+      const top0 = Math.min(pr.height - 80, Math.max(textBottom + 40, pr.height - 220))
+      geo = { sy: top0 + 270 * s0 - pr.height / 2, s0, s1, ty: -pr.height * 0.04, lift: pr.height }
     }
 
     const fill = (f: number) => {
@@ -410,7 +406,7 @@ export default function HomePage() {
         const g = ease(clamp01(p / 0.5))
         const t = 1 - ease(clamp01(p / 0.62))
         const s = geo.s0 + (geo.s1 - geo.s0) * g
-        stage.style.transform = `translate(${geo.sx * (1 - g)}px, ${geo.sy * (1 - g) + geo.ty * g}px) scale(${s})`
+        stage.style.transform = `translate(0px, ${geo.sy * (1 - g) + geo.ty * g}px) scale(${s})`
         stage.style.opacity = "1"
         inner.style.transform = `rotateX(${24 * t}deg) rotateY(${-20 * t}deg)`
         const out = clamp01((p - 0.02) / 0.22)
@@ -546,16 +542,17 @@ export default function HomePage() {
               <span className="block whitespace-nowrap">
                 The chart{" "}
                 <span className="slot" aria-hidden="true">
-                  <span className="slot-mini">
-                    {PAGES.map((p) => (
-                      <i key={p} />
+                  <span className="slot-chart">
+                    {/* Drawn from data attributes so the sentence itself stays "The chart writes itself." */}
+                    {[n.fields[1], n.fields[0], n.fields[2]].map(([l, v]) => (
+                      <span key={l} className="slot-f" data-l={l} data-v={v} data-s={n.label} />
                     ))}
                   </span>
                 </span>
               </span>
               <span className="block whitespace-nowrap">writes itself.</span>
             </h1>
-            <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,40rem)_auto] lg:items-end lg:justify-between">
+            <div className="mt-7 grid max-w-[40rem] gap-6">
               <p className="t-lead">
                 After the call, just narrate what happened. NarrateEMS writes your Zoll ePCR for you: 70% faster on
                 average, each page filled in under 10 seconds. Built by medics, for medics.
@@ -569,7 +566,7 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
-            <p className="t-small mt-6 font-semibold">
+            <p className="t-small mt-5 font-semibold">
               HIPAA compliant. End-to-end encrypted. Direct Zoll ePCR. Mobile compatible.
             </p>
           </div>
