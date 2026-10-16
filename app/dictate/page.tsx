@@ -139,6 +139,8 @@ export default function DictatePage() {
       setItemBusy(r.clientId, "Transcribing…")
       try {
         const result = await transcribe(await getAudio(r))
+        // Discarded or signed out while transcribing: don't bring the text back.
+        if (!(await listRecordings()).some((x) => x.clientId === r.clientId)) continue
         await putRecording({ ...r, status: "review", text: result.text, durationMs: r.durationMs ?? result.durationMs })
       } catch (e) {
         handleError(e)
