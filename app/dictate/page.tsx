@@ -82,7 +82,7 @@ export default function DictatePage() {
   const recordingRef = useRef<LocalRecording | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const stopLiveRef = useRef<(() => Promise<string>) | null>(null)
+  const stopLiveRef = useRef<(() => Promise<string | null>) | null>(null)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
   const writesRef = useRef<Promise<void>[]>([])
   const startedAtRef = useRef(0)

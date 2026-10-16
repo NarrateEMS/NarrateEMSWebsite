@@ -51,6 +51,8 @@ const TAP = `registerProcessor("mic-tap", class extends AudioWorkletProcessor {
 async function capture(stream: MediaStream) {
   const push = SpeechSDK.AudioInputStream.createPushStream()
   const ctx = new AudioContext()
+  const t0 = performance.now()
+  let firstAt = 0
   let open = true
   const close = () => {
     if (!open) return
@@ -64,6 +66,7 @@ async function capture(stream: MediaStream) {
     URL.revokeObjectURL(url)
     const node = new AudioWorkletNode(ctx, "mic-tap")
     node.port.onmessage = (e: MessageEvent<Float32Array>) => {
+      firstAt ||= performance.now()
       if (open) push.write(toPcm16k(e.data, ctx.sampleRate))
     }
     ctx.createMediaStreamSource(stream).connect(node)
@@ -73,15 +76,20 @@ async function capture(stream: MediaStream) {
     close()
     throw e
   }
-  return { push, close }
+  // Audio before the first frame never reached Azure (e.g. the audio device took ~2 s to start).
+  const startedLate = () => !firstAt || firstAt - t0 > 500 + (4096 / ctx.sampleRate) * 1000
+  return { push, close, startedLate }
 }
 
-/** Streams the shared mic to Azure. Resolves to a stop() that returns the final text. */
+/**
+ * Streams the shared mic to Azure. Resolves to a stop() that returns the final text, or null when
+ * live capture started late and the full recording should be transcribed instead.
+ */
 export async function startLive(
   stream: MediaStream,
   onText: (text: string) => void,
   onDrop: () => void,
-): Promise<() => Promise<string>> {
+): Promise<() => Promise<string | null>> {
   const mic = await capture(stream)
   try {
     return await connect(mic, onText, onDrop)
@@ -95,7 +103,7 @@ async function connect(
   mic: Awaited<ReturnType<typeof capture>>,
   onText: (text: string) => void,
   onDrop: () => void,
-): Promise<() => Promise<string>> {
+): Promise<() => Promise<string | null>> {
   const first = await takeToken()
   const config = SpeechSDK.SpeechConfig.fromAuthorizationToken(first.token, first.region)
   config.speechRecognitionLanguage = "en-US"
@@ -151,6 +159,6 @@ async function connect(
     if (!ended) await drained
     await new Promise<void>((resolve) => recognizer.stopContinuousRecognitionAsync(resolve, () => resolve()))
     recognizer.close()
-    return finalText.trim()
+    return mic.startedLate() ? null : finalText.trim()
   }
 }
