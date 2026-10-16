@@ -34,23 +34,44 @@ export function toPcm16k(input: Float32Array, rate: number): ArrayBuffer {
   return out.buffer
 }
 
+// Batches mic frames on the audio thread, so a busy main thread delays audio instead of dropping it.
+const TAP = `registerProcessor("mic-tap", class extends AudioWorkletProcessor {
+  buf = new Float32Array(4096); n = 0
+  process([input]) {
+    const ch = input[0]
+    if (ch) for (let i = 0; i < ch.length; i++) {
+      this.buf[this.n++] = ch[i]
+      if (this.n === this.buf.length) { this.port.postMessage(this.buf); this.buf = new Float32Array(4096); this.n = 0 }
+    }
+    return true
+  }
+})`
+
 // Buffers mic audio from the tap; Azure reads the backlog once connected, so opening words survive.
-// shortcut: ScriptProcessorNode runs on the main thread, move to AudioWorklet if audio glitches show up.
-function capture(stream: MediaStream) {
+async function capture(stream: MediaStream) {
   const push = SpeechSDK.AudioInputStream.createPushStream()
   const ctx = new AudioContext()
-  const node = ctx.createScriptProcessor(4096, 1, 1)
-  node.onaudioprocess = (e) => push.write(toPcm16k(e.inputBuffer.getChannelData(0), ctx.sampleRate))
-  ctx.createMediaStreamSource(stream).connect(node)
-  node.connect(ctx.destination)
-  ctx.resume().catch(() => undefined)
   let open = true
   const close = () => {
     if (!open) return
     open = false
-    node.disconnect()
     ctx.close().catch(() => undefined)
     push.close()
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([TAP], { type: "application/javascript" }))
+    await ctx.audioWorklet.addModule(url)
+    URL.revokeObjectURL(url)
+    const node = new AudioWorkletNode(ctx, "mic-tap")
+    node.port.onmessage = (e: MessageEvent<Float32Array>) => {
+      if (open) push.write(toPcm16k(e.data, ctx.sampleRate))
+    }
+    ctx.createMediaStreamSource(stream).connect(node)
+    node.connect(ctx.destination)
+    ctx.resume().catch(() => undefined)
+  } catch (e) {
+    close()
+    throw e
   }
   return { push, close }
 }
@@ -61,7 +82,7 @@ export async function startLive(
   onText: (text: string) => void,
   onDrop: () => void,
 ): Promise<() => Promise<string>> {
-  const mic = capture(stream)
+  const mic = await capture(stream)
   try {
     return await connect(mic, onText, onDrop)
   } catch (e) {
@@ -71,7 +92,7 @@ export async function startLive(
 }
 
 async function connect(
-  mic: ReturnType<typeof capture>,
+  mic: Awaited<ReturnType<typeof capture>>,
   onText: (text: string) => void,
   onDrop: () => void,
 ): Promise<() => Promise<string>> {
