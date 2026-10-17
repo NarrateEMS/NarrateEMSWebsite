@@ -178,7 +178,10 @@ export default function LoginPage() {
         return
       }
 
-      if (data.session) router.push("/account")
+      if (data.session) {
+        const next = new URL(new URLSearchParams(window.location.search).get("next") || "/account", window.location.origin)
+        router.push(next.origin === window.location.origin ? next.pathname + next.search : "/account")
+      }
     } catch (err) {
       console.error("Login error:", err)
       setError("An unexpected error occurred. Please try again.")
