@@ -28,11 +28,9 @@ export function Footer() {
           </nav>
         </div>
 
-        <Link href="/" aria-label="NarrateEMS home" className={`mt-14 flex items-end gap-[2vw] leading-[0.8] tracking-tight focus-hi-vis ${rv}`}>
-          <span aria-hidden className="text-[18vw] font-semibold lg:text-[248px]">narrate</span>
-          <span aria-hidden className="mb-[1.2vw] bg-ink px-[1.4vw] py-[0.4vw] text-[8.5vw] font-semibold leading-none text-paper lg:mb-4 lg:px-5 lg:py-1 lg:text-[118px]">
-            ems
-          </span>
+        <Link href="/" aria-label="NarrateEMS home" className={`mt-14 inline-flex items-center gap-2 leading-none tracking-tight focus-hi-vis ${rv}`}>
+          <span aria-hidden className="text-[44px] font-semibold lg:text-[64px]">narrate</span>
+          <span aria-hidden className="rounded-[6px] bg-ink px-2 py-1 text-[24px] font-semibold text-paper lg:px-2.5 lg:text-[34px]">ems</span>
         </Link>
 
         <div className="mt-12 flex flex-col gap-4 text-[13px] leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">

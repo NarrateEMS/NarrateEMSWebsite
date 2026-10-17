@@ -7,6 +7,7 @@ import { Wordmark } from "@/components/wordmark"
 import { STORE_URL, body, primaryBtn } from "./home/shared"
 import { Testimonial } from "./home/Testimonial"
 import { Why } from "./home/Why"
+import { Anywhere } from "./home/Anywhere"
 import { Squads } from "./home/Squads"
 import { Pricing } from "./home/Pricing"
 import { Security } from "./home/Security"
@@ -647,6 +648,7 @@ export default function HomePage() {
       </section>
 
       <Testimonial />
+      <Anywhere />
       <Why />
       <Squads scrollToSection={scrollToSection} />
       <Pricing onSelectPlan={handlePlanSelect} />
