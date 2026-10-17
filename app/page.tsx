@@ -123,6 +123,10 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
 }
 
 // Cards drift out with an ease-out, keep floating slowly, then gather with a soft ease-in-out. Scale stays in 0.94-1.
+// Scroll progress -> timeline progress. Cards (p >= 0.55) get a shorter slice of the track so they move faster.
+const SPLIT = 0.71
+const remap = (q: number) => (q < SPLIT ? (q * 0.55) / SPLIT : 0.55 + ((q - SPLIT) * 0.45) / (1 - SPLIT))
+
 function cardAt(p: number, c: Card, oy: number): number[] {
   const out = 1 - (1 - span(p, 0.55, 0.75)) ** 3
   const d = ease(span(p, 0.55, 0.92))
@@ -405,10 +409,10 @@ export default function HomePage() {
       const dt = Math.min(now - last, 64)
       last = now
       const goal = target()
-      const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 240))
+      const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 160))
       const settled = Math.abs(goal - next) < 0.0004
       current = settled ? goal : next
-      render(current)
+      render(remap(current))
       if (visible || !settled) frame = requestAnimationFrame(tick)
     }
     const start = () => {
@@ -540,7 +544,7 @@ export default function HomePage() {
             <div key={step.title} className="story-layer story-band text-center">
               <div
                 id={i === 0 ? "how" : undefined}
-                data-progress={i === 0 ? "0.2" : undefined}
+                data-progress={i === 0 ? "0.26" : undefined}
                 ref={(el) => {
                   stepRefs.current[i] = el
                 }}
