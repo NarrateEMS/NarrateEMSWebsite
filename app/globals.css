@@ -339,7 +339,7 @@
 
 /* Homepage story track. Scrubbed only when JS sets data-motion="on"; without it the track is a static, filled flow. */
 .story-layer { display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1.5rem; }
-.story[data-motion="on"] { height: 710svh; }
+.story[data-motion="on"] { height: 760svh; }
 .story[data-motion="on"] .story-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
 /* Perspective sits on the parent of each scrubbed element, so tilt reads as depth, not a squash. */
 .story[data-motion="on"] .story-layer { position: absolute; inset: 4rem 0 0 0; padding: 0 5vw; justify-content: center; pointer-events: none; perspective: 2000px; }
@@ -352,7 +352,7 @@
 .story[data-motion="on"] .story-card { position: absolute; left: 0; top: 0; }
 .story[data-motion="on"] .story-card > * { transform: translate(-50%, -50%); }
 @media (max-width: 1023px) {
-  .story[data-motion="on"] { height: 635svh; }
+  .story[data-motion="on"] { height: 680svh; }
   .story[data-motion="on"] .story-hero { padding-top: 3rem; }
   .story[data-motion="on"] .story-band { padding-top: 1.25rem; }
 }

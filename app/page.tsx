@@ -90,12 +90,15 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
   const sizes = desk ? [1, 0.92, 1.04, 0.94, 1, 0.96, 1.04] : lanes.map(() => 1)
   const rz = [-4, 3, 5, -3, 4, -5, 3]
   const rx = (w - 48 - cardW) / 2
+  const fly = { from: h + cardH * 0.75 - layerCenter, to: top + cardH * 0.55 - layerCenter }
+  // Each card starts once the previous one is a full card height plus a gap above it, so none ever touch.
+  const stagger = (FLY * (cardH * 1.04 + (desk ? 64 : 40))) / (fly.from - fly.to)
   const cards: Card[] = lanes.map((f, i) => ({
     x: f * rx,
     s: sizes[i],
     ry: -f * (desk ? 14 : 8),
     rz: rz[i] * (desk ? 1 : 0.5),
-    start: 0.58 + i * 0.045,
+    start: 0.55 + i * stagger,
   }))
   return {
     oy,
@@ -109,16 +112,18 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
       [0.58, 0, oy - h * 0.01, 2, 0, 0, fit * 0.97, 0],
     ] as Frame[],
     steps: [fade(0.05, 0.08, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
-    headline: fade(0.57, 0.6, 1.1, 1.2),
-    fly: { from: h + cardH * 0.75 - layerCenter, to: top + cardH * 0.55 - layerCenter },
+    headline: fade(0.57, 0.6, 2, 3),
+    // Short screens need a longer card run; the story ends with the last card mid-flight.
+    end: 0.55 + (lanes.length - 1) * stagger + FLY / 2,
+    fly,
     cards,
   }
 }
 
 // Scroll progress -> timeline progress. Cards (p >= 0.55) get a shorter slice of the track so they move faster.
-const SPLIT = 0.77
-const remap = (q: number) => (q < SPLIT ? (q * 0.55) / SPLIT : 0.55 + ((q - SPLIT) * 0.45) / (1 - SPLIT))
-const FLY = 0.24
+const SPLIT = 0.71
+const remap = (q: number, end: number) => (q < SPLIT ? (q * 0.55) / SPLIT : 0.55 + ((q - SPLIT) * (end - 0.55)) / (1 - SPLIT))
+const FLY = 0.2
 
 function cardAt(p: number, c: Card, fly: { from: number; to: number }): number[] {
   const t = span(p, c.start, c.start + FLY)
@@ -435,7 +440,7 @@ export default function HomePage() {
       const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 160))
       const settled = Math.abs(goal - next) < 0.0004
       current = settled ? goal : next
-      render(remap(current))
+      render(remap(current, tl.end))
       if (visible || !settled) frame = requestAnimationFrame(tick)
     }
     const start = () => {
