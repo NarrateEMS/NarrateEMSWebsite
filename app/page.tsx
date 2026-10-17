@@ -67,7 +67,7 @@ function at(p: number, frames: Frame[]): number[] {
 }
 
 type Box = { w: number; h: number; objW: number; objH: number; cardW: number; cardH: number; heroBottom: number; bandBottom: number }
-type Card = { x: number; y: number; dx: number; dy: number; rz: number; ry: number; k: number; gs: number }
+type Card = { x: number; s: number; ry: number; rz: number; start: number }
 
 // Text owns the band above bandBottom; the object and cards only ever use the area below it.
 function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom }: Box) {
@@ -85,22 +85,17 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
     [c, 0, 0, 0, 0, 0, 1, 1],
     [d, 0, -dy, 0, 0, 0, 1, 0],
   ]
-  const spots = desk
-    ? [[-0.8, -0.55], [-0.28, -0.85], [0.3, -0.8], [0.82, -0.45], [-0.6, 0.7], [0.02, 0.75], [0.62, 0.65]]
-    : [[-1, -0.95], [1, -0.63], [-1, -0.31], [1, 0], [-1, 0.31], [1, 0.63], [-1, 0.95]]
-  const rz = [-7, 4, 8, -5, 5, -8, 6].map((v) => (desk ? v : v / 2))
-  const ry = [10, -8, 12, -10, 8, -12, 10].map((v) => (desk ? v : v / 2))
+  // Cards fly bottom to top in lanes that never overlap a neighbour in flight, and fade out under the text band.
+  const lanes = desk ? [-0.85, 0.3, -0.3, 0.85, -0.6, 0.6, 0] : [-1, 1, -1, 1, -1, 1, -1]
+  const sizes = desk ? [1, 0.92, 1.04, 0.94, 1, 0.96, 1.04] : lanes.map(() => 1)
+  const rz = [-4, 3, 5, -3, 4, -5, 3]
   const rx = (w - 48 - cardW) / 2
-  const ryMax = (areaH - cardH) / 2
-  const cards: Card[] = spots.map(([fx, fy], i) => ({
-    x: fx * rx * 0.94,
-    y: oy + fy * ryMax * 0.9,
-    dx: fx * rx * 0.06,
-    dy: fy * ryMax * 0.1 - areaH * 0.03,
-    rz: rz[i],
-    ry: ry[i],
-    k: i - 3,
-    gs: w >= 640 ? 1.3 : 1.05,
+  const cards: Card[] = lanes.map((f, i) => ({
+    x: f * rx,
+    s: sizes[i],
+    ry: -f * (desk ? 14 : 8),
+    rz: rz[i] * (desk ? 1 : 0.5),
+    start: 0.58 + i * 0.045,
   }))
   return {
     oy,
@@ -115,25 +110,19 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
     ] as Frame[],
     steps: [fade(0.05, 0.08, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
     headline: fade(0.57, 0.6, 1.1, 1.2),
+    fly: { from: h + cardH * 0.75 - layerCenter, to: top + cardH * 0.55 - layerCenter },
     cards,
   }
 }
 
-// Cards drift out with an ease-out, keep floating slowly, then gather with a soft ease-in-out. Scale stays in 0.94-1.
 // Scroll progress -> timeline progress. Cards (p >= 0.55) get a shorter slice of the track so they move faster.
-const SPLIT = 0.71
+const SPLIT = 0.77
 const remap = (q: number) => (q < SPLIT ? (q * 0.55) / SPLIT : 0.55 + ((q - SPLIT) * 0.45) / (1 - SPLIT))
+const FLY = 0.24
 
-function cardAt(p: number, c: Card, oy: number): number[] {
-  const out = 1 - (1 - span(p, 0.55, 0.75)) ** 3
-  const d = ease(span(p, 0.55, 0.92))
-  const g = ease(ease(span(p, 0.82, 0.97)))
-  const x = lerp(lerp(0, c.x + c.dx * d, out), c.k * 7, g)
-  const y = lerp(lerp(oy, c.y + c.dy * d, out), oy - c.k * 6, g)
-  const rz = lerp(lerp(0, c.rz + Math.sign(c.rz) * 3 * d, out), c.k * 1.2, g)
-  const ry = lerp(lerp(0, c.ry * (1 - 0.6 * d), out), 0, g)
-  const s = lerp(lerp(0.94, 1, out), c.gs, g)
-  return [x, y, 0, ry, rz, s, span(p, 0.565, 0.59)]
+function cardAt(p: number, c: Card, fly: { from: number; to: number }): number[] {
+  const t = span(p, c.start, c.start + FLY)
+  return [c.x, lerp(fly.from, fly.to, t), lerp(26, -16, t), c.ry, c.rz, c.s, t > 0 ? 1 - span(t, 0.8, 1) : 0]
 }
 
 function write(el: HTMLElement | null, v: number[]) {
@@ -413,7 +402,7 @@ export default function HomePage() {
       write(object, at(p, tl.object))
       tl.steps.forEach((f, i) => write(stepRefs.current[i], at(p, f)))
       write(headlineRef.current, at(p, tl.headline))
-      tl.cards.forEach((c, i) => write(cardRefs.current[i], cardAt(p, c, tl.oy)))
+      tl.cards.forEach((c, i) => write(cardRefs.current[i], cardAt(p, c, tl.fly)))
 
       const said = Math.round(span(p, 0.11, 0.24) * TRANSCRIPT.length)
       if (phoneText && said !== spoken) {
