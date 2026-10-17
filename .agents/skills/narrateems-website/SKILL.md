@@ -15,7 +15,16 @@ signs anyone up - it links to `narrateems.com/#pricing`.
 ## Layout
 
 `app/page.tsx` (marketing + pricing modal), `app/login`, `app/reset-password`, `app/account`,
-`app/invite/accept`, `app/checkout/success`, `app/api/create-checkout-session`, `app/dictate`, plus legal pages.
+`app/onboarding` (signed-in feature guide linked from `/account`), `app/dictate` (phone dictation), `app/invite/accept`,
+`app/checkout/success`, `app/agreement/sign` (agency rep signing page). API routes:
+`app/api/create-checkout-session`, `app/api/finish-payment`, `app/api/agency-access`,
+`app/api/agency-agreement`. Server libs: `lib/checkout.ts` (`PRICE_CONFIG`, `startCheckout`),
+`lib/agency.ts` (agency onboarding), `lib/agreement.ts` (`AGREEMENT_VERSION`, document lists),
+`lib/email.ts` (Resend), `lib/sign-pdf.ts` (PDF stamping), `lib/auth.ts` (`userFromRequest`, bearer
+JWT). `components/agency-panel.tsx` is the `/account` agencies panel. Legal docs are PDFs in
+`public/legal/`; `next.config.mjs` redirects (non-permanent) `/terms-of-service` ->
+`/legal/terms-of-service.pdf`, `/privacy-policy` -> `/legal/privacy-policy.pdf`, `/sla` ->
+`/legal/sla.pdf`.
 Supabase browser client in `lib/supabase.ts`; shadcn/ui in `components/ui`.
 
 ## `/dictate` (phone dictation)
@@ -33,18 +42,25 @@ live Azure Speech words, edit, and Save. The extension's "From phone" list then 
 - `public/dictate.webmanifest` (linked in `app/dictate/layout.tsx`) + `public/dictate-sw.js`: Add to Home Screen opens `/dictate`.
 - A new origin (e.g. a Vercel preview) must be in the inbox's exact CORS list before it can call it.
 
-`supabase/functions/` in this repo holds **stale copies** of `accept-squad-invite` and
-`stripe-webhook-prod`. Never deploy from here - the real ones live in the `NarrateEMS` repo, and a
-deploy from this directory silently reverts the hardened versions.
+`supabase/` holds only a README: functions and migrations live in the `NarrateEMS` repo. Never
+deploy functions from here.
 
 ## `POST /api/create-checkout-session`
 
 Order matters: the Supabase user is created **before** Stripe, so the checkout can carry the
 identity.
 
-1. Requires `email`, `password`, `planType`; `planType` must be a key of `PRICE_CONFIG`
-   (`individual_monthly`, `pilot_annual`, `small_squad_annual`, `large_squad_annual`,
-   `high_volume_annual`) whose price ids come from `NEXT_PUBLIC_STRIPE_PRICE_*`.
+1. Requires `email`, `password`, `planType` and `legalAccepted: true` (every plan, squads too: the
+   modal's single "I agree" checkbox over `LEGAL_DOCUMENTS`: individuals
+   `public/legal/individual-subscription-agreement.pdf` + `terms-of-service.pdf`,
+   `privacy-policy.pdf`, `sla.pdf`; squads only the last three).
+   Stores `user_metadata.legal_accepted {version: AGREEMENT_VERSION, at}`. `planType` must be a key
+   of `PRICE_CONFIG` (`individual_monthly`, `pilot_annual`, `small_squad_annual`,
+   `large_squad_annual`, `high_volume_annual`) whose price ids come from `NEXT_PUBLIC_STRIPE_PRICE_*`.
+   Individuals also send `agencyName`, `serviceCode`, optional `repEmail` (`validateAgencyInput`):
+   revoked agency -> 400; not approved and no rep email -> `{status:'needs_rep'}` before any account
+   is created. `individual_monthly`: 7-day trial, then $29.99/month (UI copy; the real price is
+   `NEXT_PUBLIC_STRIPE_PRICE_INDIVIDUAL_MONTHLY`).
 2. If no account exists: `admin.createUser` with `email_confirm: true` and
    `user_metadata.plan_type`.
 3. If an account exists but is **unconfirmed and never signed in** (a shell), it is *adopted*: the
@@ -56,6 +72,10 @@ identity.
 5. Checkout session: `client_reference_id: userId`, subscription metadata
    `{supabase_user_id, plan_type, included_charts}`, `trial_period_days: 7`; squad plans add a
    metered overage line item alongside the flat annual price.
+6. Individuals go through `requestAgencyAccess` first: only an already-approved agency reaches
+   Checkout. Otherwise the route returns `{status:'pending'}`, the rep is emailed a signing link,
+   and **no Checkout** is created until the agency signs; then the user pays via `/account` ->
+   `POST /api/finish-payment`. Squad signup is otherwise unchanged.
 
 `client_reference_id` is what stops the "paid but no account" failure mode - never add a purchase
 path without it.
@@ -70,7 +90,12 @@ Reads `user_subscriptions` for the signed-in user and, when `squad_id` is set, r
 | `squad_id` NULL **and** `plan_type` is a squad plan | "Setting up your squad." - polls every 3s, 20 attempts |
 | `squad_id` set, `squads.squad_code` NULL | "One step left." + link-your-EMS-Charts copy (admin) / waiting-on-admin (member) |
 | `squad_id` set, `squad_code` set | "You ride with `<name>`" + admin or member copy |
-| `squad_id` NULL, individual plan | "Solo medic." |
+| `squad_id` NULL, individual plan | "Solo medic." + agencies panel |
+
+Agencies panel (`components/agency-panel.tsx`): "Your agencies" lists each authorization as
+"Approved", "Waiting for agency to sign" or "Revoked"; "Finish payment and activate →" shows when
+there is no live plan and an approval exists; "Work for another agency? Add it here." posts to
+`/api/agency-access` (asks for a rep email when the agency isn't approved).
 
 Two bugs have shipped here; both are regression tests worth keeping:
 
@@ -104,11 +129,30 @@ Acceptance POSTs **`{ invite_id }`** only; the edge function derives the user fr
 squad from the invite row. Do not reintroduce body-supplied `user_id`/`squad_id`. The success card
 auto-redirects to `/account` after ~2s.
 
+## Agency signing and PDF stamping
+
+`/agreement/sign?token=...` collects agency legal name, mailing address, rep name and title plus two
+required checkboxes (authority + agree), then `POST /api/agency-agreement`. `lib/sign-pdf.ts`
+stamps them onto `public/legal/agency-baa.pdf` and `agency-authorization.pdf` with the fixed
+NarrateEMS countersignature, domain-based enrollment ticked and the rep's email domain. Text
+shrinks, then wraps to 2 lines; still too long -> `FieldTooLongError` -> 400 "Please shorten it".
+Coordinates are hand-measured: re-measure if the PDFs change, and bump `AGREEMENT_VERSION`
+(stored in `user_metadata.legal_accepted.version` and `agency_agreements.agreement_version`;
+agencies that already signed are not asked to re-sign). `outputFileTracingIncludes` in
+`next.config.mjs` must keep `public/legal/agency-*.pdf` in the function bundle. Signed PDFs go to
+the private bucket `agency-agreements` at `<service_code>/<signed individual_authorizations.id>/<file>` and are emailed (Resend) to the rep and
+narrateems@gmail.com. Emails must stay PHI-free (Resend has no BAA).
+
+Expired, used or superseded links get "This link is invalid, expired, or already used." (404). To
+re-send, the medic re-adds the agency with a rep email on `/account` (new token, old link dies);
+admin re-send and un-revoking an agency are not supported (manual DB; see `narrateems-platform`).
+
 ## Local dev, build and lint
 
 - `npm install --legacy-peer-deps` (plain `npm install` fails; pnpm is not installed here).
 - Env needed: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_NARRATION_API_URL`,
-  `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, all `NEXT_PUBLIC_STRIPE_PRICE_*`. Modules
+  `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, all `NEXT_PUBLIC_STRIPE_PRICE_*`,
+  `RESEND_API_KEY` (optional `EMAIL_FROM`, default `no-reply@narrateems.com`). Modules
   construct Supabase/Stripe clients at import time, so `npm run build` fails outright without them -
   placeholders are fine for a type/build check.
 - `NEXT_PUBLIC_*` is inlined at **build** time: export env before `npm run build`, not just before
@@ -150,7 +194,10 @@ curl -X POST -H "Authorization: token $NARRATEEMS_GITHUB_PAT" \
 There is only one Supabase project and it is production. Pin the live squads/admins with a `select`
 before writing anything, never run a checkout as a live squad's admin, and re-read those rows
 afterwards to prove they are unchanged. Delete throwaway users **after** their `squad_invites` and
-`user_subscriptions` rows, otherwise the admin delete returns an opaque 500.
+`user_subscriptions` rows, otherwise the admin delete returns an opaque 500. Agency fixtures: delete
+Storage objects in `agency-agreements`, then `agency_agreements`/`individual_authorizations`, then
+`agencies`, then auth users. Delete test agencies directly; setting `revoked` fires the revoke hook,
+which cancels Stripe subs.
 
 `squads.squad_code` is UNIQUE and a live squad already owns the empty string. Use `NULL` for
 synthetic unlinked-squad fixtures; both values follow the same falsey account-page branch, and the
