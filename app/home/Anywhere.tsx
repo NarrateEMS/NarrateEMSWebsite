@@ -2,27 +2,51 @@
 
 import { useRef } from "react"
 import { Smartphone } from "lucide-react"
-import { h2, body } from "./shared"
 import { reveal, useReveal } from "./Testimonial"
 
+const chip = "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-semibold text-paper"
+
 const steps = [
-  [
-    <>
-      Open{" "}
-      <span className="font-bold underline decoration-hi-vis decoration-[5px] underline-offset-[7px] [text-decoration-skip-ink:none]">
-        narrateems.com/dictate
+  {
+    dot: "bg-ink",
+    title: (
+      <>
+        Open{" "}
+        <span className="font-bold underline decoration-hi-vis decoration-[5px] underline-offset-[7px] [text-decoration-skip-ink:none]">
+          narrateems.com/dictate
+        </span>
+        .
+      </>
+    ),
+    line: "Any phone browser. Nothing to install.",
+  },
+  {
+    dot: "bg-recording",
+    title: "Talk it through.",
+    line: "Words show up live. Fix any before you save.",
+    chip: (
+      <span className={`${chip} bg-recording`}>
+        <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-paper motion-reduce:animate-none" />
+        Recording
       </span>
-      .
-    </>,
-    "Any phone browser. Nothing to install.",
-  ],
-  ["Talk it through.", "Words show up live. Fix any before you save."],
-  ["Pull it in on the laptop.", "Tap From phone in the extension. The chart fills."],
-] as const
+    ),
+  },
+  {
+    dot: "bg-success",
+    title: "Pull it in on the laptop.",
+    line: "Tap From phone in the extension. The chart fills.",
+    chip: (
+      <span className={`${chip} bg-ink`}>
+        <Smartphone className="h-3.5 w-3.5" aria-hidden />
+        From phone
+      </span>
+    ),
+  },
+]
 
 const facts = [
-  ["No signal?", "It records anyway and sends when you're back."],
-  ["Gone in 24 hours.", "Or delete it yourself, on the phone or the laptop."],
+  ["Offline", "No signal? It records anyway and sends when you're back."],
+  ["24h", "Then it's gone. Or delete it yourself, on the phone or the laptop."],
 ] as const
 
 export function Anywhere() {
@@ -72,28 +96,30 @@ export function Anywhere() {
           </div>
 
           <div className="mt-14 lg:col-span-6 lg:mt-0">
-            <h2 data-reveal className={`${h2} ${reveal}`}>Narrate anywhere.</h2>
-            <p data-reveal style={{ transitionDelay: "80ms" }} className={`mt-5 max-w-lg ${body} ${reveal}`}>
-              On scene, in the rig, back at quarters. Your phone is the mic. The chart waits on the laptop.
+            <h2 data-reveal className={`text-[44px] font-semibold leading-[0.95] tracking-[-0.03em] lg:text-[88px] ${reveal}`}>
+              Narrate anywhere.
+            </h2>
+            <p data-reveal style={{ transitionDelay: "80ms" }} className={`mt-6 max-w-lg text-[22px] leading-[1.35] ${reveal}`}>
+              On scene, in the rig, back at quarters.{" "}
+              <span className="text-ink-muted">Your phone is the mic. The chart waits on the laptop.</span>
             </p>
 
-            <ol className="mt-12 space-y-8">
-              {steps.map(([title, line], i) => (
-                <li key={i} data-reveal style={{ transitionDelay: `${160 + i * 80}ms` }} className={reveal}>
-                  <p className="text-[22px] font-semibold leading-tight tracking-tight lg:text-[26px]">{title}</p>
-                  <p className={`mt-1.5 ${body}`}>{line}</p>
+            <ol className="relative mt-12 space-y-9 before:absolute before:bottom-3 before:left-[5px] before:top-3 before:w-1 before:rounded-full before:bg-paper-tint">
+              {steps.map((s, i) => (
+                <li key={i} data-reveal style={{ transitionDelay: `${160 + i * 80}ms` }} className={`relative pl-9 ${reveal}`}>
+                  <span aria-hidden className={`absolute left-0 top-2 h-3.5 w-3.5 rounded-full ring-4 ring-paper ${s.dot}`} />
+                  <p className="text-[22px] font-semibold leading-tight tracking-tight lg:text-[26px]">{s.title}</p>
+                  <p className="mt-1.5 text-[17px] leading-[1.6] text-ink-muted">{s.line}</p>
+                  {s.chip && <div className="mt-3" aria-hidden>{s.chip}</div>}
                 </li>
               ))}
             </ol>
 
-            <dl data-reveal style={{ transitionDelay: "420ms" }} className={`mt-12 grid gap-3 sm:grid-cols-2 ${reveal}`}>
+            <dl data-reveal style={{ transitionDelay: "420ms" }} className={`mt-12 grid gap-8 rounded-card bg-ink p-7 text-paper sm:grid-cols-2 lg:p-8 ${reveal}`}>
               {facts.map(([term, line]) => (
-                <div key={term} className="rounded-card bg-paper-tint p-5">
-                  <dt className="flex items-center gap-2 text-[17px] font-semibold">
-                    {term === "No signal?" && <Smartphone className="h-4 w-4" aria-hidden />}
-                    {term}
-                  </dt>
-                  <dd className="mt-1 text-[15px] leading-[1.5]">{line}</dd>
+                <div key={term}>
+                  <dt className="text-[44px] font-semibold leading-none tracking-tight">{term}</dt>
+                  <dd className="mt-3 text-[15px] leading-[1.5] text-paper/75">{line}</dd>
                 </div>
               ))}
             </dl>
