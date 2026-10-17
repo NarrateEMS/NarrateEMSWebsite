@@ -353,11 +353,6 @@ export default function HomePage() {
 
   // Lock body scroll when modal open
   useEffect(() => {
-    const bg = new URLSearchParams(location.search).get("bg")
-    if (bg) document.documentElement.dataset.bg = bg
-  }, [])
-
-  useEffect(() => {
     const locked = showCheckoutModal || showVideoModal || isMobileMenuOpen
     document.body.style.overflow = locked ? "hidden" : ""
     return () => {

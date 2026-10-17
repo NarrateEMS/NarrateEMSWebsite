@@ -359,18 +359,11 @@
 @keyframes blob-c { 0% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(30vw, -30vh, 0) scale(1.2); } 100% { transform: translate3d(-10vw, -15vh, 0) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .story-blobs i { animation: none; } }
 
-/* Navy section texture options, switched with ?bg=glow|dots|ecg. */
+/* Navy sections: soft static corner glow, echoing the hero blobs. */
 .navy-tex { position: relative; isolation: isolate; }
-.navy-tex::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; }
-[data-bg="glow"] .navy-tex::before {
+.navy-tex::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
   background: radial-gradient(55% 70% at 100% 0%, #1D3A6E, transparent 70%), radial-gradient(45% 60% at 0% 100%, #15294D, transparent 70%); /* taste-skill-ignore: owner asked for gradient backgrounds */
-}
-[data-bg="dots"] .navy-tex::before {
-  background: radial-gradient(rgb(245 244 240 / 0.16) 1.2px, transparent 1.8px) 0 0 / 22px 22px; /* taste-skill-ignore: owner asked for gradient backgrounds */
-  mask-image: radial-gradient(80% 90% at 100% 0%, #000, transparent); /* taste-skill-ignore: owner asked for gradient backgrounds */
-}
-[data-bg="ecg"] .navy-tex::before {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='120' viewBox='0 0 520 120'%3E%3Cpath d='M0 70h170l12-14 12 14h26l10 22 18-82 16 74 10-14h56l14-18 16 18h160' fill='none' stroke='%23F5F4F0' stroke-opacity='.18' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 0 78% / 520px 120px repeat-x;
 }
 
 .story-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; max-width: 64rem; }
