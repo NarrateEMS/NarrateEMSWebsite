@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef } from "react"
-import { Lock, Smartphone } from "lucide-react"
+import { Smartphone } from "lucide-react"
 import { h2, body } from "./shared"
 import { reveal, useReveal } from "./Testimonial"
 
@@ -9,12 +9,10 @@ const steps = [
   [
     <>
       Open{" "}
-      <span className="ml-1 inline-flex items-center gap-2 rounded-full bg-paper-tint py-1.5 pl-3 pr-4 align-middle text-[17px] font-medium tracking-normal ring-1 ring-ink/15 lg:text-[19px]">
-        <Lock className="h-3.5 w-3.5 text-success" aria-hidden />
-        <span>
-          narrateems.com<span className="text-ink-muted">/dictate</span>
-        </span>
+      <span className="font-bold underline decoration-hi-vis decoration-[5px] underline-offset-[7px] [text-decoration-skip-ink:none]">
+        narrateems.com/dictate
       </span>
+      .
     </>,
     "Any phone browser. Nothing to install.",
   ],
