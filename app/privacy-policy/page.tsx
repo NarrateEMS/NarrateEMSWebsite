@@ -6,7 +6,7 @@ export default function PrivacyPolicyPage() {
   return (
     <LegalLayout
       title="Privacy Policy."
-      meta="Effective March 1, 2025 · Version 3.0 — revised March 2026"
+      meta="Effective March 1, 2025 · Version 3.1 — revised October 2026"
     >
       <p>
         NarrateEMS Inc. is committed to protecting your privacy. This Privacy Policy explains what
@@ -15,7 +15,8 @@ export default function PrivacyPolicyPage() {
 
       <p>
         Our Service is architected to minimize server-side data exposure. We do not store patient
-        care records or narrative content on our servers.
+        care records in our databases. Narrative content is held server-side only for short,
+        fixed periods in Microsoft Azure, as described below.
       </p>
 
       <hr />
@@ -31,26 +32,34 @@ export default function PrivacyPolicyPage() {
           processes payment card details directly — we do not store card numbers.
         </li>
         <li>
-          Basic technical logs for service stability. In production, no patient data or transcript
-          content is included in logs.
+          Technical logs in Microsoft Azure Monitor. Operational logs contain no patient data and
+          are kept for 90 days. Diagnostic traces, used to troubleshoot chart filling, can contain
+          narration text, chart values and patient record IDs, and are deleted automatically after
+          30 days.
+        </li>
+        <li>
+          Phone narrations: if you dictate at narrateems.com/dictate, the edited text you save is
+          stored in Microsoft Azure so the extension can retrieve it. It is deleted automatically 24
+          hours after saving, and you can delete it sooner. It is never stored in Supabase.
         </li>
       </ul>
 
       <h3>What we do NOT store server-side</h3>
       <ul>
         <li>
-          <strong>Raw audio recordings:</strong> Voice input is transcribed locally within your browser.
-          Raw audio is never captured or transmitted by NarrateEMS.
+          <strong>Audio recordings:</strong> Voice input is streamed to Microsoft Azure AI Speech
+          for transcription. NarrateEMS does not store audio on its servers. On the phone page,
+          a recording waiting for a connection is kept on your phone only until it is transcribed
+          and saved, for at most 24 hours, and is deleted when you sign out.
         </li>
         <li>
           <strong>Text transcripts and session data:</strong> Narrative transcripts and extracted
           clinical data (including chief complaints, diagnoses, vital signs, and patient care
           narratives) are stored temporarily in the browser's local extension storage
-          (chrome.storage.local) on the user's device during session processing. This data is
-          stored locally on the device only — it is never transmitted to or written to NarrateEMS
-          servers or databases. It persists on the device until the user manually resets their
-          session using the Reset function in the extension. NarrateEMS cannot access, retrieve, or
-          delete this locally stored data remotely.
+          (chrome.storage.local) on the user's device during session processing. It is not written
+          to NarrateEMS databases. The extension deletes it automatically about one hour after the
+          session, and immediately when the user signs out, starts a new narration, or uses Reset.
+          NarrateEMS cannot access, retrieve, or delete this locally stored data remotely.
         </li>
         <li>
           <strong>Patient records:</strong> No patient identifiers, clinical information, or ePCR
@@ -60,8 +69,9 @@ export default function PrivacyPolicyPage() {
 
       <blockquote>
         <strong>In plain terms:</strong> patient information processed through NarrateEMS lives
-        temporarily on the provider's device only. NarrateEMS does not build or maintain a database
-        of patient records.
+        temporarily on the provider's device, plus short-lived copies in Microsoft Azure (24 hours
+        for phone narrations, 30 days for diagnostic traces). NarrateEMS does not build or maintain
+        a database of patient records.
       </blockquote>
 
       <hr />
@@ -85,7 +95,10 @@ export default function PrivacyPolicyPage() {
 
       <h2>3. How transcript content is processed</h2>
       <ul>
-        <li>Your browser's Speech API converts audio to text locally on the device.</li>
+        <li>
+          Your audio is streamed to Microsoft Azure AI Speech, which returns the text. Phone
+          recordings made without a connection are sent once the connection returns.
+        </li>
         <li>
           The text transcript is stored in the browser's local extension storage on your device and
           transmitted through our backend infrastructure (Supabase Edge Functions), which forwards
@@ -97,8 +110,9 @@ export default function PrivacyPolicyPage() {
           chrome.storage.local on your device and used to populate the ePCR form.
         </li>
         <li>
-          None of this data is written to NarrateEMS servers or databases at any point. It resides
-          on the local device only and persists until the user manually resets their session.
+          This data is not written to NarrateEMS databases. It stays on the device until it is
+          deleted automatically or by the user (see section 1). The only server-side copies are the
+          24-hour phone narrations and 30-day diagnostic traces held in Microsoft Azure.
         </li>
       </ul>
 
@@ -107,7 +121,8 @@ export default function PrivacyPolicyPage() {
       <h2>4. Data storage and security</h2>
       <ul>
         <li>
-          <strong>Storage infrastructure:</strong> Supabase (PostgreSQL).
+          <strong>Storage infrastructure:</strong> Supabase (PostgreSQL) for account and
+          subscription data; Microsoft Azure for phone narrations and logs.
         </li>
         <li>
           <strong>Encryption at rest:</strong> AES-256 encryption at the infrastructure level via
@@ -121,9 +136,9 @@ export default function PrivacyPolicyPage() {
           personnel. Data is isolated by agency.
         </li>
         <li>
-          <strong>Logging:</strong> NarrateEMS does not currently log patient data or transcript
-          content. Any future logging of such data will be conducted exclusively through
-          HIPAA-compliant services with appropriate safeguards.
+          <strong>Logging:</strong> Logs that may contain patient data are kept only in Microsoft
+          Azure Monitor, in a separate table with restricted access and 30-day automatic deletion.
+          They never pass through Supabase.
         </li>
       </ul>
 
@@ -162,6 +177,20 @@ export default function PrivacyPolicyPage() {
               <td className="px-4 py-3 align-top">Yes — BAA in Groq ToS (eff. Oct 15, 2025).</td>
             </tr>
             <tr className="border-b border-rule">
+              <td className="px-4 py-3 align-top">Microsoft Azure AI Speech</td>
+              <td className="px-4 py-3 align-top">Speech-to-text</td>
+              <td className="px-4 py-3 align-top">Audio</td>
+              <td className="px-4 py-3 align-top">Yes — Microsoft HIPAA BAA (Product Terms/DPA).</td>
+            </tr>
+            <tr className="border-b border-rule bg-paper-tint/40">
+              <td className="px-4 py-3 align-top">Microsoft Azure (Storage, Functions, Monitor)</td>
+              <td className="px-4 py-3 align-top">Phone narration inbox and logs</td>
+              <td className="px-4 py-3 align-top">
+                Saved phone narrations (24 hours); diagnostic traces (30 days)
+              </td>
+              <td className="px-4 py-3 align-top">Yes — Microsoft HIPAA BAA (Product Terms/DPA).</td>
+            </tr>
+            <tr className="border-b border-rule">
               <td className="px-4 py-3 align-top">Supabase</td>
               <td className="px-4 py-3 align-top">Database, auth, API proxy</td>
               <td className="px-4 py-3 align-top">
@@ -192,7 +221,8 @@ export default function PrivacyPolicyPage() {
       <p>
         Account and subscription records are retained for the duration of your active account and
         for a reasonable period thereafter. Transcript content and extracted clinical session data
-        are stored locally on the user's device only and are not held on NarrateEMS servers.
+        are stored on the user's device and deleted as described in section 1. Saved phone
+        narrations are deleted 24 hours after saving, and diagnostic traces after 30 days.
         Deletion of your NarrateEMS account affects only account and subscription records.
       </p>
       <p>
@@ -206,7 +236,11 @@ export default function PrivacyPolicyPage() {
       <h2>7. HIPAA</h2>
       <ul>
         <li>We implement safeguards to protect PHI during transit, including TLS encryption.</li>
-        <li>We do not persist PHI in our databases.</li>
+        <li>
+          We do not store PHI in our Supabase databases. PHI held in Microsoft Azure (phone
+          narrations for 24 hours, diagnostic traces for 30 days) is covered by Microsoft&apos;s
+          HIPAA BAA.
+        </li>
         <li>
           Covered Entities must execute a Business Associate Agreement (BAA) with NarrateEMS
           before using the Service with any PHI.
