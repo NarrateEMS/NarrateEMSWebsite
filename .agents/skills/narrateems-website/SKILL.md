@@ -34,13 +34,16 @@ Order matters: the Supabase user is created **before** Stripe, so the checkout c
 identity.
 
 1. Requires `email`, `password`, `planType` and `legalAccepted: true` (every plan, squads too: the
-   modal's single "I agree" checkbox; individuals also see the Individual Subscription Agreement).
+   modal's single "I agree" checkbox over `LEGAL_DOCUMENTS`: individuals
+   `public/legal/individual-subscription-agreement.pdf` + `terms-of-service.pdf`,
+   `privacy-policy.pdf`, `sla.pdf`; squads only the last three).
    Stores `user_metadata.legal_accepted {version: AGREEMENT_VERSION, at}`. `planType` must be a key
    of `PRICE_CONFIG` (`individual_monthly`, `pilot_annual`, `small_squad_annual`,
    `large_squad_annual`, `high_volume_annual`) whose price ids come from `NEXT_PUBLIC_STRIPE_PRICE_*`.
    Individuals also send `agencyName`, `serviceCode`, optional `repEmail` (`validateAgencyInput`):
    revoked agency -> 400; not approved and no rep email -> `{status:'needs_rep'}` before any account
-   is created.
+   is created. `individual_monthly`: 7-day trial, then $29.99/month (UI copy; the real price is
+   `NEXT_PUBLIC_STRIPE_PRICE_INDIVIDUAL_MONTHLY`).
 2. If no account exists: `admin.createUser` with `email_confirm: true` and
    `user_metadata.plan_type`.
 3. If an account exists but is **unconfirmed and never signed in** (a shell), it is *adopted*: the
@@ -116,10 +119,16 @@ required checkboxes (authority + agree), then `POST /api/agency-agreement`. `lib
 stamps them onto `public/legal/agency-baa.pdf` and `agency-authorization.pdf` with the fixed
 NarrateEMS countersignature, domain-based enrollment ticked and the rep's email domain. Text
 shrinks, then wraps to 2 lines; still too long -> `FieldTooLongError` -> 400 "Please shorten it".
-Coordinates are hand-measured: re-measure if the PDFs change. `outputFileTracingIncludes` in
+Coordinates are hand-measured: re-measure if the PDFs change, and bump `AGREEMENT_VERSION`
+(stored in `user_metadata.legal_accepted.version` and `agency_agreements.agreement_version`;
+agencies that already signed are not asked to re-sign). `outputFileTracingIncludes` in
 `next.config.mjs` must keep `public/legal/agency-*.pdf` in the function bundle. Signed PDFs go to
-the private bucket `agency-agreements` and are emailed (Resend) to the rep and
+the private bucket `agency-agreements` at `<service_code>/<signed individual_authorizations.id>/<file>` and are emailed (Resend) to the rep and
 narrateems@gmail.com. Emails must stay PHI-free (Resend has no BAA).
+
+Expired, used or superseded links get "This link is invalid, expired, or already used." (404). To
+re-send, the medic re-adds the agency with a rep email on `/account` (new token, old link dies);
+admin re-send and un-revoking an agency are not supported (manual DB; see `narrateems-platform`).
 
 ## Local dev, build and lint
 
