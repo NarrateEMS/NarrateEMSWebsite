@@ -33,7 +33,7 @@ export function Testimonial() {
   const ref = useRef<HTMLElement>(null)
   useReveal(ref)
   return (
-    <section ref={ref} id="field" className="bg-ink text-paper">
+    <section ref={ref} id="field" className="navy-tex bg-ink text-paper">
       <figure className="mx-auto max-w-[1400px] px-6 pt-16 pb-14 lg:px-10 lg:pt-24 lg:pb-24">
         <blockquote
           data-reveal

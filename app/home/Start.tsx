@@ -37,7 +37,7 @@ export function Start() {
   }
 
   return (
-    <section id="start" ref={ref} className="bg-ink text-paper">
+    <section id="start" ref={ref} className="navy-tex bg-ink text-paper">
       <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
           <h2 className={`text-[40px] sm:max-w-[14ch] font-semibold leading-[1] tracking-tight text-balance sm:text-[64px] lg:text-[88px] ${rv}`}>

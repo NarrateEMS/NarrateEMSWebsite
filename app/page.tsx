@@ -353,6 +353,11 @@ export default function HomePage() {
 
   // Lock body scroll when modal open
   useEffect(() => {
+    const bg = new URLSearchParams(location.search).get("bg")
+    if (bg) document.documentElement.dataset.bg = bg
+  }, [])
+
+  useEffect(() => {
     const locked = showCheckoutModal || showVideoModal || isMobileMenuOpen
     document.body.style.overflow = locked ? "hidden" : ""
     return () => {
@@ -534,6 +539,7 @@ export default function HomePage() {
       {/* STORY: one persistent object scrubbed across hero, narrate, fill, scatter and stack */}
       <section ref={storyRef} className="story relative bg-ink text-paper">
         <div className="story-stage">
+          <div className="story-blobs" aria-hidden><i /><i /><i /></div>
           <div className="story-layer story-hero text-center">
             <div ref={heroRef} data-tl className="flex flex-col items-center">
               <h1 className="max-w-4xl text-[44px] lg:text-[64px] font-semibold leading-[1.0] tracking-tight text-balance">

@@ -142,7 +142,7 @@ const facts = [
 export function Squads({ scrollToSection }: { scrollToSection: (id: string) => void }) {
   const ref = useReveal<HTMLDivElement>()
   return (
-    <section id="squads" className="bg-ink text-paper">
+    <section id="squads" className="navy-tex bg-ink text-paper">
       <div ref={ref} className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-28">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div data-reveal className={`max-w-2xl ${reveal}`}>

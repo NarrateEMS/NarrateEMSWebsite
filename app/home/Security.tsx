@@ -35,7 +35,7 @@ export function Security() {
             loading="lazy"
           />
 
-          <div data-reveal className={`rounded-card bg-ink p-6 text-paper lg:col-span-8 lg:p-10 ${reveal}`}>
+          <div data-reveal className={`navy-tex rounded-card bg-ink p-6 text-paper lg:col-span-8 lg:p-10 ${reveal}`}>
             <h3 className="text-[22px] font-semibold leading-tight lg:text-[28px]">Encrypted end to end.</h3>
             <p className="mt-2 text-[17px] leading-[1.6] text-paper">Recordings, transcripts and chart data, in transit and at rest.</p>
             <ol data-ui className="mt-8 grid gap-2 sm:grid-cols-[4fr_3fr_3fr] sm:gap-3" aria-label="Encrypted data path">
@@ -98,7 +98,7 @@ export function Security() {
           </div>
         </div>
 
-        <div data-reveal className={`mt-4 flex flex-col gap-6 rounded-card bg-ink p-6 text-paper sm:flex-row sm:items-center sm:justify-between lg:px-10 lg:py-12 ${reveal}`}>
+        <div data-reveal className={`mt-4 flex flex-col gap-6 navy-tex rounded-card bg-ink p-6 text-paper sm:flex-row sm:items-center sm:justify-between lg:px-10 lg:py-12 ${reveal}`}>
           <p className="text-[34px] font-semibold leading-[1.05] tracking-tight lg:text-[44px]">Never sold. Never trained on.</p>
           <a
             href="mailto:narrateems@gmail.com?subject=Security%20questions"
