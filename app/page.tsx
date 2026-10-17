@@ -13,7 +13,7 @@ import { Security } from "./home/Security"
 import { Faq } from "./home/Faq"
 import { Start } from "./home/Start"
 import { Footer } from "./home/Footer"
-import { Mail, Play, ArrowUpRight, X, Plus, Minus, Mic } from "lucide-react"
+import { Mail, Play, ArrowUpRight, X, Plus, Minus, Mic, Smartphone } from "lucide-react"
 
 
 const TRANSCRIPT =
@@ -181,6 +181,7 @@ function ChartObject() {
           ))}
         </div>
       </div>
+      <PhoneObject />
       <div
         data-ui
         className="absolute right-0 bottom-0 w-[60%] min-w-[220px] overflow-hidden rounded-ui bg-paper text-ink border border-ink text-[12px] sm:-right-8"
@@ -206,22 +207,57 @@ function ChartObject() {
             </span>
           ))}
         </div>
-        <div
-          data-speak
-          data-rec="0"
-          className="group/speak mx-3 mt-2.5 flex rounded-full items-center justify-center gap-1.5 py-2 font-semibold border border-transparent bg-hi-vis data-[rec=1]:bg-paper data-[rec=1]:border-recording"
-        >
-          <Mic className="h-3.5 w-3.5 group-data-[rec=1]/speak:text-recording" aria-hidden />
-          <span className="group-data-[rec=1]/speak:hidden">Start narrating</span>
-          <span className="hidden group-data-[rec=1]/speak:inline">Stop narrating</span>
+        <div className="mx-3 mt-2.5 flex items-center justify-center gap-1.5 rounded-full bg-hi-vis py-2 font-semibold">
+          <Mic className="h-3.5 w-3.5" aria-hidden />
+          Start narrating
         </div>
-        <div className="px-3 pt-2.5 font-semibold">Transcript</div>
+        <div className="flex items-center justify-between px-3 pt-2.5 font-semibold">
+          Transcript
+          <span
+            data-pull
+            data-on="0"
+            className="inline-flex items-center gap-1 rounded-full border border-ink px-2 py-0.5 text-[11px] transition-colors duration-300 motion-reduce:transition-none data-[on=1]:bg-ink data-[on=1]:text-paper"
+          >
+            <Smartphone className="h-3 w-3" aria-hidden />
+            From phone
+          </span>
+        </div>
         <p data-transcript className="mx-3 mt-1 h-[92px] overflow-hidden rounded-field border border-[#D6D2C7] bg-white p-2">
           {TRANSCRIPT}
         </p>
         <div data-actions data-on="1" className="mx-3 mt-2 mb-3 flex gap-2 transition-opacity duration-300 motion-reduce:transition-none data-[on=0]:opacity-0">
           <span className="flex-1 rounded-full border border-[#D6D2C7] py-1.5 text-center font-semibold">Cancel</span>
           <span className="flex-[2] rounded-full bg-ink py-1.5 text-center font-semibold text-paper">Fill the chart</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PhoneObject() {
+  return (
+    <div
+      data-phone
+      data-state="sent"
+      data-away="0"
+      className="group/phone absolute -left-3 bottom-3 w-[100px] rounded-[22px] bg-ink-2 p-1.5 text-[9px] leading-snug text-ink transition-[opacity,translate] duration-500 ease-out motion-reduce:transition-none data-[away=1]:-translate-x-6 data-[away=1]:opacity-0 sm:-left-12 sm:w-[156px] sm:rounded-[30px] sm:p-2 sm:text-[11px]"
+      style={{ transform: "translateZ(110px) rotateZ(-3deg)" }}
+    >
+      <div className="flex h-[196px] flex-col overflow-hidden rounded-[16px] bg-paper sm:h-[300px] sm:rounded-[22px]">
+        <div className="mx-auto mt-1.5 h-1 w-8 rounded-full bg-ink/20 sm:mt-2 sm:w-12" />
+        <div className="flex items-center gap-1 px-2.5 pt-2 font-semibold sm:px-3">
+          narrate<span className="rounded-[3px] bg-ink px-1 text-paper">ems</span>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col justify-end overflow-hidden px-2.5 py-2 sm:px-3">
+          <p data-phone-text className="empty:before:text-ink-muted empty:before:content-['Talk_it_through.']">{TRANSCRIPT}</p>
+        </div>
+        <div className="mx-2 mb-2 flex items-center justify-center gap-1 rounded-full py-1.5 font-semibold sm:mx-2.5 sm:mb-2.5 sm:py-2 group-data-[state=idle]/phone:bg-hi-vis group-data-[state=rec]/phone:bg-recording group-data-[state=rec]/phone:text-paper group-data-[state=sent]/phone:bg-success group-data-[state=sent]/phone:text-paper">
+          <span className="hidden group-data-[state=idle]/phone:inline">Tap to narrate</span>
+          <span className="hidden items-center gap-1 group-data-[state=rec]/phone:inline-flex">
+            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-paper motion-reduce:animate-none" />
+            Recording
+          </span>
+          <span className="hidden group-data-[state=sent]/phone:inline">Sent to laptop</span>
         </div>
       </div>
     </div>
@@ -352,7 +388,9 @@ export default function HomePage() {
     story.dataset.motion = "on"
 
     const transcript = object.querySelector<HTMLElement>("[data-transcript]")
-    const speak = object.querySelector<HTMLElement>("[data-speak]")
+    const phone = object.querySelector<HTMLElement>("[data-phone]")
+    const phoneText = object.querySelector<HTMLElement>("[data-phone-text]")
+    const pull = object.querySelector<HTMLElement>("[data-pull]")
     const actions = object.querySelector<HTMLElement>("[data-actions]")
     const fields = [...object.querySelectorAll<HTMLElement>("[data-field]")]
     const chips = [...object.querySelectorAll<HTMLElement>("[data-chip]")]
@@ -373,6 +411,7 @@ export default function HomePage() {
     let tl = measure()
     let current = -1
     let typed = -1
+    let spoken = -1
     let frame = 0
     let last = performance.now()
     let visible = true
@@ -390,12 +429,21 @@ export default function HomePage() {
       write(statsRef.current, at(p, tl.stats))
       tl.cards.forEach((c, i) => write(cardRefs.current[i], cardAt(p, c, tl.oy)))
 
-      const chars = Math.round(span(p, 0.11, 0.29) * TRANSCRIPT.length)
+      const said = Math.round(span(p, 0.11, 0.24) * TRANSCRIPT.length)
+      if (phoneText && said !== spoken) {
+        spoken = said
+        phoneText.textContent = TRANSCRIPT.slice(0, said)
+      }
+      if (phone) {
+        phone.dataset.state = p < 0.1 ? "idle" : p < 0.24 ? "rec" : "sent"
+        phone.dataset.away = p > 0.33 ? "1" : "0"
+      }
+      if (pull) pull.dataset.on = p >= 0.24 && p < 0.31 ? "1" : "0"
+      const chars = Math.round(span(p, 0.245, 0.285) * TRANSCRIPT.length)
       if (transcript && chars !== typed) {
         typed = chars
         transcript.textContent = TRANSCRIPT.slice(0, chars)
       }
-      if (speak) speak.dataset.rec = p > 0.1 && p < 0.3 ? "1" : "0"
       if (actions) actions.dataset.on = p > 0.31 ? "1" : "0"
       fields.forEach((el, i) => (el.dataset.on = p >= 0.34 + i * 0.01 ? "1" : "0"))
       chips.forEach((el, i) => {
@@ -444,7 +492,7 @@ export default function HomePage() {
 
   const navLink = "text-[17px] text-paper hover:underline underline-offset-4"
   const steps = [
-    { title: "Narrate the call.", body: "Talk it through like a partner briefing, on your phone or laptop." },
+    { title: "Narrate from your phone.", body: "Talk it through in the rig, like briefing your partner. It lands on the laptop." },
     { title: "AI fills the right fields.", body: "Medical-terminology-trained transcription puts each detail in its Zoll ePCR field." },
     { title: "Review, sign, submit.", body: "Fields land directly in Zoll, HIPAA encrypted. Minutes, not an hour of typing." },
   ]
@@ -511,8 +559,8 @@ export default function HomePage() {
               <h1 className="max-w-4xl text-[44px] lg:text-[64px] font-semibold leading-[1.0] tracking-tight text-balance">
                 The chart writes itself.
               </h1>
-              <p className="mt-6 max-w-xl text-[17px] leading-[1.6] text-paper">
-                Narrate the call. NarrateEMS writes your Zoll ePCR.
+              <p className="mt-6 max-w-xl text-[17px] leading-[1.6] text-paper text-balance">
+                Narrate the call on your phone or laptop. NarrateEMS writes your Zoll ePCR.
               </p>
               <div className="mt-9 flex flex-col sm:flex-row items-center gap-5">
                 <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
@@ -536,7 +584,7 @@ export default function HomePage() {
             </div>
           </div>
           <p className="sr-only">
-            Animation: a sample NarrateEMS popup records a fictional narration, then fills a Zoll emsCharts page and
+            Animation: a phone records a fictional narration and sends it to the NarrateEMS popup, which fills a Zoll emsCharts page and
             every chart page.
           </p>
 
