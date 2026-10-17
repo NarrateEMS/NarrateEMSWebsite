@@ -35,14 +35,14 @@ const FIELDS = [
   ["Disposition", "Transported BLS"],
 ] as const
 
-const PAGES = [
-  ["1", "Page 1: Dispatch", [["Location", "Residence"], ["Complaint", "Fall"]]],
-  ["2", "Page 2: CC/HPI", [["Chief complaint", "Left wrist pain"], ["Onset", "Fall from standing"]]],
-  ["3", "Page 3: Neuro/Airway", [["Mental status", "Alert, oriented x4"], ["Airway", "Patent"]]],
-  ["4", "Page 4: Resp/Cardio", [["Respirations", "16"], ["Pulse", "88"]]],
-  ["5", "Page 5: Physical Exam", [["Left wrist", "Pain, splinted"], ["Head", "No strike"]]],
-  ["8", "Page 8: Vitals", [["BP", "138/84"], ["SpO2", "98% room air"]]],
-  ["N", "Narrative Summary", [["Narrative", "Called for a fall at home."], ["Transport", "BLS, no change"]]],
+const STATS = [
+  ["<10s", "Per chart page"],
+  ["1hr+", "Saved per shift"],
+  ["<3 min", "Narrate to signed chart"],
+  ["24h", "Phone narrations auto-delete"],
+  ["6+", "Years in the field, on the team"],
+  ["7 days", "Free trial, every plan"],
+  ["70%", "Faster charting"],
 ] as const
 
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
@@ -87,7 +87,7 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
   ]
   const spots = desk
     ? [[-0.8, -0.55], [-0.28, -0.85], [0.3, -0.8], [0.82, -0.45], [-0.6, 0.7], [0.02, 0.75], [0.62, 0.65]]
-    : [[-0.85, -0.95], [0.85, -0.63], [-0.85, -0.31], [0.85, 0], [-0.85, 0.31], [0.85, 0.63], [-0.85, 0.95]]
+    : [[-1, -0.95], [1, -0.63], [-1, -0.31], [1, 0], [-1, 0.31], [1, 0.63], [-1, 0.95]]
   const rz = [-7, 4, 8, -5, 5, -8, 6].map((v) => (desk ? v : v / 2))
   const ry = [10, -8, 12, -10, 8, -12, 10].map((v) => (desk ? v : v / 2))
   const rx = (w - 48 - cardW) / 2
@@ -114,12 +114,7 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
       [0.58, 0, oy - h * 0.01, 2, 0, 0, fit * 0.97, 0],
     ] as Frame[],
     steps: [fade(0.05, 0.08, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
-    headline: fade(0.57, 0.6, 0.84, 0.87),
-    stats: [
-      [0.88, 0, 16, 0, 0, 0, 1, 0],
-      [0.93, 0, 0, 0, 0, 0, 1, 1],
-      [1, 0, 0, 0, 0, 0, 1, 1],
-    ] as Frame[],
+    headline: fade(0.57, 0.6, 1.1, 1.2),
     cards,
   }
 }
@@ -267,21 +262,11 @@ function PhoneObject() {
   )
 }
 
-function PageCard({ title, fields }: { title: string; fields: readonly (readonly [string, string])[] }) {
+function StatCard({ figure, label }: { figure: string; label: string }) {
   return (
-    <div data-ui className="w-[172px] sm:w-[230px] sm:h-[160px] lg:w-[280px] lg:h-[184px] lg:text-[13px] overflow-hidden rounded-ui bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
-      <div className="flex items-center justify-between gap-2 bg-[#DDE3EA] px-3 py-2 font-semibold">
-        <span className="truncate">{title}</span>
-        <span className="hidden sm:inline text-success">Filled</span>
-      </div>
-      <div className="space-y-2 p-3">
-        {fields.map(([label, value], i) => (
-          <div key={label} className={i ? "hidden sm:block" : undefined}>
-            <div className="text-[#4A5568]">{label}</div>
-            <div className="mt-0.5 truncate rounded-field bg-hi-vis px-1.5 leading-6 font-medium">{value}</div>
-          </div>
-        ))}
-      </div>
+    <div data-ui className="flex h-[112px] w-[148px] flex-col justify-between rounded-ui bg-white p-3.5 text-ink sm:h-[160px] sm:w-[230px] sm:p-4 lg:h-[184px] lg:w-[280px] lg:p-5">
+      <span className="text-[34px] font-semibold leading-none tracking-tight tabular-nums lg:text-[64px]">{figure}</span>
+      <span className="text-[13px] leading-snug text-ink-muted lg:text-[17px]">{label}</span>
     </div>
   )
 }
@@ -307,7 +292,6 @@ export default function HomePage() {
   const objectRef = useRef<HTMLDivElement>(null)
   const stepRefs = useRef<(HTMLDivElement | null)[]>([])
   const headlineRef = useRef<HTMLHeadingElement>(null)
-  const statsRef = useRef<HTMLDListElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const handlePlanSelect = (planType: string) => {
@@ -429,7 +413,6 @@ export default function HomePage() {
       write(object, at(p, tl.object))
       tl.steps.forEach((f, i) => write(stepRefs.current[i], at(p, f)))
       write(headlineRef.current, at(p, tl.headline))
-      write(statsRef.current, at(p, tl.stats))
       tl.cards.forEach((c, i) => write(cardRefs.current[i], cardAt(p, c, tl.oy)))
 
       const said = Math.round(span(p, 0.11, 0.24) * TRANSCRIPT.length)
@@ -617,35 +600,21 @@ export default function HomePage() {
 
           <div className="story-layer" aria-hidden>
             <div className="story-cards">
-              {PAGES.map(([chip, title, fields], i) => (
+              {STATS.map(([figure, label], i) => (
                 <div
-                  key={chip}
+                  key={figure}
                   className="story-card"
                   ref={(el) => {
                     cardRefs.current[i] = el
                   }}
                   data-tl
                 >
-                  <PageCard title={title} fields={fields} />
+                  <StatCard figure={figure} label={label} />
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="story-layer story-stats">
-            <dl ref={statsRef} data-tl className="grid grid-cols-3 gap-8 text-center">
-              {[
-                ["70%", "Faster charting"],
-                ["<10s", "Per chart page"],
-                ["1hr+", "Saved per shift"],
-              ].map(([figure, label]) => (
-                <div key={label}>
-                  <dt className="text-[34px] lg:text-[64px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
-                  <dd className="mt-2 text-[17px] text-paper">{label}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
         </div>
       </section>
 

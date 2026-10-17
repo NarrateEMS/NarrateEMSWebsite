@@ -346,7 +346,6 @@
 .story[data-motion="on"] .story-layer > * { pointer-events: auto; }
 .story[data-motion="on"] .story-hero { justify-content: flex-start; padding-top: 5rem; }
 .story[data-motion="on"] .story-band { justify-content: flex-start; padding-top: 2rem; }
-.story[data-motion="on"] .story-stats { justify-content: flex-end; padding-bottom: 8svh; }
 .story[data-motion="on"] [data-tl] { transform: var(--tf, none); opacity: var(--o, 1); will-change: transform, opacity; }
 .story-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; max-width: 64rem; }
 .story[data-motion="on"] .story-cards { display: block; position: relative; width: 0; height: 0; perspective: 2000px; }
