@@ -55,12 +55,14 @@ export function Faq() {
               </a>
               . A medic writes back.
             </p>
-            <img
-              src="/photos/stethoscope.jpg"
-              alt="A stethoscope resting on a white surface"
-              className={`mt-10 aspect-[16/11] w-full lg:aspect-[4/5] lg:object-left object-cover ${rv} delay-150`}
-              loading="lazy"
-            />
+            <a
+              href="mailto:narrateems@gmail.com"
+              className={`mt-10 block bg-ink p-8 text-paper hover:bg-ink-2 transition-colors focus-hi-vis ${rv} delay-150`}
+            >
+              <span className="block text-[44px] font-semibold leading-none text-hi-vis lg:text-[64px]">?</span>
+              <span className="mt-6 block text-[22px] font-semibold">narrateems@gmail.com</span>
+              <span className="mt-1 block text-[17px] text-paper/70">A medic writes back.</span>
+            </a>
           </div>
         </div>
         <ul className="space-y-2 lg:col-span-7">

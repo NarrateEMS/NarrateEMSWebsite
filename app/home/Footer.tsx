@@ -38,9 +38,8 @@ export function Footer() {
         <div className="mt-12 flex flex-col gap-4 text-[13px] leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">
           <p className="max-w-[60ch]">
             Photos: &ldquo;Ambulance at night&rdquo; by JumpV, CC BY 2.0, via Flickr. &ldquo;Fontainebleau ambulance soir
-            2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0, &ldquo;Bags of medical supplies and defibrillators&rdquo; by
-            Hillelfrei, CC BY-SA 4.0 (cropped), and &ldquo;Doctors stethoscope 1&rdquo; by Stethoscopes, CC BY-SA 3.0
-            (cropped), all via Wikimedia Commons.
+            2020-11-22 (2)&rdquo; by Baidax, CC BY-SA 4.0, and &ldquo;Bags of medical supplies and defibrillators&rdquo; by
+            Hillelfrei, CC BY-SA 4.0 (cropped), both via Wikimedia Commons.
           </p>
           <p className="shrink-0">© 2026 NarrateEMS</p>
         </div>
