@@ -1,12 +1,23 @@
 "use client"
 
 import { useRef } from "react"
-import { Smartphone } from "lucide-react"
+import { Lock, Smartphone } from "lucide-react"
 import { h2, body } from "./shared"
 import { reveal, useReveal } from "./Testimonial"
 
 const steps = [
-  ["Open narrateems.com/dictate.", "Any phone browser. Nothing to install."],
+  [
+    <>
+      Open{" "}
+      <span className="ml-1 inline-flex items-center gap-2 rounded-full bg-paper-tint py-1.5 pl-3 pr-4 align-middle text-[17px] font-medium tracking-normal ring-1 ring-ink/15 lg:text-[19px]">
+        <Lock className="h-3.5 w-3.5 text-success" aria-hidden />
+        <span>
+          narrateems.com<span className="text-ink-muted">/dictate</span>
+        </span>
+      </span>
+    </>,
+    "Any phone browser. Nothing to install.",
+  ],
   ["Talk it through.", "Words show up live. Fix any before you save."],
   ["Pull it in on the laptop.", "Tap From phone in the extension. The chart fills."],
 ] as const
@@ -70,7 +81,7 @@ export function Anywhere() {
 
             <ol className="mt-12 space-y-8">
               {steps.map(([title, line], i) => (
-                <li key={title} data-reveal style={{ transitionDelay: `${160 + i * 80}ms` }} className={reveal}>
+                <li key={i} data-reveal style={{ transitionDelay: `${160 + i * 80}ms` }} className={reveal}>
                   <p className="text-[22px] font-semibold leading-tight tracking-tight lg:text-[26px]">{title}</p>
                   <p className={`mt-1.5 ${body}`}>{line}</p>
                 </li>
