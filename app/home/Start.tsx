@@ -7,7 +7,7 @@ import { STORE_URL, CALENDLY_URL, inkBtn } from "./shared"
 import { rv, useReveal } from "./Faq"
 
 const field =
-  "w-full bg-paper-tint border-b-2 border-ink px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
+  "w-full rounded-field bg-paper-tint border border-ink/30 px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
 
 export function Start() {
   const [formData, setFormData] = useState({ name: "", email: "", company: "", message: "" })
@@ -53,7 +53,7 @@ export function Start() {
             href={STORE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={`group flex min-h-[148px] flex-col justify-between bg-hi-vis p-6 text-hi-vis-ink transition-colors hover:bg-paper focus-hi-vis lg:p-8 ${rv} delay-150`}
+            className={`group flex min-h-[148px] flex-col justify-between rounded-card bg-hi-vis p-6 text-hi-vis-ink transition-colors hover:bg-paper focus-hi-vis lg:p-8 ${rv} delay-150`}
           >
             <ArrowUpRight className="h-7 w-7 self-end transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
             <span className="text-[22px] font-semibold leading-tight lg:text-[32px]">Install Chrome extension</span>
@@ -62,7 +62,7 @@ export function Start() {
             href={CALENDLY_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={`group flex min-h-[148px] flex-col justify-between bg-ink-2 p-6 text-paper transition-colors hover:bg-paper hover:text-ink focus-hi-vis lg:p-8 ${rv} delay-200`}
+            className={`group flex min-h-[148px] flex-col justify-between rounded-card bg-ink-2 p-6 text-paper transition-colors hover:bg-paper hover:text-ink focus-hi-vis lg:p-8 ${rv} delay-200`}
           >
             <ArrowUpRight className="h-7 w-7 self-end transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
             <span className="text-[22px] font-semibold leading-tight lg:text-[32px]">Book a squad walkthrough</span>
@@ -73,10 +73,10 @@ export function Start() {
           <img
             src="/photos/jump-bags.jpg"
             alt="A row of navy medical jump bags with reflective stripes on a shelf"
-            className={`h-full min-h-[280px] w-full object-cover lg:col-span-7 ${rv}`}
+            className={`h-full min-h-[280px] w-full rounded-card object-cover lg:col-span-7 ${rv}`}
             loading="lazy"
           />
-          <div className={`bg-paper p-6 text-ink lg:col-span-5 lg:p-8 ${rv} delay-75`}>
+          <div className={`rounded-card bg-paper p-6 text-ink lg:col-span-5 lg:p-8 ${rv} delay-75`}>
             <h3 className="text-[22px] font-semibold leading-tight">Or send us a note</h3>
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               {(

@@ -12,7 +12,7 @@ const SQUAD_PLANS = [
 const MAX_CHARTS = 10000
 const SQUAD_COLS = ["xl:col-start-3", "xl:col-start-4", "xl:col-start-5", "xl:col-start-6"]
 
-const card = "flex flex-col gap-6 p-6 xl:row-span-4 xl:row-start-2 xl:grid xl:grid-rows-subgrid xl:gap-6 xl:p-5"
+const card = "flex flex-col rounded-card gap-6 p-6 xl:row-span-4 xl:row-start-2 xl:grid xl:grid-rows-subgrid xl:gap-6 xl:p-5"
 const price = "text-[44px] font-semibold leading-none tracking-tight tabular-nums"
 const rise = "motion-safe:transition-[transform,opacity] motion-safe:duration-700 motion-safe:ease-[cubic-bezier(0.16,1,0.3,1)]"
 
@@ -92,7 +92,7 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
                   {p.blurb}
                   {p.popular && <strong className="font-semibold">. Most chosen</strong>}
                 </p>
-                <div className={`h-2.5 overflow-hidden ${p.popular ? "bg-paper" : "bg-paper-tint"}`} aria-hidden>
+                <div className={`h-2.5 overflow-hidden rounded-full ${p.popular ? "bg-paper" : "bg-paper-tint"}`} aria-hidden>
                   <div
                     className="h-full origin-left bg-ink motion-safe:transition-transform motion-safe:duration-1000 motion-safe:ease-[cubic-bezier(0.16,1,0.3,1)]"
                     style={{ transform: `scaleX(${armed ? 0 : p.charts / MAX_CHARTS})`, transitionDelay: `${300 + i * 120}ms` }}

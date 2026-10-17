@@ -154,7 +154,7 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="text-[#4A5568]">{label}</div>
-      <div className="mt-0.5 h-6 border border-[#C9CED6] bg-white">
+      <div className="mt-0.5 h-6 overflow-hidden rounded-field border border-[#C9CED6] bg-white">
         <span
           data-field
           data-on="1"
@@ -170,7 +170,7 @@ function Field({ label, value }: { label: string; value: string }) {
 function ChartObject() {
   return (
     <div className="relative w-[min(560px,calc(100vw-3rem))] pb-20 [transform-style:preserve-3d]">
-      <div data-ui className="bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
+      <div data-ui className="overflow-hidden rounded-ui bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
         <div className="flex items-center justify-between bg-[#DDE3EA] px-3 py-2 font-semibold">
           <span>emsCharts, Page 2: CC/HPI</span>
           <span className="font-normal">Sample chart</span>
@@ -183,7 +183,7 @@ function ChartObject() {
       </div>
       <div
         data-ui
-        className="absolute right-0 bottom-0 w-[60%] min-w-[220px] bg-paper text-ink border border-ink text-[12px] sm:-right-8"
+        className="absolute right-0 bottom-0 w-[60%] min-w-[220px] overflow-hidden rounded-ui bg-paper text-ink border border-ink text-[12px] sm:-right-8"
         style={{ transform: "translateZ(70px)" }}
       >
         <div className="flex items-center justify-between bg-ink px-3 py-2">
@@ -191,10 +191,10 @@ function ChartObject() {
             <span className="text-[15px]">narrate</span>
             <span className="bg-paper px-1 text-ink">ems</span>
           </span>
-          <span className="border border-paper/40 px-1.5 text-paper">Reset</span>
+          <span className="rounded-full border border-paper/40 px-2 text-paper">Reset</span>
         </div>
         <div className="px-3 pt-2.5 font-semibold">Chart page</div>
-        <div className="mx-3 mt-1 grid grid-cols-7 border border-[#D6D2C7] bg-white">
+        <div className="mx-3 mt-1 grid grid-cols-7 overflow-hidden rounded-field border border-[#D6D2C7] bg-white">
           {CHIPS.map((chip) => (
             <span
               key={chip}
@@ -209,19 +209,19 @@ function ChartObject() {
         <div
           data-speak
           data-rec="0"
-          className="group/speak mx-3 mt-2.5 flex items-center justify-center gap-1.5 py-2 font-semibold border border-transparent bg-hi-vis data-[rec=1]:bg-paper data-[rec=1]:border-recording"
+          className="group/speak mx-3 mt-2.5 flex rounded-full items-center justify-center gap-1.5 py-2 font-semibold border border-transparent bg-hi-vis data-[rec=1]:bg-paper data-[rec=1]:border-recording"
         >
           <Mic className="h-3.5 w-3.5 group-data-[rec=1]/speak:text-recording" aria-hidden />
           <span className="group-data-[rec=1]/speak:hidden">Start narrating</span>
           <span className="hidden group-data-[rec=1]/speak:inline">Stop narrating</span>
         </div>
         <div className="px-3 pt-2.5 font-semibold">Transcript</div>
-        <p data-transcript className="mx-3 mt-1 h-[92px] overflow-hidden border border-[#D6D2C7] bg-white p-2">
+        <p data-transcript className="mx-3 mt-1 h-[92px] overflow-hidden rounded-field border border-[#D6D2C7] bg-white p-2">
           {TRANSCRIPT}
         </p>
         <div data-actions data-on="1" className="mx-3 mt-2 mb-3 flex gap-2 transition-opacity duration-300 motion-reduce:transition-none data-[on=0]:opacity-0">
-          <span className="flex-1 border border-[#D6D2C7] py-1.5 text-center font-semibold">Cancel</span>
-          <span className="flex-[2] bg-ink py-1.5 text-center font-semibold text-paper">Fill the chart</span>
+          <span className="flex-1 rounded-full border border-[#D6D2C7] py-1.5 text-center font-semibold">Cancel</span>
+          <span className="flex-[2] rounded-full bg-ink py-1.5 text-center font-semibold text-paper">Fill the chart</span>
         </div>
       </div>
     </div>
@@ -230,7 +230,7 @@ function ChartObject() {
 
 function PageCard({ title, fields }: { title: string; fields: readonly (readonly [string, string])[] }) {
   return (
-    <div data-ui className="w-[156px] sm:w-[230px] sm:h-[160px] lg:w-[280px] lg:h-[184px] lg:text-[13px] bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
+    <div data-ui className="w-[156px] sm:w-[230px] sm:h-[160px] lg:w-[280px] lg:h-[184px] lg:text-[13px] overflow-hidden rounded-ui bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
       <div className="flex items-center justify-between gap-2 bg-[#DDE3EA] px-3 py-2 font-semibold">
         <span className="truncate">{title}</span>
         <span className="hidden sm:inline text-success">Filled</span>
@@ -239,7 +239,7 @@ function PageCard({ title, fields }: { title: string; fields: readonly (readonly
         {fields.map(([label, value], i) => (
           <div key={label} className={i ? "hidden sm:block" : undefined}>
             <div className="text-[#4A5568]">{label}</div>
-            <div className="mt-0.5 truncate bg-hi-vis px-1.5 leading-6 font-medium">{value}</div>
+            <div className="mt-0.5 truncate rounded-field bg-hi-vis px-1.5 leading-6 font-medium">{value}</div>
           </div>
         ))}
       </div>
@@ -461,7 +461,7 @@ export default function HomePage() {
             <button onClick={() => scrollToSection("pricing")} className={navLink}>Pricing</button>
             <button onClick={() => scrollToSection("security")} className={navLink}>Security</button>
             <Link href="/login" className={navLink}>Log in</Link>
-            <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="bg-hi-vis text-hi-vis-ink px-4 py-2 text-[17px] font-semibold hover:bg-paper focus-hi-vis">
+            <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="rounded-full bg-hi-vis text-hi-vis-ink px-4 py-2 text-[17px] font-semibold hover:bg-paper focus-hi-vis">
               Install
             </a>
           </div>
@@ -613,12 +613,12 @@ export default function HomePage() {
         <div className="fixed inset-0 z-50 bg-ink/95 flex items-center justify-center p-4" onClick={() => setShowVideoModal(false)}>
           <button
             onClick={() => setShowVideoModal(false)}
-            className="absolute top-5 right-5 text-paper p-2 hover:bg-paper/10 focus-hi-vis"
+            className="absolute top-5 right-5 rounded-full text-paper p-2 hover:bg-paper/10 focus-hi-vis"
             aria-label="Close video"
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="relative w-full max-w-5xl aspect-video bg-black" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-5xl aspect-video overflow-hidden rounded-card bg-black" onClick={(e) => e.stopPropagation()}>
             <iframe
               src="https://www.youtube.com/embed/qvp9YXTCtZA?autoplay=1&rel=0"
               title="NarrateEMS product demo"
@@ -633,10 +633,10 @@ export default function HomePage() {
       {/* CHECKOUT MODAL */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-50 bg-ink/80 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-md bg-paper p-8">
+          <div className="relative w-full max-w-md rounded-card bg-paper p-8">
             <button
               onClick={() => setShowCheckoutModal(false)}
-              className="absolute top-4 right-4 text-ink p-1.5 hover:bg-paper-tint focus-hi-vis"
+              className="absolute top-4 right-4 rounded-full text-ink p-1.5 hover:bg-paper-tint focus-hi-vis"
               aria-label="Close"
             >
               <X className="h-5 w-5" />

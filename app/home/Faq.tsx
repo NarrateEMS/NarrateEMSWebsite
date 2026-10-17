@@ -57,7 +57,7 @@ export function Faq() {
             </p>
             <a
               href="mailto:narrateems@gmail.com"
-              className={`mt-10 block bg-ink p-8 text-paper hover:bg-ink-2 transition-colors focus-hi-vis ${rv} delay-150`}
+              className={`mt-10 block rounded-card bg-ink p-8 text-paper hover:bg-ink-2 transition-colors focus-hi-vis ${rv} delay-150`}
             >
               <span className="block text-[44px] font-semibold leading-none text-hi-vis lg:text-[64px]">?</span>
               <span className="mt-6 block text-[22px] font-semibold">narrateems@gmail.com</span>
@@ -69,16 +69,16 @@ export function Faq() {
           {faqs.map((item, i) => {
             const isOpen = openFaq === i
             return (
-              <li key={item.q} className={`${rv} ${isOpen ? "bg-ink text-paper" : "text-ink"}`} style={{ transitionDelay: `${i * 60}ms` }}>
+              <li key={item.q} className={`rounded-card ${rv} ${isOpen ? "bg-ink text-paper" : "text-ink"}`} style={{ transitionDelay: `${i * 60}ms` }}>
                 <h3>
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : i)}
                     aria-expanded={isOpen}
                     aria-controls={`faq-${i}`}
-                    className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left text-[22px] font-semibold leading-snug focus-hi-vis lg:px-8 lg:py-6"
+                    className="flex w-full items-center justify-between gap-6 rounded-card px-6 py-5 text-left text-[22px] font-semibold leading-snug focus-hi-vis lg:px-8 lg:py-6"
                   >
                     {item.q}
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center ${isOpen ? "bg-hi-vis text-hi-vis-ink" : "bg-paper"}`}>
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${isOpen ? "bg-hi-vis text-hi-vis-ink" : "bg-paper"}`}>
                       {isOpen ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     </span>
                   </button>

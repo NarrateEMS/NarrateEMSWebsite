@@ -108,6 +108,9 @@
 }
 
 @theme inline {
+  --radius-card: 16px;
+  --radius-ui: 10px;
+  --radius-field: 6px;
   --font-sans: var(--font-work-sans), 'Work Sans', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-work-sans), 'Work Sans', system-ui, -apple-system, sans-serif; /* taste-skill-ignore: alias to Work Sans for untouched pages (A8) */
   --font-serif: var(--font-work-sans), 'Work Sans', system-ui, -apple-system, sans-serif;

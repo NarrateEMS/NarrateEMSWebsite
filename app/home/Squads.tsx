@@ -47,7 +47,7 @@ function SquadStage() {
       data-reveal
       role="img"
       aria-label="Sample squad admin screen with squad code, chart usage, invite form and member list"
-      className={`group w-full bg-paper text-ink ${reveal}`}
+      className={`group w-full overflow-hidden rounded-card bg-paper text-ink ${reveal}`}
     >
       <div className="flex items-center gap-3 bg-ink-2 px-4 py-3 text-[13px] text-paper">
         <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -61,23 +61,23 @@ function SquadStage() {
 
       <div className="grid gap-3 p-5 lg:grid-cols-12 lg:px-8 lg:pb-8">
         <div className="grid gap-3 sm:grid-cols-3 lg:col-span-4 lg:grid-cols-1">
-          <div className="bg-ink p-4 text-paper">
+          <div className="rounded-field bg-ink p-4 text-paper">
             <span className="block text-[14px]">Squad code</span>
             <span className="mt-2 flex items-center justify-between text-[26px] font-semibold leading-none tracking-tight">
               SAMPLE42
               <Copy className="h-4 w-4 text-hi-vis" aria-hidden />
             </span>
           </div>
-          <div className="bg-surface p-4">
+          <div className="rounded-field bg-surface p-4">
             <span className="block text-[14px]">Charts this period</span>
             <span className="mt-2 block text-[26px] font-semibold leading-none tabular-nums tracking-tight">
               1,284 <span className="text-[15px] font-normal">of 2,000</span>
             </span>
-            <span className="mt-3 block h-2 bg-paper-tint">
+            <span className="mt-3 block h-2 overflow-hidden rounded-full bg-paper-tint">
               <span className="block h-full w-[64%] origin-left bg-hi-vis transition-transform delay-300 duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[pending]:scale-x-0 motion-reduce:transition-none" />
             </span>
           </div>
-          <div className="bg-surface p-4">
+          <div className="rounded-field bg-surface p-4">
             <span className="block text-[14px]">Plan</span>
             <span className="mt-2 block text-[20px] font-semibold leading-none">Small Squad</span>
             <span className="mt-2 block text-[14px]">One bill, billed annually</span>
@@ -85,37 +85,37 @@ function SquadStage() {
         </div>
 
         <div className="flex flex-col gap-3 lg:col-span-8">
-          <div className="bg-surface p-4">
+          <div className="rounded-field bg-surface p-4">
             <span className="flex items-center gap-2 text-[15px] font-semibold">
               <UserPlus className="h-4 w-4" aria-hidden />
               Invite a member
             </span>
             <span className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <span className="flex min-w-0 flex-1">
+              <span className="flex min-w-0 flex-1 overflow-hidden rounded-field">
                 <span className="min-w-0 flex-1 truncate bg-paper px-3 py-2.5 text-[14px] text-ink-muted">name@squad.org</span>
                 <span className="bg-hi-vis px-3 py-2.5 text-[14px] font-semibold text-hi-vis-ink">Send invite</span>
               </span>
-              <span className="bg-paper-tint px-3 py-2.5 text-[14px] text-success">Invite sent to medic.d@squad.org</span>
+              <span className="rounded-field bg-paper-tint px-3 py-2.5 text-[14px] text-success">Invite sent to medic.d@squad.org</span>
             </span>
           </div>
-          <div className="flex-1 bg-surface p-4">
+          <div className="flex-1 rounded-field bg-surface p-4">
             <span className="flex items-center gap-2 text-[15px] font-semibold">
               <Users className="h-4 w-4" aria-hidden />
               Members and pending invites
             </span>
             <span className="mt-2 block">
               {members.map(([email, status]) => (
-                <span key={email} className="flex items-center justify-between gap-3 px-2 py-2 text-[14px] even:bg-paper">
+                <span key={email} className="flex items-center justify-between gap-3 rounded-field px-2 py-2 text-[14px] even:bg-paper">
                   <span className={`truncate ${status === "pending" ? "text-ink-muted" : ""}`}>{email}</span>
-                  {status === "admin" && <span className="shrink-0 bg-ink px-2 py-1 text-[13px] text-paper">Admin</span>}
+                  {status === "admin" && <span className="shrink-0 rounded-full bg-ink px-2.5 py-1 text-[13px] text-paper">Admin</span>}
                   {status === "member" && (
-                    <span className="inline-flex shrink-0 items-center gap-1 bg-paper-tint px-2 py-1 text-[13px]">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-paper-tint px-2.5 py-1 text-[13px]">
                       <Trash2 className="h-3 w-3" aria-hidden />
                       Remove
                     </span>
                   )}
                   {status === "pending" && (
-                    <span className="inline-flex shrink-0 items-center gap-1 bg-paper-tint px-2 py-1 text-[13px]">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-paper-tint px-2.5 py-1 text-[13px]">
                       <RefreshCw className="h-3 w-3" aria-hidden />
                       Resend
                     </span>

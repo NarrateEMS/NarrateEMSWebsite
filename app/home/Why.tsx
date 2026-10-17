@@ -3,7 +3,7 @@ import { h2, body } from "./shared"
 import { reveal, useReveal } from "./Testimonial"
 
 const bar =
-  "h-10 origin-left transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none data-[in=0]:scale-x-0 lg:h-12"
+  "h-10 rounded-field origin-left transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none data-[in=0]:scale-x-0 lg:h-12"
 
 export function Why() {
   const ref = useRef<HTMLElement>(null)
@@ -25,7 +25,7 @@ export function Why() {
         </div>
 
         <div className="mt-20 lg:mt-28 lg:grid lg:grid-cols-12 lg:items-center lg:gap-10">
-          <div data-reveal className={`overflow-hidden lg:col-span-5 ${reveal}`}>
+          <div data-reveal className={`overflow-hidden rounded-card lg:col-span-5 ${reveal}`}>
             <img
               src="/photos/ambulance-night-blur.jpg"
               alt="An ambulance passing at night, motion-blurred"
