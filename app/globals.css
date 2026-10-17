@@ -336,24 +336,20 @@
 
 /* Homepage story track. Scrubbed only when JS sets data-motion="on"; without it the track is a static, filled flow. */
 .story-layer { display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1.5rem; }
-.story[data-motion="on"] { height: 820svh; }
-.story[data-motion="on"] .story-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; perspective: 1400px; }
-.story[data-motion="on"] .story-layer { position: absolute; inset: 4rem 0 0 0; padding: 0 5vw; justify-content: center; pointer-events: none; }
+.story[data-motion="on"] { height: 980svh; }
+.story[data-motion="on"] .story-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+/* Perspective sits on the parent of each scrubbed element, so tilt reads as depth, not a squash. */
+.story[data-motion="on"] .story-layer { position: absolute; inset: 4rem 0 0 0; padding: 0 5vw; justify-content: center; pointer-events: none; perspective: 2000px; }
 .story[data-motion="on"] .story-layer > * { pointer-events: auto; }
 .story[data-motion="on"] .story-hero { justify-content: flex-start; padding-top: 5rem; }
-.story[data-motion="on"] .story-step-l { align-items: flex-start; }
-.story[data-motion="on"] .story-step-r { align-items: flex-end; }
-.story[data-motion="on"] .story-step-l > *, .story[data-motion="on"] .story-step-r > * { max-width: min(360px, calc(27vw - 80px)); }
+.story[data-motion="on"] .story-band { justify-content: flex-start; padding-top: 2rem; }
 .story[data-motion="on"] [data-tl] { transform: var(--tf, none); opacity: var(--o, 1); will-change: transform, opacity; }
 .story-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; max-width: 64rem; }
-.story[data-motion="on"] .story-cards { display: block; position: relative; width: 0; height: 0; }
-.story[data-motion="on"] .story-card { position: absolute; left: -115px; top: -80px; }
-@media (max-width: 1279px) {
-  .story[data-motion="on"] .story-step-l,
-  .story[data-motion="on"] .story-step-r { align-items: center; justify-content: flex-start; padding-top: 2.5rem; text-align: center; }
-  .story[data-motion="on"] .story-step-l > *, .story[data-motion="on"] .story-step-r > * { max-width: 30rem; }
-}
+.story[data-motion="on"] .story-cards { display: block; position: relative; width: 0; height: 0; perspective: 2000px; }
+.story[data-motion="on"] .story-card { position: absolute; left: 0; top: 0; }
+.story[data-motion="on"] .story-card > * { transform: translate(-50%, -50%); }
 @media (max-width: 1023px) {
-  .story[data-motion="on"] { height: 700svh; }
+  .story[data-motion="on"] { height: 880svh; }
   .story[data-motion="on"] .story-hero { padding-top: 3rem; }
+  .story[data-motion="on"] .story-band { padding-top: 1.25rem; }
 }
