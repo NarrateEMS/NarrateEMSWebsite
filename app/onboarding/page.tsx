@@ -8,12 +8,12 @@ import { useRouter } from "next/navigation"
 import {
   ArrowRight,
   BookOpenText,
-  Download,
   ExternalLink,
   LogOut,
   ShieldCheck,
 } from "lucide-react"
-import { Wordmark } from "@/components/wordmark"
+import { AppNav, btn, outlineBtn, navLink } from "@/components/app-ui"
+import { primaryBtn } from "@/app/home/shared"
 import {
   FeaturesVisual,
   NarrationVisual,
@@ -80,7 +80,7 @@ export default function OnboardingPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
-        <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
+        <div className="flex items-center gap-3 text-[17px] text-ink-muted">
           <BookOpenText className="h-4 w-4 animate-pulse text-ink" />
           Loading guide
         </div>
@@ -90,56 +90,34 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-paper text-ink antialiased">
-      <nav className="sticky top-0 z-40 border-b border-rule bg-paper/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-5 sm:px-6 lg:px-10">
-          <Wordmark href="/" size="md" />
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Link
-              href="/account"
-              className="inline-flex items-center gap-1.5 px-2 py-2 text-sm text-ink-muted transition-colors hover:text-ink sm:px-3"
-            >
-              <ArrowRight className="h-3.5 w-3.5 rotate-180" />
-              Account
-            </Link>
-            <a
-              href={CHROME_EXTENSION_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden items-center gap-1.5 px-3 py-2 text-sm text-ink-muted transition-colors hover:text-ink md:inline-flex"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Install
-            </a>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 px-2 py-2 text-sm text-ink-muted transition-colors hover:text-ink sm:px-3"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+      <AppNav>
+        <Link href="/account" className={navLink}>
+          Account
+        </Link>
+        <button onClick={handleLogout} className={navLink}>
+          <LogOut className="h-4 w-4" />
+          Log out
+        </button>
+      </AppNav>
 
-      <header className="border-b border-rule bg-grain">
+      <header className="border-b border-rule">
         <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1fr_0.65fr] lg:px-10 lg:py-24">
           <div>
-            <div className="mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
-              <BookOpenText className="h-3.5 w-3.5" />
+            <div className="mb-5 flex items-center gap-2 text-[17px] font-medium text-ink-muted">
+              <BookOpenText className="h-4 w-4" />
               NarrateEMS field guide
             </div>
-            <h1 className="max-w-3xl font-serif text-5xl leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
-              From first narration to a{" "}
-              <span className="italic">fully onboarded squad.</span>
+            <h1 className="max-w-3xl text-[44px] font-semibold leading-[1.02] tracking-tight text-balance sm:text-[56px] lg:text-[64px]">
+              From first narration to a fully onboarded squad.
             </h1>
-            <p className="mt-7 max-w-2xl text-base leading-relaxed text-ink-muted sm:text-lg">
+            <p className="mt-7 max-w-2xl text-[17px] leading-relaxed text-ink-muted sm:text-[19px]">
               Follow the annotated walkthroughs below while you keep your ZOLL
               chart open in Chrome. The visuals use sample information only.
             </p>
           </div>
 
-          <div className="self-end rounded-2xl border border-rule-strong bg-surface p-5 shadow-[0_18px_50px_rgba(10,22,40,0.06)] sm:p-6">
-            <div className="flex items-center gap-2 text-sm font-semibold">
+          <div className="self-end rounded-card border border-rule bg-surface p-6">
+            <div className="flex items-center gap-2 text-[17px] font-semibold">
               <ShieldCheck className="h-4 w-4" />
               Before your first narration
             </div>
@@ -149,8 +127,8 @@ export default function OnboardingPage() {
                 "Sign into the extension with this account.",
                 "Open the correct patient chart in ZOLL.",
               ].map((item, index) => (
-                <li key={item} className="flex gap-3 text-sm text-ink-muted">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-hi-vis font-mono text-[9px] font-semibold text-ink">
+                <li key={item} className="flex gap-3 text-[17px] text-ink-muted">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-[15px] font-semibold text-paper">
                     {index + 1}
                   </span>
                   <span className="pt-0.5 leading-relaxed">{item}</span>
@@ -161,7 +139,7 @@ export default function OnboardingPage() {
               href={CHROME_EXTENSION_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 text-sm font-semibold text-paper transition-colors hover:bg-ink-2"
+              className={`${btn} mt-6 w-full`}
             >
               Open Chrome Web Store
               <ExternalLink className="h-3.5 w-3.5" />
@@ -173,7 +151,7 @@ export default function OnboardingPage() {
       <div className="mx-auto grid max-w-[1200px] gap-12 px-5 py-12 sm:px-6 lg:grid-cols-[210px_minmax(0,1fr)] lg:px-10 lg:py-16">
         <aside className="hidden lg:block">
           <div className="sticky top-28">
-            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink-soft">
+            <p className="text-[15px] font-semibold text-ink">
               In this guide
             </p>
             <nav className="mt-5 border-l border-rule-strong">
@@ -181,16 +159,16 @@ export default function OnboardingPage() {
                 <a
                   key={section.id}
                   href={`#${section.id}`}
-                  className="group flex gap-3 border-l-2 border-transparent py-3 pl-4 text-sm text-ink-muted transition-colors hover:border-ink hover:text-ink"
+                  className="group flex min-h-11 items-center gap-3 border-l-2 border-transparent py-2 pl-4 text-[15px] text-ink-muted transition-colors hover:border-ink hover:text-ink focus-hi-vis"
                 >
-                  <span className="font-mono text-[9px] text-ink-soft">
+                  <span className="text-ink-soft tabular-nums">
                     {section.number}
                   </span>
                   <span>{section.label}</span>
                 </a>
               ))}
             </nav>
-            <p className="mt-8 text-xs leading-relaxed text-ink-soft">
+            <p className="mt-8 text-[14px] leading-relaxed text-ink-muted">
               Signed in as
               <br />
               <span className="break-all text-ink-muted">{email}</span>
@@ -242,10 +220,10 @@ export default function OnboardingPage() {
               ].map((feature) => (
                 <div
                   key={feature.title}
-                  className="border-t border-ink pt-4"
+                  className="rounded-card border border-rule bg-surface p-5"
                 >
-                  <h3 className="text-sm font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                  <h3 className="text-[17px] font-semibold">{feature.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-ink-muted">
                     {feature.text}
                   </p>
                 </div>
@@ -263,18 +241,18 @@ export default function OnboardingPage() {
             <div className="mt-9">
               <TeamVisual />
             </div>
-            <div className="mt-7 flex flex-col gap-4 rounded-xl border border-rule-strong bg-paper-tint p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-7 flex flex-col gap-4 rounded-card border border-rule bg-paper-tint p-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold">
+                <p className="text-[17px] font-semibold">
                   Ready to invite your crew?
                 </p>
-                <p className="mt-1 text-sm text-ink-muted">
+                <p className="mt-1 text-[15px] text-ink-muted">
                   Open Squad administration from your account.
                 </p>
               </div>
               <Link
                 href="/account"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 text-sm font-semibold text-paper transition-colors hover:bg-ink-2"
+                className={`${outlineBtn} shrink-0`}
               >
                 Manage squad
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -298,22 +276,21 @@ export default function OnboardingPage() {
             </Note>
           </section>
 
-          <section className="rounded-2xl bg-ink px-6 py-10 text-paper sm:px-10 sm:py-12">
-            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-paper/55">
+          <section className="rounded-card bg-ink px-6 py-10 text-paper sm:px-10 sm:py-12">
+            <p className="text-[17px] font-medium text-paper/80">
               You&apos;re ready
             </p>
             <div className="mt-4 flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="max-w-xl font-serif text-4xl leading-tight sm:text-5xl">
-                  Open a ZOLL chart and start your{" "}
-                  <span className="italic">first narration.</span>
+                <h2 className="max-w-xl text-[34px] font-semibold tracking-tight leading-tight text-balance sm:text-[44px]">
+                  Open a ZOLL chart and start your first narration.
                 </h2>
               </div>
               <a
                 href={CHROME_EXTENSION_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-hi-vis px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-[#e7bc10]"
+                className={`${primaryBtn} shrink-0`}
               >
                 Open extension listing
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -324,8 +301,8 @@ export default function OnboardingPage() {
       </div>
 
       <footer className="border-t border-rule">
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-2 px-5 py-8 text-xs text-ink-soft sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
-          <span className="font-mono uppercase tracking-[0.16em]">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-2 px-5 py-8 text-[15px] text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
+          <span>
             NarrateEMS field guide
           </span>
           <span>Always review the chart before signing.</span>
@@ -348,17 +325,17 @@ function SectionHeader({
 }) {
   return (
     <div className="grid gap-5 sm:grid-cols-[64px_minmax(0,1fr)]">
-      <div className="font-mono text-xs tracking-[0.18em] text-ink-soft">
+      <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-ink text-[17px] font-semibold text-paper tabular-nums">
         {number}
       </div>
       <div>
-        <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink-soft">
+        <p className="text-[17px] font-medium text-ink-muted">
           {eyebrow}
         </p>
-        <h2 className="mt-3 font-serif text-4xl leading-none sm:text-5xl">
+        <h2 className="mt-2 text-[34px] font-semibold leading-[1.05] tracking-tight sm:text-[44px]">
           {title}
         </h2>
-        <p className="mt-5 max-w-3xl text-base leading-relaxed text-ink-muted">
+        <p className="mt-5 max-w-3xl text-[17px] leading-relaxed text-ink-muted">
           {description}
         </p>
       </div>
@@ -368,7 +345,7 @@ function SectionHeader({
 
 function Note({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-7 flex gap-3 border-l-2 border-hi-vis-deep bg-paper-tint px-4 py-3 text-sm leading-relaxed text-ink-muted">
+    <div className="mt-7 flex gap-3 rounded-card border border-rule bg-paper-tint p-5 text-[15px] leading-relaxed text-ink">
       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
       <p>{children}</p>
     </div>

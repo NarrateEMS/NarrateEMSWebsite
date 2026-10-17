@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
-import { Wordmark } from "@/components/wordmark"
+import { AuthShell, btn, outlineBtn, textLink, field, label, navLink } from "@/components/app-ui"
 import { Loader2, CheckCircle, XCircle, Eye, EyeOff, ArrowUpRight, AlertCircle } from "lucide-react"
 
 type PageState = "loading" | "set-password" | "confirm-join" | "processing" | "success" | "error"
@@ -238,59 +238,48 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink antialiased flex flex-col">
-      <header className="border-b border-rule">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 h-16 flex items-center justify-between">
-          <Wordmark href="/" size="md" />
-          <Link href="/" className="text-sm text-ink-muted hover:text-ink transition-colors">
-            Back to site
-          </Link>
-        </div>
-      </header>
-
-      <main className="flex-1 flex items-center justify-center px-6 py-16 lg:py-20">
-        <div className="w-full max-w-[480px]">
+    <AuthShell
+      nav={
+        <Link href="/" className={navLink}>
+          Back to site
+        </Link>
+      }
+    >
           {pageState === "loading" && (
             <div className="text-center">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-                ↳ Verifying invite
-              </div>
               <Loader2 className="h-6 w-6 animate-spin text-ink mx-auto" />
             </div>
           )}
 
           {pageState === "set-password" && (
             <>
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-                ↳ Squad invite
-              </div>
-              <h1 className="font-serif text-4xl lg:text-5xl text-ink leading-[1.05] mb-3">
-                Joining <span className="italic">{squadName}.</span>
+              <h1 className="text-[34px] lg:text-[40px] font-semibold tracking-tight text-ink leading-[1.05] mb-3 text-balance">
+                Joining {squadName}.
               </h1>
-              <p className="text-ink-muted mb-8">Set a password and you're in.</p>
+              <p className="text-[17px] text-ink-muted mb-8">Set a password and you're in.</p>
 
               {error && (
-                <div className="bg-paper-tint border border-rule-strong rounded-md p-3.5 mb-5 flex items-start gap-2.5">
+                <div className="bg-paper-tint border border-rule-strong rounded-field p-3.5 mb-5 flex items-start gap-2.5">
                   <AlertCircle className="h-4 w-4 text-ink mt-0.5 shrink-0" />
-                  <p className="text-sm text-ink-muted">{error}</p>
+                  <p className="text-[15px] text-ink">{error}</p>
                 </div>
               )}
 
               <form onSubmit={handleSetPassword} className="space-y-5">
                 <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft mb-2">
+                  <label className={label}>
                     Email
                   </label>
                   <input
                     type="email"
                     value={email}
                     disabled
-                    className="w-full px-4 py-3.5 bg-paper-tint border border-rule rounded-md text-ink-muted"
+                    className={`${field} bg-paper-tint text-ink-muted`}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft mb-2">
+                  <label className={label}>
                     Password
                   </label>
                   <div className="relative">
@@ -301,12 +290,12 @@ export default function AcceptInvitePage() {
                       placeholder="At least 8 characters"
                       required
                       minLength={8}
-                      className="w-full px-4 py-3.5 pr-12 bg-surface border border-rule rounded-md text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-ink"
+                      className={`${field} pr-14`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink"
+                      className="absolute right-0.5 top-1/2 -translate-y-1/2 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-muted hover:text-ink focus-hi-vis"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -314,7 +303,7 @@ export default function AcceptInvitePage() {
                 </div>
 
                 <div>
-                  <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft mb-2">
+                  <label className={label}>
                     Confirm password
                   </label>
                   <div className="relative">
@@ -325,12 +314,12 @@ export default function AcceptInvitePage() {
                       placeholder="Same password again"
                       required
                       minLength={8}
-                      className="w-full px-4 py-3.5 pr-12 bg-surface border border-rule rounded-md text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-ink"
+                      className={`${field} pr-14`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink"
+                      className="absolute right-0.5 top-1/2 -translate-y-1/2 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-muted hover:text-ink focus-hi-vis"
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -339,7 +328,7 @@ export default function AcceptInvitePage() {
 
                 <button
                   type="submit"
-                  className="w-full inline-flex items-center justify-center gap-2 bg-hi-vis text-hi-vis-ink py-3.5 text-base font-semibold rounded-md hover:bg-hi-vis-deep hover:text-paper transition-colors focus-hi-vis"
+                  className={`${btn} w-full`}
                 >
                   Create account &amp; join squad
                   <ArrowUpRight className="h-4 w-4" />
@@ -350,27 +339,24 @@ export default function AcceptInvitePage() {
 
           {pageState === "confirm-join" && (
             <div className="text-center">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-                ↳ Squad invite
-              </div>
-              <h1 className="font-serif text-4xl lg:text-5xl text-ink leading-[1.05] mb-3">
-                Join <span className="italic">{squadName}?</span>
+              <h1 className="text-[34px] lg:text-[40px] font-semibold tracking-tight text-ink leading-[1.05] mb-3 text-balance">
+                Join {squadName}?
               </h1>
-              <p className="text-ink-muted mb-8">
+              <p className="text-[17px] text-ink-muted mb-8">
                 Signed in as{" "}
                 <span className="text-ink font-medium break-all">{email}</span>.
               </p>
 
               {error && (
-                <div className="bg-paper-tint border border-rule-strong rounded-md p-3.5 mb-5 flex items-start gap-2.5 text-left">
+                <div className="bg-paper-tint border border-rule-strong rounded-field p-3.5 mb-5 flex items-start gap-2.5 text-left">
                   <AlertCircle className="h-4 w-4 text-ink mt-0.5 shrink-0" />
-                  <p className="text-sm text-ink-muted">{error}</p>
+                  <p className="text-[15px] text-ink">{error}</p>
                 </div>
               )}
 
               <button
                 onClick={handleJoinSquad}
-                className="w-full inline-flex items-center justify-center gap-2 bg-hi-vis text-hi-vis-ink py-3.5 text-base font-semibold rounded-md hover:bg-hi-vis-deep hover:text-paper transition-colors focus-hi-vis"
+                className={`${btn} w-full`}
               >
                 Join {squadName}
                 <ArrowUpRight className="h-4 w-4" />
@@ -381,7 +367,7 @@ export default function AcceptInvitePage() {
               <button
                 type="button"
                 onClick={() => setPageState("set-password")}
-                className="mt-5 text-sm text-ink-muted hover:text-ink underline underline-offset-4"
+                className={`${textLink} mt-3 underline`}
               >
                 I don't have a password yet -- set one
               </button>
@@ -390,25 +376,17 @@ export default function AcceptInvitePage() {
 
           {pageState === "processing" && (
             <div className="text-center">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-                ↳ Setting up
-              </div>
               <Loader2 className="h-6 w-6 animate-spin text-ink mx-auto" />
             </div>
           )}
 
           {pageState === "success" && (
             <div className="text-center">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-                ↳ You're in
-              </div>
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-md bg-paper-tint border border-rule mb-6">
-                <CheckCircle className="h-6 w-6 text-success" />
-              </div>
-              <h1 className="font-serif text-4xl text-ink leading-tight mb-3">
-                Welcome to the <span className="italic">squad.</span>
+              <CheckCircle className="h-8 w-8 text-success mx-auto mb-5" aria-hidden />
+              <h1 className="text-[32px] font-semibold tracking-tight text-ink mb-3 leading-[1.1] text-balance">
+                Welcome to the squad.
               </h1>
-              <p className="text-ink-muted">
+              <p className="text-[17px] text-ink-muted">
                 {isExistingUser
                   ? "You can use NarrateEMS with your existing login. Taking you to your account…"
                   : "Open the Chrome extension and log in with your new password. Taking you to your account…"}
@@ -418,32 +396,19 @@ export default function AcceptInvitePage() {
 
           {pageState === "error" && (
             <div className="text-center">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-                ↳ Something's off
-              </div>
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-md bg-paper-tint border border-rule mb-6">
-                <XCircle className="h-6 w-6 text-ink" />
-              </div>
-              <h1 className="font-serif text-4xl text-ink leading-tight mb-3">
-                Couldn't process <span className="italic">that invite.</span>
+              <XCircle className="h-8 w-8 text-ink mx-auto mb-5" aria-hidden />
+              <h1 className="text-[32px] font-semibold tracking-tight text-ink mb-3 leading-[1.1] text-balance">
+                Couldn't process that invite.
               </h1>
-              <p className="text-ink-muted mb-8">{error}</p>
+              <p className="text-[17px] text-ink-muted mb-8">{error}</p>
               <button
                 onClick={() => router.push("/")}
-                className="w-full inline-flex items-center justify-center gap-2 bg-paper border border-ink text-ink py-3.5 text-sm font-semibold rounded-md hover:bg-ink hover:text-paper transition-colors"
+                className={`${outlineBtn} w-full`}
               >
                 Back to home
               </button>
             </div>
           )}
-        </div>
-      </main>
-
-      <footer className="border-t border-rule">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-10 h-14 flex items-center justify-between text-xs text-ink-soft">
-          <span className="font-mono uppercase tracking-[0.16em]">© 2026 NarrateEMS</span>
-        </div>
-      </footer>
-    </div>
+    </AuthShell>
   )
 }

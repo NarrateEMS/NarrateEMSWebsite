@@ -7,7 +7,8 @@ import type { FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
-import { Wordmark } from "@/components/wordmark"
+import { AppNav, AppFooter, btn, outlineBtn, dangerBtn, textLink, field, navLink } from "@/components/app-ui"
+import { primaryBtn } from "@/app/home/shared"
 import {
   Loader2,
   LogOut,
@@ -361,7 +362,7 @@ export default function AccountPage() {
       <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-6 w-6 animate-spin text-ink" />
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
+          <div className="text-[17px] text-ink-muted">
             Loading account
           </div>
         </div>
@@ -381,93 +382,66 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-paper text-ink antialiased">
-      {/* Nav */}
-      <nav className="border-b border-rule bg-paper/90 backdrop-blur-md sticky top-0 z-30">
-        <div className="mx-auto max-w-[1100px] px-6 lg:px-10 h-16 flex items-center justify-between">
-          <Wordmark href="/" size="md" />
-          <div className="flex items-center gap-2">
-            <Link
-              href="/onboarding"
-              className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors px-3 py-2"
-            >
-              <BookOpenText className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Guide</span>
-            </Link>
-            <a
-              href={CHROME_EXTENSION_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors px-3 py-2"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Install
-            </a>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors px-3 py-2"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Sign out
-            </button>
-          </div>
-        </div>
-      </nav>
+      <AppNav>
+        <Link href="/account" aria-current="page" className={navLink}>
+          Account
+        </Link>
+        <button onClick={handleLogout} className={navLink}>
+          <LogOut className="h-4 w-4" />
+          Log out
+        </button>
+      </AppNav>
 
       <main className="mx-auto max-w-[1100px] px-6 lg:px-10 py-12 lg:py-16">
         {/* Page header */}
-        <div className="flex items-start justify-between gap-6 mb-12 pb-10 border-b border-rule">
+        <div className="flex items-start justify-between gap-6 mb-10">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-4">
-              ↳ Your account
-            </div>
-            <h1 className="font-serif text-5xl lg:text-6xl leading-[1] tracking-tight text-balance">
+            <h1 className="text-[44px] lg:text-[56px] font-semibold leading-[1.02] tracking-tight text-balance break-words">
               {(() => {
                 const handle = user?.email?.split("@")[0]
                 return (
                   <>
                     Welcome,
                     <br />
-                    <span className="italic">{handle || "medic"}.</span>
+                    <span>{handle || "medic"}.</span>
                   </>
                 )
               })()}
             </h1>
           </div>
-          <div className="hidden sm:flex items-center justify-center w-16 h-16 rounded-full bg-ink text-paper font-mono text-base tracking-widest shrink-0">
+          <div className="hidden sm:flex items-center justify-center w-16 h-16 rounded-full bg-ink text-paper text-[17px] font-semibold shrink-0">
             {initials}
           </div>
         </div>
 
         {/* Two-column grid */}
-        <div className="grid lg:grid-cols-12 gap-px bg-rule border border-rule">
+        <div className="grid lg:grid-cols-12 gap-4">
           {/* Account info */}
-          <section className="lg:col-span-7 bg-paper p-7 lg:p-10">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-              ↳ Account
-            </div>
+          <section className="lg:col-span-7 rounded-card border border-rule bg-surface p-6 lg:p-10">
+            <h2 className="text-[22px] font-semibold tracking-tight mb-6">Account</h2>
 
             <dl className="space-y-6">
-              <div className="flex items-baseline justify-between gap-6 pb-5 border-b border-rule">
-                <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">
+              <div className="flex items-center justify-between gap-6 pb-5 border-b border-rule">
+                <dt className="text-[15px] text-ink-muted">
                   Email
                 </dt>
                 <dd className="text-ink break-all text-right">{user?.email}</dd>
               </div>
 
-              <div className="flex items-baseline justify-between gap-6 pb-5 border-b border-rule">
-                <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">
+              <div className="flex items-center justify-between gap-6 pb-5 border-b border-rule">
+                <dt className="text-[15px] text-ink-muted">
                   Subscription
                 </dt>
-                <dd className="inline-flex items-center gap-2">
+                <dd className="inline-flex items-center gap-2 rounded-full bg-paper-tint px-3 py-1 text-[15px] font-medium">
                   {isActive ? (
                     <>
-                      <span className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
-                      <span className="font-mono text-xs uppercase tracking-[0.16em] text-ink">
+                      <span className="h-2 w-2 rounded-full bg-success pulse-dot" />
+                      <span className="text-ink">
                         Active
                       </span>
                     </>
                   ) : (
-                    <span className="font-mono text-xs uppercase tracking-[0.16em] text-ink-soft">
+                    <span className="text-ink-muted capitalize">
                       {subscriptionStatus || "none"}
                     </span>
                   )}
@@ -475,12 +449,12 @@ export default function AccountPage() {
               </div>
 
               <div className="pb-2">
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft mb-3 flex items-center gap-1.5">
-                  <KeyRound className="h-3 w-3" />
+                <div className="text-[15px] text-ink-muted mb-3 flex items-center gap-1.5">
+                  <KeyRound className="h-4 w-4" />
                   Password
                 </div>
                 {resetSent ? (
-                  <div className="inline-flex items-center gap-2 text-sm text-ink bg-paper-tint border border-rule rounded-md px-3 py-2.5">
+                  <div className="inline-flex flex-wrap items-center gap-2 text-[15px] text-ink bg-paper-tint border border-rule rounded-field px-3 py-2.5">
                     <CheckCircle className="h-4 w-4" />
                     Reset link sent to{" "}
                     <span className="font-medium break-all">{user?.email}</span>
@@ -489,7 +463,7 @@ export default function AccountPage() {
                   <button
                     onClick={handleResetPassword}
                     disabled={resetSending}
-                    className="inline-flex items-center gap-2 bg-paper border border-rule-strong text-ink px-4 py-2.5 text-sm font-medium rounded-md hover:bg-ink hover:text-paper hover:border-ink transition-colors disabled:opacity-60"
+                    className={outlineBtn}
                   >
                     {resetSending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                     Send password reset email
@@ -500,28 +474,26 @@ export default function AccountPage() {
           </section>
 
           {/* Squad info */}
-          <section className="lg:col-span-5 bg-paper p-7 lg:p-10">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-              ↳ Squad
-            </div>
+          <section className="lg:col-span-5 rounded-card border border-rule bg-surface p-6 lg:p-10">
+            <h2 className="text-[22px] font-semibold tracking-tight mb-6">Squad</h2>
 
             {squadProvisioning ? (
               <div>
-                <div className="font-serif text-3xl text-ink leading-tight mb-3 inline-flex items-center gap-3">
+                <div className="text-[28px] font-semibold tracking-tight text-ink leading-tight mb-3 inline-flex items-center gap-3">
                   <Loader2 className="h-5 w-5 animate-spin text-ink-soft" />
                   Setting up your squad.
                 </div>
-                <p className="text-sm text-ink-muted leading-relaxed">
+                <p className="text-[17px] text-ink-muted leading-relaxed">
                   Your payment went through and we're finishing your squad now. This
                   page updates itself within a few seconds -- no need to reload.
                 </p>
               </div>
             ) : squadUnlinked ? (
               <div>
-                <div className="font-serif text-3xl text-ink leading-tight mb-3">
+                <div className="text-[28px] font-semibold tracking-tight text-ink leading-tight mb-3">
                   One step left.
                 </div>
-                <p className="text-sm text-ink-muted leading-relaxed">
+                <p className="text-[17px] text-ink-muted leading-relaxed">
                   {isSquadAdmin
                     ? "Your squad is set up but not linked yet. Open a chart for your squad's service in ZOLL, then open the NarrateEMS extension in that same browser. It will link the squad automatically; return here afterward to invite your crew."
                     : "Your squad is set up but not linked yet. Ask your squad admin to open a chart for your service in ZOLL, then open the NarrateEMS extension in that same browser."}
@@ -529,13 +501,13 @@ export default function AccountPage() {
               </div>
             ) : squadName || inSquad ? (
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft mb-2">
+                <div className="text-[15px] text-ink-muted mb-2">
                   You ride with
                 </div>
-                <div className="font-serif text-3xl text-ink leading-tight mb-6">
+                <div className="text-[28px] font-semibold tracking-tight text-ink leading-tight mb-6">
                   {squadName ?? "Your squad"}
                 </div>
-                <div className="pt-5 border-t border-rule text-sm text-ink-muted leading-relaxed">
+                <div className="pt-5 border-t border-rule text-[17px] text-ink-muted leading-relaxed">
                   {isSquadAdmin
                     ? "You are this squad's admin. Charts from every member roll up to this squad's billing; manage your crew below or from the extension."
                     : "Your charts roll up to this squad's billing. To leave or transfer, contact your squad admin."}
@@ -543,10 +515,10 @@ export default function AccountPage() {
               </div>
             ) : (
               <div>
-                <div className="font-serif text-3xl text-ink leading-tight mb-3">
+                <div className="text-[28px] font-semibold tracking-tight text-ink leading-tight mb-3">
                   Solo medic.
                 </div>
-                <p className="text-sm text-ink-muted leading-relaxed">
+                <p className="text-[17px] text-ink-muted leading-relaxed">
                   You're on an individual plan. Want to roll up under a squad? Have
                   your captain send you an invite.
                 </p>
@@ -558,19 +530,16 @@ export default function AccountPage() {
         {isSquadAdmin && (
           <section
             id="squad-administration"
-            className="mt-12 scroll-mt-28 border border-rule bg-paper"
+            className="mt-4 scroll-mt-28 rounded-card border border-rule bg-surface overflow-hidden"
           >
-            <div className="px-7 py-6 lg:px-10 border-b border-rule flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="px-6 py-6 lg:px-10 border-b border-rule flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
-                  ↳ Squad administration
-                </div>
-                <h2 className="font-serif text-3xl lg:text-4xl leading-tight">
-                  Manage your <span className="italic">crew.</span>
+                <h2 className="text-[28px] lg:text-[34px] font-semibold tracking-tight leading-tight">
+                  Manage your crew.
                 </h2>
               </div>
               {squadAdminData && (
-                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">
+                <div className="text-[15px] text-ink-muted">
                   {squadAdminData.seats.active_members} members ·{" "}
                   {squadAdminData.seats.pending_invites} pending
                 </div>
@@ -578,16 +547,16 @@ export default function AccountPage() {
             </div>
 
             {squadAdminLoading && !squadAdminData ? (
-              <div className="px-7 py-10 lg:px-10 flex items-center gap-3 text-sm text-ink-muted">
+              <div className="px-6 py-10 lg:px-10 flex items-center gap-3 text-[17px] text-ink-muted">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading squad roster
               </div>
             ) : squadAdminError && !squadAdminData ? (
-              <div className="px-7 py-10 lg:px-10">
-                <p className="text-sm text-[var(--danger)] mb-4">{squadAdminError}</p>
+              <div className="px-6 py-10 lg:px-10">
+                <p className="text-[17px] text-danger mb-4">{squadAdminError}</p>
                 <button
                   onClick={loadSquadAdminData}
-                  className="inline-flex items-center gap-2 border border-rule-strong rounded-md px-4 py-2.5 text-sm font-medium hover:bg-ink hover:text-paper transition-colors"
+                  className={outlineBtn}
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   Try again
@@ -595,17 +564,17 @@ export default function AccountPage() {
               </div>
             ) : (
               <div className="grid lg:grid-cols-12">
-                <div className="lg:col-span-5 px-7 py-8 lg:px-10 border-b lg:border-b-0 lg:border-r border-rule">
+                <div className="lg:col-span-5 px-6 py-8 lg:px-10 border-b lg:border-b-0 lg:border-r border-rule">
                   <div className="flex items-center gap-2 mb-4">
                     <UserPlus className="h-4 w-4" />
-                    <h3 className="font-mono text-[10px] uppercase tracking-[0.18em]">
+                    <h3 className="text-[17px] font-semibold">
                       Invite a member
                     </h3>
                   </div>
 
                   {squadAdminData?.squad.squad_code ? (
                     <>
-                      <p className="text-sm text-ink-muted leading-relaxed mb-5">
+                      <p className="text-[17px] text-ink-muted leading-relaxed mb-5">
                         They will receive a secure link to join{" "}
                         <span className="text-ink">{squadAdminData.squad.name}</span>.
                       </p>
@@ -620,12 +589,12 @@ export default function AccountPage() {
                           onChange={(event) => setInviteEmail(event.target.value)}
                           placeholder="name@squad.org"
                           disabled={inviteSending}
-                          className="min-w-0 flex-1 bg-paper border border-rule-strong rounded-md px-3 py-2.5 text-sm outline-none focus:border-ink focus:ring-2 focus:ring-hi-vis/40 disabled:opacity-60"
+                          className={`${field} min-w-0 flex-1 bg-paper`}
                         />
                         <button
                           type="submit"
                           disabled={inviteSending || !inviteEmail.trim()}
-                          className="inline-flex items-center justify-center gap-2 bg-hi-vis text-hi-vis-ink rounded-md px-4 py-2.5 text-sm font-semibold hover:bg-hi-vis-deep hover:text-paper transition-colors disabled:bg-paper-tint disabled:text-ink-soft"
+                          className={`${btn} px-5 py-2.5 disabled:bg-paper-tint disabled:text-ink-muted disabled:opacity-100`}
                         >
                           {inviteSending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                           Send invite
@@ -633,7 +602,7 @@ export default function AccountPage() {
                       </form>
                     </>
                   ) : (
-                    <p className="text-sm text-ink-muted leading-relaxed">
+                    <p className="text-[17px] text-ink-muted leading-relaxed">
                       Open a chart for your squad&apos;s service in ZOLL, then open the
                       NarrateEMS extension in that same browser. It will link the squad
                       automatically so you can invite members here.
@@ -643,10 +612,10 @@ export default function AccountPage() {
                   {inviteMessage && (
                     <div
                       role="status"
-                      className={`mt-4 border-l-2 px-3 py-2 text-sm ${
+                      className={`mt-4 rounded-field border bg-paper px-3 py-2.5 text-[15px] ${
                         inviteMessageType === "success"
-                          ? "border-[var(--success)] bg-paper-tint text-[var(--success)]"
-                          : "border-[var(--danger)] bg-paper-tint text-[var(--danger)]"
+                          ? "border-success text-success"
+                          : "border-danger text-danger"
                       }`}
                     >
                       {inviteMessage}
@@ -654,10 +623,10 @@ export default function AccountPage() {
                   )}
                 </div>
 
-                <div className="lg:col-span-7 px-7 py-8 lg:px-10">
+                <div className="lg:col-span-7 px-6 py-8 lg:px-10">
                   <div className="flex items-center gap-2 mb-5">
                     <Users className="h-4 w-4" />
-                    <h3 className="font-mono text-[10px] uppercase tracking-[0.18em]">
+                    <h3 className="text-[17px] font-semibold">
                       Members and pending invites
                     </h3>
                   </div>
@@ -665,25 +634,25 @@ export default function AccountPage() {
                   {memberMessage && (
                     <div
                       role="status"
-                      className={`mb-4 border-l-2 bg-paper-tint px-3 py-2 text-sm ${
+                      className={`mb-4 rounded-field border bg-paper px-3 py-2.5 text-[15px] ${
                         memberMessageType === "success"
-                          ? "border-[var(--success)] text-[var(--success)]"
-                          : "border-[var(--danger)] text-[var(--danger)]"
+                          ? "border-success text-success"
+                          : "border-danger text-danger"
                       }`}
                     >
                       {memberMessage}
                     </div>
                   )}
 
-                  <div className="divide-y divide-rule border-y border-rule">
+                  <div className="space-y-2">
                     {squadAdminData?.members.map((member) => (
                       <div
                         key={member.user_id}
-                        className="py-3 flex items-center justify-between gap-4"
+                        className="rounded-field border border-rule bg-paper px-4 py-2 min-h-14 flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
                       >
-                        <span className="text-sm break-all">{member.email}</span>
+                        <span className="min-w-0 text-[15px] break-all">{member.email}</span>
                         {member.is_admin ? (
-                          <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft border border-rule-strong rounded-full px-2 py-1">
+                          <span className="shrink-0 rounded-full bg-paper-tint px-3 py-1 text-[14px] font-medium text-ink">
                             Admin
                           </span>
                         ) : confirmingMemberId === member.user_id ? (
@@ -692,7 +661,7 @@ export default function AccountPage() {
                               type="button"
                               onClick={() => setConfirmingMemberId(null)}
                               disabled={removingMemberId === member.user_id}
-                              className="font-mono text-[9px] uppercase tracking-[0.12em] text-ink-soft hover:text-ink disabled:opacity-50"
+                              className={`${textLink} px-2 disabled:opacity-50`}
                             >
                               Cancel
                             </button>
@@ -700,12 +669,12 @@ export default function AccountPage() {
                               type="button"
                               onClick={() => removeSquadMember(member)}
                               disabled={removingMemberId === member.user_id}
-                              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--danger)] text-white px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] disabled:opacity-60"
+                              className="inline-flex items-center gap-1.5 rounded-full bg-danger text-paper px-5 min-h-11 text-[15px] font-semibold focus-hi-vis disabled:opacity-60"
                             >
                               {removingMemberId === member.user_id ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-4 w-4" />
                               )}
                               Confirm remove
                             </button>
@@ -714,9 +683,9 @@ export default function AccountPage() {
                           <button
                             type="button"
                             onClick={() => setConfirmingMemberId(member.user_id)}
-                            className="shrink-0 inline-flex items-center gap-1.5 border border-rule-strong rounded-full px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-muted hover:border-[var(--danger)] hover:text-[var(--danger)] transition-colors"
+                            className={`${dangerBtn} shrink-0`}
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-4 w-4" />
                             Remove
                           </button>
                         )}
@@ -725,11 +694,11 @@ export default function AccountPage() {
                     {squadAdminData?.pending_invites.map((invite) => (
                       <div
                         key={invite.id}
-                        className="py-3 flex items-center justify-between gap-4"
+                        className="rounded-field border border-rule bg-paper px-4 py-2 min-h-14 flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
                       >
                         <div className="min-w-0">
-                          <div className="text-sm text-ink-muted break-all">{invite.email}</div>
-                          <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft mt-1">
+                          <div className="text-[15px] text-ink-muted break-all">{invite.email}</div>
+                          <div className="text-[14px] text-ink-muted mt-0.5">
                             Invite pending
                           </div>
                         </div>
@@ -737,16 +706,16 @@ export default function AccountPage() {
                           type="button"
                           onClick={() => resendSquadInvite(invite.email)}
                           disabled={inviteSending}
-                          className="shrink-0 inline-flex items-center gap-1.5 border border-rule-strong rounded-full px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-ink hover:text-paper transition-colors disabled:opacity-50"
+                          className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-ink px-5 min-h-11 text-[15px] font-semibold hover:bg-ink hover:text-paper transition-colors focus-hi-vis disabled:opacity-50"
                         >
-                          <RefreshCw className="h-3 w-3" />
+                          <RefreshCw className="h-4 w-4" />
                           Resend
                         </button>
                       </div>
                     ))}
                     {!squadAdminData?.members.length &&
                       !squadAdminData?.pending_invites.length && (
-                        <div className="py-5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-soft">
+                        <div className="py-5 text-[15px] text-ink-muted">
                           No members or pending invites yet
                         </div>
                       )}
@@ -758,15 +727,12 @@ export default function AccountPage() {
         )}
 
         {/* Extension callout */}
-        <section className="mt-12 bg-ink text-paper rounded-xl p-8 lg:p-10 grid lg:grid-cols-12 gap-6 items-center">
+        <section className="mt-4 bg-ink text-paper rounded-card p-6 lg:p-10 grid lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-8">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-paper/50 mb-3">
-              ↳ Don't have it yet?
-            </div>
-            <h2 className="font-serif text-3xl lg:text-4xl leading-tight text-balance">
-              Install the Chrome extension <span className="italic">on the rig laptop.</span>
+            <h2 className="text-[28px] lg:text-[34px] font-semibold tracking-tight leading-tight text-balance">
+              Install the Chrome extension on the rig laptop.
             </h2>
-            <p className="mt-3 text-paper/70 text-sm leading-relaxed max-w-md">
+            <p className="mt-3 text-paper/80 text-[17px] leading-relaxed max-w-md">
               Sign in once. Hit record after the next call. Your Zoll chart will be
               ready by the time you sit down.
             </p>
@@ -776,7 +742,7 @@ export default function AccountPage() {
               href={CHROME_EXTENSION_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-hi-vis text-hi-vis-ink px-6 py-3.5 text-sm font-semibold rounded-md hover:bg-paper transition-colors focus-hi-vis"
+              className={primaryBtn}
             >
               <Download className="h-4 w-4" />
               Install extension
@@ -786,43 +752,31 @@ export default function AccountPage() {
         </section>
 
         {/* Help */}
-        <div className="mt-12 text-center">
-          <Link
-            href="/"
-            className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft hover:text-ink transition-colors"
-          >
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8">
+          <Link href="/onboarding" className={textLink}>
+            <BookOpenText className="h-4 w-4" />
+            Guide
+          </Link>
+          <Link href="/" className={textLink}>
             ← Back to home
           </Link>
         </div>
 
-        <div className="mt-6 text-center text-sm text-ink-soft inline-flex items-center justify-center gap-2 w-full">
-          <Mail className="h-3.5 w-3.5" />
+        <div className="mt-2 text-center text-[15px] text-ink-muted inline-flex flex-wrap items-center justify-center gap-2 w-full">
+          <Mail className="h-4 w-4" />
           Need help?{" "}
           <a
             href="mailto:narrateems@gmail.com"
-            className="text-ink hover:text-hi-vis-deep underline underline-offset-4"
+            className="inline-flex items-center min-h-11 text-ink underline underline-offset-4 focus-hi-vis"
           >
             narrateems@gmail.com
           </a>
         </div>
       </main>
 
-      <footer className="border-t border-rule mt-16">
-        <div className="mx-auto max-w-[1100px] px-6 lg:px-10 h-14 flex items-center justify-between text-xs text-ink-soft">
-          <span className="font-mono uppercase tracking-[0.16em]">© 2026 NarrateEMS</span>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy-policy" className="hover:text-ink transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms-of-service" className="hover:text-ink transition-colors">
-              Terms
-            </Link>
-            <Link href="/sla" className="hover:text-ink transition-colors">
-              SLA
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <div className="mt-16">
+        <AppFooter sla />
+      </div>
     </div>
   )
 }

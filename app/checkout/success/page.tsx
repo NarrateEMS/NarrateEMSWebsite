@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Wordmark } from "@/components/wordmark"
+import { AppNav, AppFooter, btn, outlineBtn, textLink, navLink } from "@/components/app-ui"
 import { Loader2, ArrowUpRight, Download } from "lucide-react"
 
 function CheckoutSuccessContent() {
@@ -28,10 +28,10 @@ function CheckoutSuccessContent() {
         <main className="flex-1 flex items-center justify-center px-6">
           <div className="flex flex-col items-center gap-4 max-w-md text-center">
             <Loader2 className="h-6 w-6 animate-spin text-ink" />
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
+            <div className="text-[20px] font-semibold text-ink">
               Setting up your account
             </div>
-            <p className="text-ink-muted text-sm">
+            <p className="text-[17px] text-ink-muted">
               We're activating your subscription and provisioning your squad. Hang
               tight — this takes a couple seconds.
             </p>
@@ -45,14 +45,11 @@ function CheckoutSuccessContent() {
     <div className="min-h-screen bg-paper text-ink antialiased flex flex-col">
       <Header />
       <main className="flex-1">
-        <section className="mx-auto max-w-[1100px] px-6 lg:px-10 pt-16 lg:pt-24 pb-12">
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-6">
-            ↳ You're in
-          </div>
-          <h1 className="font-serif text-6xl lg:text-7xl leading-[0.98] tracking-tight text-balance max-w-3xl">
-            Welcome to <span className="italic">NarrateEMS.</span>
+        <section className="mx-auto max-w-[1100px] px-6 lg:px-10 pt-12 lg:pt-20 pb-10">
+          <h1 className="text-[44px] lg:text-[64px] font-semibold leading-[1.02] tracking-tight text-balance max-w-3xl">
+            Welcome to NarrateEMS.
           </h1>
-          <p className="mt-6 text-lg text-ink-muted leading-relaxed max-w-2xl">
+          <p className="mt-6 text-[19px] text-ink-muted leading-relaxed max-w-2xl">
             {isSquadPlan
               ? "Your squad is provisioned. Five quick things and your whole crew is charting by voice."
               : "Your subscription is active. Three quick things and you're charting by voice on your next call."}
@@ -60,7 +57,7 @@ function CheckoutSuccessContent() {
         </section>
 
         <section className="mx-auto max-w-[1100px] px-6 lg:px-10 pb-16 lg:pb-24">
-          <ol className="border-y border-rule">
+          <ol className="space-y-3">
             {[
               {
                 title: "Install the Chrome extension.",
@@ -70,7 +67,7 @@ function CheckoutSuccessContent() {
                     href="https://chromewebstore.google.com/detail/narrateems-ai-medic-voice/nokdpnigpfafepjbdinggckgcdekdjkm"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-hi-vis text-hi-vis-ink px-5 py-3 text-sm font-semibold rounded-md hover:bg-hi-vis-deep hover:text-paper transition-colors focus-hi-vis"
+                    className={btn}
                   >
                     <Download className="h-4 w-4" />
                     Install extension
@@ -105,77 +102,56 @@ function CheckoutSuccessContent() {
             ].map((step, i) => (
               <li
                 key={step.title}
-                className="grid grid-cols-[auto_1fr_auto] items-start gap-6 lg:gap-10 py-8 border-b border-rule last:border-b-0"
+                className="grid grid-cols-[auto_1fr] sm:grid-cols-[auto_1fr_auto] items-start gap-x-5 gap-y-4 lg:gap-x-10 rounded-card border border-rule bg-surface p-6 lg:p-8"
               >
-                <div className="font-mono text-sm text-ink-soft tabular-nums pt-1">
-                  {String(i + 1).padStart(2, "0")}
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-ink text-paper text-[17px] font-semibold tabular-nums">
+                  {i + 1}
                 </div>
                 <div>
-                  <h3 className="font-serif text-2xl lg:text-3xl text-ink leading-tight">
+                  <h3 className="text-[22px] lg:text-[26px] font-semibold tracking-tight text-ink leading-tight">
                     {step.title}
                   </h3>
-                  <p className="mt-2 text-ink-muted leading-relaxed max-w-xl">{step.body}</p>
+                  <p className="mt-2 text-[17px] text-ink-muted leading-relaxed max-w-xl">{step.body}</p>
                 </div>
-                <div>{step.cta}</div>
+                {step.cta && <div className="col-start-2 sm:col-start-auto">{step.cta}</div>}
               </li>
             ))}
           </ol>
 
-          <div className="mt-12 flex flex-wrap items-center gap-4">
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
               href="/account"
-              className="inline-flex items-center gap-2 bg-ink text-paper px-5 py-3 text-sm font-medium rounded-md hover:bg-ink-2 transition-colors"
+              className={outlineBtn}
             >
               Go to your account
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
-            <Link href="/" className="text-sm text-ink-muted hover:text-ink transition-colors">
+            <Link href="/" className={textLink}>
               Back to home
             </Link>
           </div>
 
           {sessionId && (
-            <div className="mt-12 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">
+            <div className="mt-12 text-[15px] text-ink-muted break-all">
               Order · {sessionId.slice(0, 24)}…
             </div>
           )}
         </section>
       </main>
 
-      <footer className="border-t border-rule">
-        <div className="mx-auto max-w-[1100px] px-6 lg:px-10 h-14 flex items-center justify-between text-xs text-ink-soft">
-          <span className="font-mono uppercase tracking-[0.16em]">© 2026 NarrateEMS</span>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy-policy" className="hover:text-ink transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms-of-service" className="hover:text-ink transition-colors">
-              Terms
-            </Link>
-            <Link href="/sla" className="hover:text-ink transition-colors">
-              SLA
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <AppFooter sla />
     </div>
   )
 }
 
 function Header() {
   return (
-    <header className="border-b border-rule">
-      <div className="mx-auto max-w-[1100px] px-6 lg:px-10 h-16 flex items-center justify-between">
-        <Wordmark href="/" size="md" />
-        <Link
-          href="/account"
-          className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink transition-colors"
-        >
-          Your account
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
-    </header>
+    <AppNav>
+      <Link href="/account" className={navLink}>
+        Your account
+        <ArrowUpRight className="h-4 w-4" />
+      </Link>
+    </AppNav>
   )
 }
 
