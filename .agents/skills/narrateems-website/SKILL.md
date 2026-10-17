@@ -15,8 +15,23 @@ signs anyone up - it links to `narrateems.com/#pricing`.
 ## Layout
 
 `app/page.tsx` (marketing + pricing modal), `app/login`, `app/reset-password`, `app/account`,
-`app/invite/accept`, `app/checkout/success`, `app/api/create-checkout-session`, plus legal pages.
+`app/invite/accept`, `app/checkout/success`, `app/api/create-checkout-session`, `app/dictate`, plus legal pages.
 Supabase browser client in `lib/supabase.ts`; shadcn/ui in `components/ui`.
+
+## `/dictate` (phone dictation)
+
+Phone page for medics without a laptop. Signed-in users with an active/trialing plan record here, see
+live Azure Speech words, edit, and Save. The extension's "From phone" list then pulls the text.
+- `lib/dictate/live.ts` (lazy chunk, preloaded after sign-in): an AudioWorklet buffers the mic from the
+  tap into a Speech push stream, so the opening words survive the connect delay. If capture started late,
+  `stop()` returns null and the full recording goes to `/transcribe`.
+- `lib/dictate/store.ts`: IndexedDB drafts plus audio chunks (ArrayBuffers, not Blobs, for Safari private
+  tabs), deleted on save, after 24h, or on any sign-out (`clearDictateData`). Offline recordings
+  are transcribed when the signal returns.
+- `lib/dictate/api.ts`: the Azure inbox (`NEXT_PUBLIC_NARRATION_API_URL`, contract in the NarrateEMS repo's
+  `azure/narration-inbox/README.md`) and `get-speech-token`. Saved text lives in Azure for 24h, never Supabase.
+- `public/dictate.webmanifest` (linked in `app/dictate/layout.tsx`) + `public/dictate-sw.js`: Add to Home Screen opens `/dictate`.
+- A new origin (e.g. a Vercel preview) must be in the inbox's exact CORS list before it can call it.
 
 `supabase/functions/` in this repo holds **stale copies** of `accept-squad-invite` and
 `stripe-webhook-prod`. Never deploy from here - the real ones live in the `NarrateEMS` repo, and a
@@ -92,7 +107,7 @@ auto-redirects to `/account` after ~2s.
 ## Local dev, build and lint
 
 - `npm install --legacy-peer-deps` (plain `npm install` fails; pnpm is not installed here).
-- Env needed: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+- Env needed: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_NARRATION_API_URL`,
   `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, all `NEXT_PUBLIC_STRIPE_PRICE_*`. Modules
   construct Supabase/Stripe clients at import time, so `npm run build` fails outright without them -
   placeholders are fine for a type/build check.
