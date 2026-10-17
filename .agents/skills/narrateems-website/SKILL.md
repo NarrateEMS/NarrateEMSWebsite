@@ -22,7 +22,9 @@ signs anyone up - it links to `narrateems.com/#pricing`.
 `lib/agency.ts` (agency onboarding), `lib/agreement.ts` (`AGREEMENT_VERSION`, document lists),
 `lib/email.ts` (Resend), `lib/sign-pdf.ts` (PDF stamping), `lib/auth.ts` (`userFromRequest`, bearer
 JWT). `components/agency-panel.tsx` is the `/account` agencies panel. Legal docs are PDFs in
-`public/legal/`; `/terms-of-service`, `/privacy-policy`, `/sla` redirect to them (`next.config.mjs`).
+`public/legal/`; `next.config.mjs` redirects (non-permanent) `/terms-of-service` ->
+`/legal/terms-of-service.pdf`, `/privacy-policy` -> `/legal/privacy-policy.pdf`, `/sla` ->
+`/legal/sla.pdf`.
 Supabase browser client in `lib/supabase.ts`; shadcn/ui in `components/ui`.
 
 `supabase/` holds only a README: functions and migrations live in the `NarrateEMS` repo. Never
