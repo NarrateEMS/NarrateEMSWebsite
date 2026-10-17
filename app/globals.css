@@ -347,6 +347,23 @@
 .story[data-motion="on"] .story-hero { justify-content: flex-start; padding-top: 5rem; }
 .story[data-motion="on"] .story-band { justify-content: flex-start; padding-top: 2rem; }
 .story[data-motion="on"] [data-tl] { transform: var(--tf, none); opacity: var(--o, 1); will-change: transform, opacity; }
+/* Hero backdrop: slow navy drift. Transform-only so it stays on the compositor. */
+.story-stage { position: relative; overflow: hidden; isolation: isolate; }
+.story-stage::before {
+  content: ""; position: absolute; inset: -40%; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(36% 32% at 28% 30%, #1D3A6E 0%, transparent 70%),
+    radial-gradient(30% 28% at 74% 62%, #173464 0%, transparent 70%),
+    radial-gradient(26% 24% at 52% 82%, #22314F 0%, transparent 70%),
+    var(--ink);
+  animation: story-drift 22s ease-in-out infinite alternate;
+}
+@keyframes story-drift {
+  0% { transform: translate3d(-6%, -4%, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(5%, 3%, 0) rotate(8deg) scale(1.08); }
+  100% { transform: translate3d(-3%, 6%, 0) rotate(-6deg) scale(1.02); }
+}
+@media (prefers-reduced-motion: reduce) { .story-stage::before { animation: none; } }
 .story-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; max-width: 64rem; }
 .story[data-motion="on"] .story-cards { display: block; position: relative; width: 0; height: 0; perspective: 2000px; }
 .story[data-motion="on"] .story-card { position: absolute; left: 0; top: 0; }
