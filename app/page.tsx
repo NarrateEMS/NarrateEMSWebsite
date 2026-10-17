@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Wordmark } from "@/components/wordmark"
-import { STORE_URL, h2, body, primaryBtn } from "./home/shared"
+import { STORE_URL, body, primaryBtn } from "./home/shared"
 import { Testimonial } from "./home/Testimonial"
 import { Why } from "./home/Why"
 import { Squads } from "./home/Squads"
@@ -47,6 +47,9 @@ const PAGES = [
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
 const ease = (t: number) => t * t * (3 - 2 * t)
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+const span = (p: number, a: number, b: number) => clamp((p - a) / (b - a))
+
 // Keyframes: [progress, x, y, rotateX, rotateY, rotateZ, scale, opacity]; eased between stops.
 type Frame = number[]
 function at(p: number, frames: Frame[]): number[] {
@@ -62,59 +65,74 @@ function at(p: number, frames: Frame[]): number[] {
   return frames[frames.length - 1].slice(1)
 }
 
-function buildTimeline(w: number, h: number, objW: number, objH: number, heroBottom: number) {
+type Box = { w: number; h: number; objW: number; objH: number; cardW: number; cardH: number; heroBottom: number; bandBottom: number }
+type Card = { x: number; y: number; dx: number; dy: number; rz: number; ry: number; k: number }
+
+// Text owns the band above bandBottom; the object and cards only ever use the area below it.
+function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom }: Box) {
   const desk = w >= 1024
-  const side = w >= 1280
-  const fit = Math.min(1, (h * (side ? 0.62 : 0.42)) / objH, side ? (w * 0.36) / (objW + 32) : 1)
-  const oy = side ? 0 : h * 0.22
-  // Hero: the tilted object's top edge sits just under the CTAs.
+  const top = bandBottom + 16
+  const areaH = h - (desk ? 32 : 16) - top
+  const fit = Math.min(desk ? 1.5 : 1, (areaH * 0.96) / objH, (w - 48) / (objW + 64))
   const layerCenter = 64 + (h - 64) / 2
-  const heroY = Math.max(oy, heroBottom + 40 - layerCenter + ((objH * fit) / 2) * 0.55)
-  const fade = (a: number, b: number, c: number, d: number, dy = 24): Frame[] => [
+  const oy = top + areaH / 2 - layerCenter
+  // Hero: the object's top edge peeks just under the CTAs, then rises flat into the area.
+  const heroY = Math.max(oy, heroBottom + 40 + (objH * fit) / 2 - layerCenter)
+  const fade = (a: number, b: number, c: number, d: number, dy = 16): Frame[] => [
     [a, 0, dy, 0, 0, 0, 1, 0],
     [b, 0, 0, 0, 0, 0, 1, 1],
     [c, 0, 0, 0, 0, 0, 1, 1],
     [d, 0, -dy, 0, 0, 0, 1, 0],
   ]
-  const scatter = desk
-    ? [[-0.3, -0.3], [0.02, -0.31], [0.31, -0.27], [-0.36, 0.26], [-0.08, 0.31], [0.2, 0.29], [0.4, 0.21]]
-    : [[-0.24, -0.32], [0.24, -0.29], [-0.22, -0.17], [0.24, -0.15], [-0.24, 0.2], [0.24, 0.25], [0, 0.34]]
-  const rz = [-10, 6, 12, 8, -6, -12, 9]
-  const ry = [18, -14, 22, -20, 12, -16, 20]
-  const cs = desk ? 1 : 0.62
-  const cards: Frame[][] = scatter.map(([sx, sy], i) => {
-    const x = sx * w
-    const y = sy * h
-    const k = i - 3
-    const stackY = desk ? -h * 0.04 : -h * 0.02
-    return [
-      [0.56, 0, oy, 0, 0, 0, cs * 0.5, 0],
-      [0.63, x, y, 0, ry[i], rz[i], cs, 1],
-      [0.8, x * 1.06, y * 1.04, 0, -ry[i] * 0.4, rz[i] + 8 * Math.sign(k || 1), cs, 1],
-      [0.83, x * 1.06, y * 1.04, 0, -ry[i] * 0.4, rz[i] + 8 * Math.sign(k || 1), cs, 1],
-      [0.91, k * 7, stackY + k * -6, 0, 0, k * 1.2, cs * 0.94, 1],
-      [1, k * 7, stackY + k * -6, 0, 0, k * 1.2, cs * 0.94, 1],
-    ]
-  })
+  const spots = desk
+    ? [[-0.8, -0.55], [-0.28, -0.85], [0.3, -0.8], [0.82, -0.45], [-0.6, 0.7], [0.02, 0.75], [0.62, 0.65]]
+    : [[-0.9, -0.9], [0.9, -0.6], [-0.9, -0.3], [0.9, 0.05], [-0.9, 0.35], [0.9, 0.7], [-0.9, 0.95]]
+  const rz = [-7, 4, 8, -5, 5, -8, 6]
+  const ry = [10, -8, 12, -10, 8, -12, 10].map((v) => (desk ? v : v / 2))
+  const rx = (w - 48 - cardW) / 2
+  const ryMax = (areaH - cardH) / 2
+  const cards: Card[] = spots.map(([fx, fy], i) => ({
+    x: fx * rx * 0.94,
+    y: oy + fy * ryMax * 0.9,
+    dx: fx * rx * 0.06,
+    dy: fy * ryMax * 0.1 - areaH * 0.03,
+    rz: rz[i],
+    ry: ry[i],
+    k: i - 3,
+  }))
   return {
-    hero: [[0, 0, 0, 0, 0, 0, 1, 1], [0.07, 0, -h * 0.12, 0, 0, 0, 1, 0]] as Frame[],
+    oy,
+    hero: [[0, 0, 0, 0, 0, 0, 1, 1], [0.06, 0, -h * 0.08, 0, 0, 0, 1, 0]] as Frame[],
     object: [
-      [0, 0, heroY, 58, 0, -4, fit, 1],
-      [0.13, 0, oy + h * 0.02, 16, -6, -2, fit, 1],
-      [0.36, 0, oy, 8, 4, 0, fit, 1],
-      [0.44, 0, oy, 0, 0, 0, fit, 1],
-      [0.56, 0, oy, 0, 0, 0, fit, 1],
-      [0.64, 0, oy + h * 0.04, -10, 0, 0, fit * 0.5, 0],
+      [0, 0, heroY, 12, -8, -2, fit, 1],
+      [0.1, 0, oy, 5, 3, 0, fit, 1],
+      [0.3, 0, oy, 2, -2, 0, fit, 1],
+      [0.46, 0, oy, 0, 0, 0, fit, 1],
+      [0.55, 0, oy, 0, 0, 0, fit, 1],
+      [0.58, 0, oy - h * 0.01, 2, 0, 0, fit * 0.97, 0],
     ] as Frame[],
-    steps: [fade(0.12, 0.16, 0.25, 0.29), fade(0.27, 0.31, 0.39, 0.43), fade(0.43, 0.47, 0.53, 0.56)],
-    headline: fade(0.58, 0.63, 0.8, 0.83, 20),
+    steps: [fade(0.07, 0.1, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
+    headline: fade(0.57, 0.6, 0.84, 0.87),
     stats: [
-      [0.88, 0, h * 0.28 + 20, 0, 0, 0, 1, 0],
-      [0.92, 0, h * 0.28, 0, 0, 0, 1, 1],
-      [1, 0, h * 0.28, 0, 0, 0, 1, 1],
+      [0.88, 0, 16, 0, 0, 0, 1, 0],
+      [0.93, 0, 0, 0, 0, 0, 1, 1],
+      [1, 0, 0, 0, 0, 0, 1, 1],
     ] as Frame[],
     cards,
   }
+}
+
+// Cards drift out with an ease-out, keep floating slowly, then gather with a soft ease-in-out. Scale stays in 0.94-1.
+function cardAt(p: number, c: Card, oy: number): number[] {
+  const out = 1 - (1 - span(p, 0.55, 0.75)) ** 3
+  const d = ease(span(p, 0.55, 0.92))
+  const g = ease(ease(span(p, 0.82, 0.97)))
+  const x = lerp(lerp(0, c.x + c.dx * d, out), c.k * 7, g)
+  const y = lerp(lerp(oy, c.y + c.dy * d, out), oy - c.k * 6, g)
+  const rz = lerp(lerp(0, c.rz + Math.sign(c.rz) * 3 * d, out), c.k * 1.2, g)
+  const ry = lerp(lerp(0, c.ry * (1 - 0.6 * d), out), 0, g)
+  const s = lerp(lerp(0.94, 1, out), 0.96, g)
+  return [x, y, 0, ry, rz, s, span(p, 0.565, 0.59)]
 }
 
 function write(el: HTMLElement | null, v: number[]) {
@@ -208,14 +226,14 @@ function ChartObject() {
 
 function PageCard({ title, fields }: { title: string; fields: readonly (readonly [string, string])[] }) {
   return (
-    <div data-ui className="w-[230px] h-[160px] bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
-      <div className="flex items-center justify-between bg-[#DDE3EA] px-3 py-2 font-semibold">
-        <span>{title}</span>
-        <span className="text-success">Filled</span>
+    <div data-ui className="w-[156px] sm:w-[230px] sm:h-[160px] lg:w-[280px] lg:h-[184px] lg:text-[13px] bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
+      <div className="flex items-center justify-between gap-2 bg-[#DDE3EA] px-3 py-2 font-semibold">
+        <span className="truncate">{title}</span>
+        <span className="hidden sm:inline text-success">Filled</span>
       </div>
       <div className="space-y-2 p-3">
-        {fields.map(([label, value]) => (
-          <div key={label}>
+        {fields.map(([label, value], i) => (
+          <div key={label} className={i ? "hidden sm:block" : undefined}>
             <div className="text-[#4A5568]">{label}</div>
             <div className="mt-0.5 truncate bg-hi-vis px-1.5 leading-6 font-medium">{value}</div>
           </div>
@@ -334,11 +352,21 @@ export default function HomePage() {
     const actions = object.querySelector<HTMLElement>("[data-actions]")
     const fields = [...object.querySelectorAll<HTMLElement>("[data-field]")]
     const chips = [...object.querySelectorAll<HTMLElement>("[data-chip]")]
-    const heroBottom = () => {
-      const hero = heroRef.current
-      return hero ? 64 + (window.innerWidth >= 1024 ? 80 : 48) + hero.offsetHeight : 0
-    }
-    let tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight, heroBottom())
+    const firstCard = cardRefs.current[0]?.firstElementChild as HTMLElement | null
+    // Layers start under the 64px nav; offsetTop/offsetHeight ignore the scrub transforms.
+    const bottomOf = (el: HTMLElement | null) => (el ? 64 + el.offsetTop + el.offsetHeight : 0)
+    const measure = () =>
+      buildTimeline({
+        w: window.innerWidth,
+        h: window.innerHeight,
+        objW: object.offsetWidth,
+        objH: object.offsetHeight,
+        cardW: firstCard?.offsetWidth ?? 230,
+        cardH: firstCard?.offsetHeight ?? 160,
+        heroBottom: bottomOf(heroRef.current),
+        bandBottom: Math.max(...[...stepRefs.current, headlineRef.current, statsRef.current].map(bottomOf)),
+      })
+    let tl = measure()
     let current = -1
     let typed = -1
     let frame = 0
@@ -356,18 +384,18 @@ export default function HomePage() {
       tl.steps.forEach((f, i) => write(stepRefs.current[i], at(p, f)))
       write(headlineRef.current, at(p, tl.headline))
       write(statsRef.current, at(p, tl.stats))
-      tl.cards.forEach((f, i) => write(cardRefs.current[i], at(p, f)))
+      tl.cards.forEach((c, i) => write(cardRefs.current[i], cardAt(p, c, tl.oy)))
 
-      const chars = Math.round(clamp((p - 0.15) / 0.19) * TRANSCRIPT.length)
+      const chars = Math.round(span(p, 0.11, 0.29) * TRANSCRIPT.length)
       if (transcript && chars !== typed) {
         typed = chars
         transcript.textContent = TRANSCRIPT.slice(0, chars)
       }
-      if (speak) speak.dataset.rec = p > 0.15 && p < 0.35 ? "1" : "0"
-      if (actions) actions.dataset.on = p > 0.35 ? "1" : "0"
-      fields.forEach((el, i) => (el.dataset.on = p >= 0.4 + i * 0.012 ? "1" : "0"))
+      if (speak) speak.dataset.rec = p > 0.1 && p < 0.3 ? "1" : "0"
+      if (actions) actions.dataset.on = p > 0.31 ? "1" : "0"
+      fields.forEach((el, i) => (el.dataset.on = p >= 0.34 + i * 0.01 ? "1" : "0"))
       chips.forEach((el, i) => {
-        const s = 0.4 + i * 0.018
+        const s = 0.34 + i * 0.015
         el.dataset.state = p >= s + 0.03 ? "complete" : p >= s ? "processing" : "pending"
       })
     }
@@ -377,7 +405,7 @@ export default function HomePage() {
       const dt = Math.min(now - last, 64)
       last = now
       const goal = target()
-      const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 90))
+      const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 240))
       const settled = Math.abs(goal - next) < 0.0004
       current = settled ? goal : next
       render(current)
@@ -396,7 +424,7 @@ export default function HomePage() {
     })
     io.observe(story)
     const onResize = () => {
-      tl = buildTimeline(window.innerWidth, window.innerHeight, object.offsetWidth, object.offsetHeight, heroBottom())
+      tl = measure()
       start()
     }
     window.addEventListener("resize", onResize)
@@ -412,21 +440,9 @@ export default function HomePage() {
 
   const navLink = "text-[17px] text-paper hover:underline underline-offset-4"
   const steps = [
-    {
-      title: "Narrate the call.",
-      body: "Once you're clear of the call, open the extension and walk through it the way you'd brief your partner: demographics, chief complaint, vitals, interventions, transport. Talk normally.",
-      detail: "Mobile compatible. Use it on your phone or laptop.",
-    },
-    {
-      title: "AI structures the chart.",
-      body: "Medical-terminology-trained transcription parses your narration into the right Zoll ePCR fields: demographics, chief complaint, assessment, treatment, transport, each placed where it belongs.",
-      detail: "Each page fills in under 10 seconds.",
-    },
-    {
-      title: "Chart is in Zoll. You're done.",
-      body: "Fields land directly inside your Zoll ePCR. Review, sign, submit. Done in minutes, not the hour you used to spend typing.",
-      detail: "Direct Zoll integration. HIPAA encrypted.",
-    },
+    { title: "Narrate the call.", body: "Talk it through like a partner briefing, on your phone or laptop." },
+    { title: "AI fills the right fields.", body: "Medical-terminology-trained transcription puts each detail in its Zoll ePCR field." },
+    { title: "Review, sign, submit.", body: "Fields land directly in Zoll, HIPAA encrypted. Minutes, not an hour of typing." },
   ]
 
   return (
@@ -492,7 +508,7 @@ export default function HomePage() {
                 The chart writes itself.
               </h1>
               <p className="mt-6 max-w-xl text-[17px] leading-[1.6] text-paper">
-                After the call, narrate what happened. NarrateEMS writes your Zoll ePCR for you.
+                Narrate the call. NarrateEMS writes your Zoll ePCR.
               </p>
               <div className="mt-9 flex flex-col sm:flex-row items-center gap-5">
                 <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
@@ -511,7 +527,7 @@ export default function HomePage() {
           </div>
 
           <div className="story-layer" aria-hidden>
-            <div ref={objectRef} data-tl>
+            <div ref={objectRef} data-tl className="[transform-style:preserve-3d]">
               <ChartObject />
             </div>
           </div>
@@ -521,7 +537,7 @@ export default function HomePage() {
           </p>
 
           {steps.map((step, i) => (
-            <div key={step.title} className={`story-layer ${i === 1 ? "story-step-r" : "story-step-l"}`}>
+            <div key={step.title} className="story-layer story-band text-center">
               <div
                 id={i === 0 ? "how" : undefined}
                 data-progress={i === 0 ? "0.2" : undefined}
@@ -529,17 +545,16 @@ export default function HomePage() {
                   stepRefs.current[i] = el
                 }}
                 data-tl
-                className="max-w-xl"
+                className="max-w-2xl"
               >
-                {i === 0 && <h2 className={`${h2} mb-6`}>Three steps, after the call.</h2>}
-                <h3 className="text-[22px] font-semibold leading-tight">{step.title}</h3>
-                <p className="mt-3 text-[17px] leading-[1.6] text-paper">{step.body}</p>
-                <p className="mt-3 text-[13px] text-paper">{step.detail}</p>
+                {i === 0 && <h2 className="sr-only">How it works, in three steps after the call</h2>}
+                <h3 className="text-[28px] lg:text-[44px] font-semibold leading-[1.05] tracking-tight text-balance">{step.title}</h3>
+                <p className="mt-3 text-[17px] leading-[1.6] text-paper text-balance">{step.body}</p>
               </div>
             </div>
           ))}
 
-          <div className="story-layer text-center">
+          <div className="story-layer story-band text-center">
             <h2 ref={headlineRef} data-tl className="max-w-4xl text-[34px] lg:text-[64px] font-semibold leading-[1.02] tracking-tight text-balance">
               Each page filled in under 10 seconds.
             </h2>
@@ -562,7 +577,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="story-layer">
+          <div className="story-layer story-band">
             <dl ref={statsRef} data-tl className="grid grid-cols-3 gap-8 text-center">
               {[
                 ["70%", "Faster charting"],
@@ -570,7 +585,7 @@ export default function HomePage() {
                 ["1hr+", "Saved per shift"],
               ].map(([figure, label]) => (
                 <div key={label}>
-                  <dt className="text-[34px] lg:text-[44px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
+                  <dt className="text-[34px] lg:text-[64px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
                   <dd className="mt-2 text-[13px] text-paper">{label}</dd>
                 </div>
               ))}
