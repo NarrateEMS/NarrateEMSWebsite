@@ -1,6 +1,6 @@
 export const AGREEMENT_VERSION = '2026-10'
 
-// Agency-signed PDFs, stamped and stored in Google Drive on signing.
+// Agency-signed PDFs, stamped on signing and stored in the private Supabase Storage bucket agency-agreements.
 export const AGENCY_DOCUMENTS = [
   { file: 'agency-baa.pdf', title: 'Business Associate Agreement' },
   { file: 'agency-authorization.pdf', title: 'Agency Authorization & Security Acknowledgment' },
