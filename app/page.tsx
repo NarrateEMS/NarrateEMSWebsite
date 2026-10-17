@@ -67,14 +67,14 @@ function at(p: number, frames: Frame[]): number[] {
 }
 
 type Box = { w: number; h: number; objW: number; objH: number; cardW: number; cardH: number; heroBottom: number; bandBottom: number }
-type Card = { x: number; y: number; dx: number; dy: number; rz: number; ry: number; k: number }
+type Card = { x: number; y: number; dx: number; dy: number; rz: number; ry: number; k: number; gs: number }
 
 // Text owns the band above bandBottom; the object and cards only ever use the area below it.
 function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom }: Box) {
   const desk = w >= 1024
   const top = bandBottom + 16
   const areaH = h - (desk ? 32 : 16) - top
-  const fit = Math.min(desk ? 1.5 : 1, (areaH * 0.96) / objH, (w - 48) / (objW + 64))
+  const fit = Math.min(desk ? 1.5 : w >= 640 ? 1.3 : 1, (areaH * 0.96) / objH, (w - 48) / (objW + 64))
   const layerCenter = 64 + (h - 64) / 2
   const oy = top + areaH / 2 - layerCenter
   // Hero: the object's top edge peeks just under the CTAs, then rises flat into the area.
@@ -87,8 +87,8 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
   ]
   const spots = desk
     ? [[-0.8, -0.55], [-0.28, -0.85], [0.3, -0.8], [0.82, -0.45], [-0.6, 0.7], [0.02, 0.75], [0.62, 0.65]]
-    : [[-0.9, -0.9], [0.9, -0.6], [-0.9, -0.3], [0.9, 0.05], [-0.9, 0.35], [0.9, 0.7], [-0.9, 0.95]]
-  const rz = [-7, 4, 8, -5, 5, -8, 6]
+    : [[-0.85, -0.95], [0.85, -0.63], [-0.85, -0.31], [0.85, 0], [-0.85, 0.31], [0.85, 0.63], [-0.85, 0.95]]
+  const rz = [-7, 4, 8, -5, 5, -8, 6].map((v) => (desk ? v : v / 2))
   const ry = [10, -8, 12, -10, 8, -12, 10].map((v) => (desk ? v : v / 2))
   const rx = (w - 48 - cardW) / 2
   const ryMax = (areaH - cardH) / 2
@@ -100,6 +100,7 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
     rz: rz[i],
     ry: ry[i],
     k: i - 3,
+    gs: w >= 640 ? 1.3 : 1.05,
   }))
   return {
     oy,
@@ -112,7 +113,7 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
       [0.55, 0, oy, 0, 0, 0, fit, 1],
       [0.58, 0, oy - h * 0.01, 2, 0, 0, fit * 0.97, 0],
     ] as Frame[],
-    steps: [fade(0.07, 0.1, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
+    steps: [fade(0.05, 0.08, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
     headline: fade(0.57, 0.6, 0.84, 0.87),
     stats: [
       [0.88, 0, 16, 0, 0, 0, 1, 0],
@@ -136,7 +137,7 @@ function cardAt(p: number, c: Card, oy: number): number[] {
   const y = lerp(lerp(oy, c.y + c.dy * d, out), oy - c.k * 6, g)
   const rz = lerp(lerp(0, c.rz + Math.sign(c.rz) * 3 * d, out), c.k * 1.2, g)
   const ry = lerp(lerp(0, c.ry * (1 - 0.6 * d), out), 0, g)
-  const s = lerp(lerp(0.94, 1, out), 0.96, g)
+  const s = lerp(lerp(0.94, 1, out), c.gs, g)
   return [x, y, 0, ry, rz, s, span(p, 0.565, 0.59)]
 }
 
@@ -241,7 +242,8 @@ function PhoneObject() {
       data-phone
       data-state="sent"
       data-away="0"
-      className="group/phone absolute -left-3 bottom-3 w-[100px] rounded-[22px] bg-ink-2 p-1.5 text-[9px] leading-snug text-ink transition-[opacity,translate] duration-500 ease-out motion-reduce:transition-none data-[away=1]:-translate-x-6 data-[away=1]:opacity-0 sm:-left-12 sm:w-[156px] sm:rounded-[30px] sm:p-2 sm:text-[11px]"
+      data-ui
+      className="group/phone absolute -left-3 bottom-3 w-[112px] rounded-[22px] bg-ink-2 p-1.5 text-[11px] leading-snug text-ink transition-[opacity,translate] duration-500 ease-out motion-reduce:transition-none data-[away=1]:-translate-x-6 data-[away=1]:opacity-0 sm:-left-12 sm:w-[156px] sm:rounded-[30px] sm:p-2 sm:text-[11px]"
       style={{ transform: "translateZ(110px) rotateZ(-3deg)" }}
     >
       <div className="flex h-[196px] flex-col overflow-hidden rounded-[16px] bg-paper sm:h-[300px] sm:rounded-[22px]">
@@ -267,7 +269,7 @@ function PhoneObject() {
 
 function PageCard({ title, fields }: { title: string; fields: readonly (readonly [string, string])[] }) {
   return (
-    <div data-ui className="w-[156px] sm:w-[230px] sm:h-[160px] lg:w-[280px] lg:h-[184px] lg:text-[13px] overflow-hidden rounded-ui bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
+    <div data-ui className="w-[172px] sm:w-[230px] sm:h-[160px] lg:w-[280px] lg:h-[184px] lg:text-[13px] overflow-hidden rounded-ui bg-white text-ink border border-[#C9CED6] text-[12px] leading-snug">
       <div className="flex items-center justify-between gap-2 bg-[#DDE3EA] px-3 py-2 font-semibold">
         <span className="truncate">{title}</span>
         <span className="hidden sm:inline text-success">Filled</span>
@@ -407,7 +409,7 @@ export default function HomePage() {
         cardW: firstCard?.offsetWidth ?? 230,
         cardH: firstCard?.offsetHeight ?? 160,
         heroBottom: bottomOf(heroRef.current),
-        bandBottom: Math.max(...[...stepRefs.current, headlineRef.current, statsRef.current].map(bottomOf)),
+        bandBottom: Math.max(...[...stepRefs.current, headlineRef.current].map(bottomOf)),
       })
     let tl = measure()
     let current = -1
@@ -630,7 +632,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="story-layer story-band">
+          <div className="story-layer story-stats">
             <dl ref={statsRef} data-tl className="grid grid-cols-3 gap-8 text-center">
               {[
                 ["70%", "Faster charting"],
@@ -639,7 +641,7 @@ export default function HomePage() {
               ].map(([figure, label]) => (
                 <div key={label}>
                   <dt className="text-[34px] lg:text-[64px] font-semibold leading-none tracking-tight tabular-nums">{figure}</dt>
-                  <dd className="mt-2 text-[13px] text-paper">{label}</dd>
+                  <dd className="mt-2 text-[17px] text-paper">{label}</dd>
                 </div>
               ))}
             </dl>
@@ -703,7 +705,7 @@ export default function HomePage() {
                   value={checkoutEmail}
                   onChange={(e) => setCheckoutEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="mt-1.5 w-full bg-paper-tint px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
+                  className="mt-1.5 w-full rounded-field bg-paper-tint px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
                 />
               </label>
               <label className="block">
@@ -715,10 +717,10 @@ export default function HomePage() {
                   value={checkoutPassword}
                   onChange={(e) => setCheckoutPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="mt-1.5 w-full bg-paper-tint px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
+                  className="mt-1.5 w-full rounded-field bg-paper-tint px-4 py-3 text-[17px] text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-ink"
                 />
               </label>
-              {checkoutError && <div className="bg-[#FEF2F2] px-3 py-2.5 text-[17px] text-danger">{checkoutError}</div>}
+              {checkoutError && <div className="rounded-field bg-[#FEF2F2] px-3 py-2.5 text-[17px] text-danger">{checkoutError}</div>}
               <button type="submit" disabled={isCheckoutLoading} className={`${primaryBtn} w-full disabled:opacity-60`}>
                 {isCheckoutLoading ? "Processing…" : "Continue to payment →"}
               </button>

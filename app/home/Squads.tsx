@@ -47,7 +47,7 @@ function SquadStage() {
       data-reveal
       role="img"
       aria-label="Sample squad admin screen with squad code, chart usage, invite form and member list"
-      className={`group w-full overflow-hidden rounded-card bg-paper text-ink ${reveal}`}
+      className={`group w-full overflow-hidden rounded-ui bg-paper text-ink ${reveal}`}
     >
       <div className="flex items-center gap-3 bg-ink-2 px-4 py-3 text-[13px] text-paper">
         <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />

@@ -71,8 +71,8 @@ export function Start() {
 
         <div className="mt-4 grid gap-4 lg:grid-cols-12">
           <img
-            src="/photos/jump-bags.jpg"
-            alt="A row of navy medical jump bags with reflective stripes on a shelf"
+            src="/photos/ambulance-night-blur.jpg"
+            alt="An ambulance passing at night, motion-blurred"
             className={`h-full min-h-[280px] w-full rounded-card object-cover lg:col-span-7 ${rv}`}
             loading="lazy"
           />

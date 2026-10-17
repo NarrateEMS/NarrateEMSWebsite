@@ -51,7 +51,8 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
 
         <div className="mt-14 grid gap-3 xl:grid-cols-[minmax(0,1fr)_1.5rem_repeat(4,minmax(0,1fr))] xl:gap-x-3 xl:gap-y-0">
           <div className="xl:col-start-1 xl:row-start-1 xl:pb-5">
-            <h3 className="text-[22px] font-semibold leading-tight">Solo medics, billed monthly</h3>
+            <h3 className="text-[22px] font-semibold leading-tight">Solo medics</h3>
+            <p className={body}>Billed monthly.</p>
           </div>
 
           <article className={`${card} bg-paper md:grid md:grid-cols-2 md:gap-x-8 xl:col-start-1 xl:grid-cols-none xl:gap-x-0 ${enter(0).className}`} style={enter(0).style}>
@@ -71,8 +72,8 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
           </article>
 
           <div className="mt-11 xl:col-span-4 xl:col-start-3 xl:row-start-1 xl:mt-0 xl:pb-5">
-            <h3 className="text-[22px] font-semibold leading-tight">Squads, billed annually</h3>
-            <p className={body}>One bill. Squad codes. Admin controls.</p>
+            <h3 className="text-[22px] font-semibold leading-tight">Squads</h3>
+            <p className={body}>Billed annually. One bill, squad codes, admin controls.</p>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2 xl:contents">
@@ -90,7 +91,7 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
               <div>
                 <p className="mb-4 text-[17px] leading-snug">
                   {p.blurb}
-                  {p.popular && <strong className="font-semibold">. Most chosen</strong>}
+                  {p.popular && <strong className="ml-2 inline-block rounded-full bg-ink px-2.5 py-0.5 align-middle text-[13px] font-semibold text-paper">Most chosen</strong>}
                 </p>
                 <div className={`h-2.5 overflow-hidden rounded-full ${p.popular ? "bg-paper" : "bg-paper-tint"}`} aria-hidden>
                   <div

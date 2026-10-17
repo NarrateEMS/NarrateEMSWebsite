@@ -32,6 +32,7 @@ export function Anywhere() {
             />
             <div className="absolute inset-0 bg-ink/45" aria-hidden />
             <div
+              data-ui
               role="img"
               aria-label="The NarrateEMS dictate page on a phone, with a saved narration"
               className="absolute left-1/2 top-1/2 w-[230px] -translate-x-1/2 -translate-y-1/2 rounded-[34px] bg-ink-2 p-2.5 sm:w-[260px]"

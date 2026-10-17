@@ -11,7 +11,7 @@ export function Why() {
   return (
     <section ref={ref} id="why" className="bg-paper-tint">
       <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-40">
-        <div className="lg:grid lg:grid-cols-12 lg:items-end lg:gap-10">
+        <div className="lg:grid lg:grid-cols-12 lg:items-center lg:gap-10">
           <div className="lg:col-span-6">
             <h2 data-reveal className={`${h2} ${reveal}`}>We built it for ourselves first.</h2>
             <p data-reveal style={{ transitionDelay: "80ms" }} className={`mt-5 ${body} ${reveal}`}>
@@ -19,7 +19,7 @@ export function Why() {
             </p>
           </div>
           <p data-reveal style={{ transitionDelay: "160ms" }} className={`mt-14 lg:col-span-6 lg:mt-0 lg:text-right ${reveal}`}>
-            <span className="block text-[120px] font-semibold leading-[0.8] tracking-[-0.05em] tabular-nums lg:text-[220px]">6+</span>
+            <span className="block text-[120px] font-semibold leading-[0.8] tracking-[-0.05em] tabular-nums lg:text-[180px]">6+</span>
             <span className="mt-4 block text-[17px] lg:text-[20px]">Years of field experience on the team</span>
           </p>
         </div>
