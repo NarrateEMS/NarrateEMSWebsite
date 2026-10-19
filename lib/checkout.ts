@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { errorMessage, logEvent } from '@/lib/observability'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27.acacia',
+  apiVersion: '2025-12-15.clover',
 })
 
 export const supabaseAdmin = createClient(
@@ -103,6 +103,8 @@ export async function startCheckout(
       client_reference_id: userId, // This is what the webhook uses to link payment to user!
       line_items: lineItems,
       subscription_data: {
+        // Flexible bills already-reported overage at the old price on a mid-year plan change; classic drops it.
+        billing_mode: { type: 'flexible' },
         trial_period_days: 7,
         metadata: {
           supabase_user_id: userId,
