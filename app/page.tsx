@@ -667,7 +667,7 @@ export default function HomePage() {
       {/* CHECKOUT MODAL */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-50 bg-ink/80 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-md rounded-card bg-paper p-8">
+          <div className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-card bg-paper p-8">
             <button
               onClick={() => setShowCheckoutModal(false)}
               className="absolute top-4 right-4 rounded-full text-ink p-1.5 hover:bg-paper-tint focus-hi-vis"
