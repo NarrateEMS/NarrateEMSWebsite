@@ -366,6 +366,7 @@
   background: radial-gradient(55% 70% at 100% 0%, #1D3A6E, transparent 70%), radial-gradient(45% 60% at 0% 100%, #15294D, transparent 70%); /* taste-skill-ignore: owner asked for gradient backgrounds */
 }
 
+@media (prefers-reduced-motion: reduce) { .reveal, .pulse-dot, .animate-spin, .animate-pulse { animation: none; } } /* taste-skill-ignore: turns these animations off */
 .story-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; max-width: 64rem; }
 .story[data-motion="on"] .story-cards { display: block; position: relative; width: 0; height: 0; perspective: 2000px; }
 .story[data-motion="on"] .story-card { position: absolute; left: 0; top: 0; }
