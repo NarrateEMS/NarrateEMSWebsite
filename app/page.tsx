@@ -305,6 +305,7 @@ export default function HomePage() {
     setRepEmail("")
     setNeedsRep(false)
     setAgencyPending(false)
+    setLegalAccepted(false)
     setShowCheckoutModal(true)
   }
 
