@@ -59,3 +59,4 @@ coverage/
 *.pid.lock
 
 .claude/
+supabase/.temp/
