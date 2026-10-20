@@ -27,6 +27,23 @@ JWT). `components/agency-panel.tsx` is the `/account` agencies panel. Legal docs
 `/legal/sla.pdf`.
 Supabase browser client in `lib/supabase.ts`; shadcn/ui in `components/ui`.
 
+## Design (A3)
+
+- Homepage is one full-width scroll story: `app/page.tsx` composes the sections in `app/home/`.
+  The 3D story runs on one requestAnimationFrame loop that writes CSS variables (no React state per
+  frame) and only runs while the story is on screen.
+- Font is Work Sans only (no serif, italics or mono labels). Colours are the tokens in `app/globals.css`:
+  ink/navy, paper, hi-vis yellow, red, green.
+- Corners by type: buttons, tags and statuses are pills (`rounded-full`); cards and panels
+  `rounded-card` (16px); app windows and modals `rounded-ui` (10px); fields and list rows `rounded-field` (6px).
+  Full-width sections, photos and the nav stay square. `--radius` is 0, so `rounded-sm/md/lg` are square.
+- Hero and the auth pages use `.story-stage` + `.story-blobs` (3 drifting blobs); other navy
+  sections use the static `.navy-tex` glow. Anything that moves must stop under
+  `prefers-reduced-motion`.
+- Signed-in pages reuse `components/app-ui.tsx` (`AppNav`, `AuthShell`, `AppFooter`, `btn`,
+  `outlineBtn`, `dangerBtn`, `field`, `label`). Use these instead of new one-off button/input classes.
+- Photos are generic only: no real squads, faces, agency patches or readable branding.
+
 ## `/dictate` (phone dictation)
 
 Phone page for medics without a laptop. Signed-in users with an active/trialing plan record here, see
@@ -110,6 +127,10 @@ Two bugs have shipped here; both are regression tests worth keeping:
 If you ever see the `"Your squad"` fallback name, the `squads` read returned null - suspect RLS, and
 check the console (the failure is logged, not swallowed).
 
+Admin usage line ("Charts used X of Y this year (Z overage) · resets <date>") comes from
+`get-squad-admin-data`'s `usage` field (server-computed; null for non-counted plans). Don't
+recompute it from `squads.charts_used`: the year rolls lazily, so that column can be stale.
+
 ## `/invite/accept`
 
 Branch selection is `?setup=1` on the URL **OR** `user_metadata.needs_password === true`:
@@ -158,9 +179,7 @@ admin re-send and un-revoking an agency are not supported (manual DB; see `narra
 - `NEXT_PUBLIC_*` is inlined at **build** time: export env before `npm run build`, not just before
   `npm run start`. Guard against testing a stale bundle by grepping the built chunk for a new
   string, e.g. `grep -rl "Setting up your squad" .next/static/chunks/app/account/`.
-- `npx tsc --noEmit` reports one **pre-existing** error: the `apiVersion: '2025-01-27.acacia'`
-  literal in the checkout route does not match the installed Stripe types. Do not "fix" it by
-  changing the pinned API version as a side effect of unrelated work; the production build succeeds.
+- `npx tsc --noEmit` is clean: the checkout route pins `apiVersion: '2025-12-15.clover'` with `subscription_data.billing_mode: { type: 'flexible' }`.
 - `npm run lint` (`eslint .`) has no config committed and `npx next lint` drops into an interactive
   setup prompt - do not let it scaffold a config mid-task.
 - A dev server launched from a one-shot shell must use `setsid npm run dev`; plain `nohup ... &`
