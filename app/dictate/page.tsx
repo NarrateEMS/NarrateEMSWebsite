@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { AlertCircle, Loader2, Mic, RefreshCw, Square, WifiOff } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import { Wordmark } from "@/components/wordmark"
+import { AppNav, btn, dangerBtn, field, navLink, outlineBtn } from "@/components/app-ui"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,17 +46,22 @@ const when = (iso: string) =>
 function Confirm({ label, title, onConfirm }: { label: string; title: string; onConfirm: () => void }) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger className="text-sm text-ink-muted underline underline-offset-4 hover:text-ink">
+      <AlertDialogTrigger className={dangerBtn}>
         {label}
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="rounded-ui border-rule bg-paper text-ink">
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          <AlertDialogTitle className="text-xl">{title}</AlertDialogTitle>
+          <AlertDialogDescription className="text-[15px] text-ink-muted">This cannot be undone.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{label}</AlertDialogAction>
+          <AlertDialogCancel className={outlineBtn}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="min-h-11 rounded-full bg-danger px-6 text-[17px] font-semibold text-paper hover:bg-danger/90 focus-hi-vis"
+          >
+            {label}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -364,54 +369,47 @@ export default function DictatePage() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-paper flex items-center justify-center">
+      <div className="min-h-dvh bg-paper flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink antialiased">
+    <div className="min-h-dvh bg-paper text-ink antialiased">
+      <AppNav>
+        <button onClick={signOut} disabled={!!recording} className={`${navLink} disabled:opacity-40`}>
+          Sign out
+        </button>
+      </AppNav>
       {recording && (
-        <div role="status" className="sticky top-0 z-10 bg-red-600 text-white text-center py-2.5 font-semibold">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-white mr-2 animate-pulse" />
+        <div role="status" className="sticky top-16 z-30 bg-recording text-paper text-center py-2.5 text-[17px] font-semibold">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-paper mr-2 animate-pulse" />{/* taste-skill-ignore: live recording indicator */}
           Recording
         </div>
       )}
-      <header className="border-b border-rule">
-        <div className="mx-auto max-w-xl px-4 h-14 flex items-center justify-between">
-          <Wordmark href="/" size="sm" />
-          <button
-            onClick={signOut}
-            disabled={!!recording}
-            className="text-sm text-ink-muted hover:text-ink disabled:opacity-40"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
 
-      <main className="mx-auto max-w-xl px-4 py-6 space-y-6">
+      <main className="mx-auto max-w-xl px-4 py-8 space-y-8">
         {noPlan ? (
-          <div className="bg-paper-tint border border-rule-strong rounded-md p-5">
-            <h1 className="font-serif text-2xl mb-2">No active plan</h1>
-            <p className="text-ink-muted mb-4">This account doesn't have an active NarrateEMS plan.</p>
-            <Link href="/account" className="font-semibold underline underline-offset-4">
+          <div className="bg-surface rounded-card p-6">
+            <h1 className="text-2xl font-semibold mb-2">No active plan</h1>
+            <p className="text-[17px] text-ink-muted mb-5">This account doesn't have an active NarrateEMS plan.</p>
+            <Link href="/account" className={btn}>
               Go to your account
             </Link>
           </div>
         ) : (
           <>
             {!online && (
-              <div className="flex items-start gap-2.5 bg-paper-tint border border-rule rounded-md p-3.5 text-sm">
+              <div className="flex items-start gap-3 bg-paper-tint rounded-card p-4 text-[15px]">
                 <WifiOff className="h-4 w-4 mt-0.5 shrink-0" />
                 No signal. You can still record; it is kept on this phone and transcribed when you're back
                 online.
               </div>
             )}
             {error && (
-              <div className="flex items-start gap-2.5 bg-paper-tint border border-rule-strong rounded-md p-3.5 text-sm">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <div role="alert" className="flex items-start gap-3 bg-danger/10 rounded-card p-4 text-[15px]">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-danger" />
                 {error}
               </div>
             )}
@@ -420,9 +418,9 @@ export default function DictatePage() {
               <button
                 onClick={recording ? stopRecording : startRecording}
                 disabled={starting}
-                className={`w-full inline-flex flex-col items-center justify-center py-5 text-lg font-semibold rounded-md transition-colors ${
+                className={`w-full inline-flex flex-col items-center justify-center min-h-20 py-5 text-xl font-semibold rounded-full transition-colors focus-hi-vis active:translate-y-px ${
                   recording
-                    ? "bg-[var(--danger)] text-white"
+                    ? "bg-recording text-paper"
                     : starting
                       ? "bg-ink text-paper opacity-70"
                       : "bg-hi-vis text-hi-vis-ink hover:bg-hi-vis-deep"
@@ -432,13 +430,13 @@ export default function DictatePage() {
                   {recording ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                   {recording ? "Recording, speak now" : starting ? "Starting…" : "Record"}
                 </span>
-                {recording && <span className="text-xs font-normal opacity-90">Tap to stop</span>}
+                {recording && <span className="text-[15px] font-normal opacity-90">Tap to stop</span>}
               </button>
-              <p className="text-xs text-ink-soft">
+              <p className="text-[15px] text-ink-muted">
                 Keep this screen open. On iPhone, locking the phone or switching apps stops the recording.
               </p>
               {recording && (
-                <div className="text-left bg-surface border border-rule rounded-md p-4 min-h-24 whitespace-pre-wrap">
+                <div className="text-left text-[17px] bg-surface rounded-card p-5 min-h-24 whitespace-pre-wrap">
                   {dropped ? (
                     <span className="text-ink-muted">
                       Live words unavailable. Still recording; the audio will be transcribed when you stop.
@@ -452,10 +450,10 @@ export default function DictatePage() {
 
             {local.length > 0 && (
               <section className="space-y-3">
-                <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">On this phone</h2>
+                <h2 className="text-xl font-semibold">On this phone</h2>
                 {local.map((r) => (
-                  <div key={r.clientId} className="bg-surface border border-rule rounded-md p-4 space-y-3">
-                    <div className="flex items-center justify-between text-sm">
+                  <div key={r.clientId} className="bg-surface rounded-card p-5 space-y-4">
+                    <div className="flex items-center justify-between gap-3 text-[15px]">
                       <span className="font-semibold">
                         {busy[r.clientId] ??
                           (r.status === "review" ? "Ready to review" : online ? "Waiting to transcribe" : "Waiting for signal")}
@@ -471,7 +469,7 @@ export default function DictatePage() {
                           rows={6}
                           aria-label="Narration"
                           placeholder="No speech was detected. Type the narration here."
-                          className="w-full px-3 py-2.5 bg-paper border border-rule rounded-md focus:outline-none focus:border-ink"
+                          className={field}
                         />
                         <input
                           value={r.label}
@@ -479,17 +477,17 @@ export default function DictatePage() {
                           maxLength={80}
                           aria-label="Label"
                           placeholder="Label (optional, no patient names)"
-                          className="w-full px-3 py-2.5 bg-paper border border-rule rounded-md focus:outline-none focus:border-ink"
+                          className={field}
                         />
                       </>
                     )}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <Confirm label="Discard" title="Discard this recording?" onConfirm={() => discard(r)} />
                       {r.status === "review" && (
                         <button
                           onClick={() => save(r)}
                           disabled={!r.text.trim() || !!busy[r.clientId] || !online}
-                          className="bg-hi-vis text-hi-vis-ink px-5 py-2.5 font-semibold rounded-md disabled:opacity-50"
+                          className={btn}
                         >
                           Save
                         </button>
@@ -502,22 +500,24 @@ export default function DictatePage() {
 
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
-                  Saved for 24 hours
-                </h2>
-                <button onClick={refreshSaved} aria-label="Refresh" className="text-ink-muted hover:text-ink">
+                <h2 className="text-xl font-semibold">Saved for 24 hours</h2>
+                <button
+                  onClick={refreshSaved}
+                  aria-label="Refresh"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-muted hover:bg-paper-tint hover:text-ink focus-hi-vis"
+                >
                   <RefreshCw className="h-4 w-4" />
                 </button>
               </div>
-              {saved?.length === 0 && <p className="text-sm text-ink-muted">Nothing saved yet.</p>}
+              {saved?.length === 0 && <p className="text-[15px] text-ink-muted">Nothing saved yet.</p>}
               {saved?.map((n) => (
-                <div key={n.id} className="bg-surface border border-rule rounded-md p-4 space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
+                <div key={n.id} className="bg-surface rounded-card p-5 space-y-2">
+                  <div className="flex items-center justify-between text-[15px]">
                     <span className="font-semibold truncate">{n.label || "Narration"}</span>
                     <span className="text-ink-soft shrink-0 ml-3">{when(n.recordedAt)}</span>
                   </div>
-                  <p className="text-sm text-ink-muted line-clamp-2">{n.preview}</p>
-                  <div className="flex items-center justify-between text-xs text-ink-soft">
+                  <p className="text-[15px] text-ink-muted line-clamp-2">{n.preview}</p>
+                  <div className="flex items-center justify-between text-[13px] text-ink-soft">
                     <span>{n.chars} characters</span>
                     <Confirm label="Delete" title="Delete this narration?" onConfirm={() => removeSaved(n.id)} />
                   </div>
