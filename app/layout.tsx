@@ -27,21 +27,12 @@ export const metadata: Metadata = {
     url: "https://narrateems.com",
     siteName: "NarrateEMS",
     type: "website",
-    images: [
-      {
-        url: "https://narrateems.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "NarrateEMS: Voice-driven ePCR charting for medics",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "NarrateEMS: The chart writes itself.",
     description:
       "After the call, narrate. NarrateEMS writes your Zoll ePCR, 70% faster.",
-    images: ["https://narrateems.com/og-image.jpg"],
   },
   manifest: "/manifest.json",
   generator: "v0.app",
