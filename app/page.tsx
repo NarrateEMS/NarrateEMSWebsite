@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Wordmark } from "@/components/wordmark"
 import { LEGAL_DOCUMENTS } from "@/lib/agreement"
+import { INDIVIDUAL_PLAN, planLabel } from "@/lib/plans"
 import { STORE_URL, body, primaryBtn } from "./home/shared"
 import { Testimonial } from "./home/Testimonial"
 import { Why } from "./home/Why"
@@ -309,24 +310,7 @@ export default function HomePage() {
     setShowCheckoutModal(true)
   }
 
-  const getPlanDisplayInfo = (planType: string) => {
-    switch (planType) {
-      case "individual_monthly":
-        return "Individual, $29.99 / month"
-      case "pilot_annual":
-        return "Pilot, $1,000 / year · 500 charts"
-      case "small_squad_annual":
-        return "Small Squad, $3,000 / year · 2,000 charts"
-      case "large_squad_annual":
-        return "Large Squad, $6,000 / year · 5,000 charts"
-      case "high_volume_annual":
-        return "High Volume, $10,000 / year · 10,000 charts"
-      default:
-        return ""
-    }
-  }
-
-  const isIndividual = selectedPlan?.type === "individual_monthly"
+  const isIndividual = selectedPlan?.type === INDIVIDUAL_PLAN.id
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -678,7 +662,7 @@ export default function HomePage() {
             </button>
             <p className="text-[13px] font-semibold">Step 1 of 2: create your account</p>
             <h3 className="mt-3 text-[34px] font-semibold leading-tight tracking-tight">Get started.</h3>
-            <p className={`mt-2 ${body}`}>{selectedPlan?.type && getPlanDisplayInfo(selectedPlan.type)}</p>
+            <p className={`mt-2 ${body}`}>{selectedPlan?.type && planLabel(selectedPlan.type)}</p>
             {agencyPending ? (
               <div className="mt-8 space-y-4">
                 <p className={body}>

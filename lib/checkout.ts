@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { errorMessage, logEvent } from '@/lib/observability'
+import { squadCharts } from '@/lib/plans'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-12-15.clover',
@@ -39,25 +40,25 @@ export const PRICE_CONFIG: Record<string, PlanConfig> = {
     type: 'squad',
     flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PILOT_FLAT!,
     overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PILOT_OVERAGE!,
-    includedCharts: 500,
+    includedCharts: squadCharts('pilot_annual'),
   },
   small_squad_annual: {
     type: 'squad',
     flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SMALL_SQUAD_FLAT!,
     overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SMALL_SQUAD_OVERAGE!,
-    includedCharts: 2000,
+    includedCharts: squadCharts('small_squad_annual'),
   },
   large_squad_annual: {
     type: 'squad',
     flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_LARGE_SQUAD_FLAT!,
     overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_LARGE_SQUAD_OVERAGE!,
-    includedCharts: 5000,
+    includedCharts: squadCharts('large_squad_annual'),
   },
   high_volume_annual: {
     type: 'squad',
     flatPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_HIGH_VOLUME_FLAT!,
     overagePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_HIGH_VOLUME_OVERAGE!,
-    includedCharts: 10000,
+    includedCharts: squadCharts('high_volume_annual'),
   },
 }
 
