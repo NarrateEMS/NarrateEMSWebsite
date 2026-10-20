@@ -444,7 +444,7 @@ export default function AccountPage() {
                 <dd className="inline-flex items-center gap-2 rounded-full bg-paper-tint px-3 py-1 text-[15px] font-medium">
                   {isActive ? (
                     <>
-                      <span className="h-2 w-2 rounded-full bg-success pulse-dot" />
+                      <span className="h-2 w-2 rounded-full bg-success" />
                       <span className="text-ink">
                         Active
                       </span>
@@ -494,7 +494,7 @@ export default function AccountPage() {
                 </div>
                 <p className="text-[17px] text-ink-muted leading-relaxed">
                   Your payment went through and we're finishing your squad now. This
-                  page updates itself within a few seconds -- no need to reload.
+                  page updates itself within a few seconds. No need to reload.
                 </p>
               </div>
             ) : squadUnlinked ? (
@@ -670,7 +670,7 @@ export default function AccountPage() {
                     {squadAdminData?.members.map((member) => (
                       <div
                         key={member.user_id}
-                        className="rounded-field border border-rule bg-paper px-4 py-2 min-h-14 flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
+                        className="rounded-field border border-rule bg-paper px-4 py-2 min-h-14 flex items-center justify-between gap-4"
                       >
                         <span className="min-w-0 text-[15px] break-all">{member.email}</span>
                         {member.is_admin ? (
@@ -716,7 +716,7 @@ export default function AccountPage() {
                     {squadAdminData?.pending_invites.map((invite) => (
                       <div
                         key={invite.id}
-                        className="rounded-field border border-rule bg-paper px-4 py-2 min-h-14 flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
+                        className="rounded-field border border-rule bg-paper px-4 py-2 min-h-14 flex items-center justify-between gap-4"
                       >
                         <div className="min-w-0">
                           <div className="text-[15px] text-ink-muted break-all">{invite.email}</div>

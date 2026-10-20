@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import type { FormEvent } from "react"
 import { supabase } from "@/lib/supabase"
+import { btn, field, outlineBtn } from "@/components/app-ui"
 
 type Authorization = {
   id: string
@@ -15,9 +16,6 @@ const LABEL: Record<string, string> = {
   pending: "Waiting for agency to sign",
   revoked: "Revoked",
 }
-
-const inputClass =
-  "w-full px-3 py-2 bg-paper border border-rule rounded-md text-sm text-ink placeholder:text-ink-soft/60 focus:outline-none focus:border-ink"
 
 async function authedPost(path: string, body?: object) {
   const { data } = await supabase.auth.getSession()
@@ -94,15 +92,15 @@ export function AgencyPanel({ subscriptionStatus }: { subscriptionStatus: string
 
   return (
     <div className="mt-6 pt-5 border-t border-rule space-y-4">
-      <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">Your agencies</div>
+      <h3 className="text-[17px] font-semibold">Your agencies</h3>
       {auths.length > 0 && (
-        <ul className="space-y-2 text-sm">
+        <ul className="space-y-2 text-[15px]">
           {auths.map((a) => (
-            <li key={a.id} className="flex justify-between gap-3">
+            <li key={a.id} className="flex items-center justify-between gap-3">
               <span className="text-ink">
                 {a.agencies?.name} <span className="text-ink-soft">({a.agencies?.service_code})</span>
               </span>
-              <span className="text-ink-muted">{LABEL[a.status]}</span>
+              <span className="shrink-0 rounded-full bg-paper-tint px-3 py-1 text-[14px] font-medium">{LABEL[a.status]}</span>
             </li>
           ))}
         </ul>
@@ -112,15 +110,15 @@ export function AgencyPanel({ subscriptionStatus }: { subscriptionStatus: string
         <button
           onClick={finishPayment}
           disabled={busy}
-          className="w-full py-3 bg-hi-vis text-hi-vis-ink font-semibold rounded-md hover:bg-hi-vis-deep hover:text-paper transition-colors disabled:opacity-60"
+          className={`${btn} w-full`}
         >
           Finish payment and activate →
         </button>
       )}
 
       <form onSubmit={addAgency} className="space-y-2">
-        <div className="text-sm text-ink-muted">Work for another agency? Add it here.</div>
-        <input required maxLength={120} value={agencyName} onChange={(e) => setAgencyName(e.target.value)} placeholder="EMS agency name" className={inputClass} />
+        <div className="text-[15px] text-ink-muted">Work for another agency? Add it here.</div>
+        <input required maxLength={120} value={agencyName} onChange={(e) => setAgencyName(e.target.value)} placeholder="EMS agency name" className={field} />
         <input
           required
           pattern="[A-Za-z0-9]{2,32}"
@@ -130,21 +128,21 @@ export function AgencyPanel({ subscriptionStatus }: { subscriptionStatus: string
             setNeedsRep(false)
           }}
           placeholder="EMS Charts service code, e.g. S2643"
-          className={inputClass}
+          className={field}
         />
         {needsRep && (
           <>
-            <div className="text-sm text-ink-muted">
+            <div className="text-[15px] text-ink-muted">
               This agency hasn't approved NarrateEMS yet. Enter your chief's or another authorized representative's email.
             </div>
-            <input required type="email" value={repEmail} onChange={(e) => setRepEmail(e.target.value)} placeholder="chief@agency.org" className={inputClass} />
+            <input required type="email" value={repEmail} onChange={(e) => setRepEmail(e.target.value)} placeholder="chief@agency.org" className={field} />
           </>
         )}
-        <button type="submit" disabled={busy} className="w-full py-2 border border-rule rounded-md text-sm hover:border-ink disabled:opacity-60">
+        <button type="submit" disabled={busy} className={`${outlineBtn} w-full`}>
           {needsRep ? "Send to my agency" : "Add agency"}
         </button>
       </form>
-      {message && <div className="text-sm text-ink">{message}</div>}
+      {message && <div role="status" className="text-[15px] text-ink">{message}</div>}
     </div>
   )
 }

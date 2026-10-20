@@ -27,6 +27,23 @@ JWT). `components/agency-panel.tsx` is the `/account` agencies panel. Legal docs
 `/legal/sla.pdf`.
 Supabase browser client in `lib/supabase.ts`; shadcn/ui in `components/ui`.
 
+## Design (A3)
+
+- Homepage is one full-width scroll story: `app/page.tsx` composes the sections in `app/home/`.
+  The 3D story runs on one requestAnimationFrame loop that writes CSS variables (no React state per
+  frame) and only runs while the story is on screen.
+- Font is Work Sans only (no serif, italics or mono labels). Colours are the tokens in `app/globals.css`:
+  ink/navy, paper, hi-vis yellow, red, green.
+- Corners by type: buttons, tags and statuses are pills (`rounded-full`); cards and panels
+  `rounded-card` (16px); app windows and modals `rounded-ui` (10px); fields and list rows `rounded-field` (6px).
+  Full-width sections, photos and the nav stay square. `--radius` is 0, so `rounded-sm/md/lg` are square.
+- Hero and the auth pages use `.story-stage` + `.story-blobs` (3 drifting blobs); other navy
+  sections use the static `.navy-tex` glow. Anything that moves must stop under
+  `prefers-reduced-motion`.
+- Signed-in pages reuse `components/app-ui.tsx` (`AppNav`, `AuthShell`, `AppFooter`, `btn`,
+  `outlineBtn`, `dangerBtn`, `field`, `label`). Use these instead of new one-off button/input classes.
+- Photos are generic only: no real squads, faces, agency patches or readable branding.
+
 ## `/dictate` (phone dictation)
 
 Phone page for medics without a laptop. Signed-in users with an active/trialing plan record here, see
