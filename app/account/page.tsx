@@ -7,6 +7,7 @@ import type { FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { SQUAD_PLAN_TYPES } from "@/lib/plans"
 import { clearDictateData } from "@/lib/dictate/store"
 import { AgencyPanel } from "@/components/agency-panel"
 import { AppNav, AppFooter, btn, outlineBtn, dangerBtn, textLink, field, navLink } from "@/components/app-ui"
@@ -28,16 +29,6 @@ import {
 
 const CHROME_EXTENSION_URL =
   "https://chromewebstore.google.com/detail/narrateems/nokdpnigpfafepjbdinggckgcdekdjkm"
-
-// plan_type is stamped on the user at checkout, before Stripe is ever called,
-// so it is the one signal available while the subscription row is still being
-// provisioned by the webhook.
-const SQUAD_PLAN_TYPES = [
-  "pilot_annual",
-  "small_squad_annual",
-  "large_squad_annual",
-  "high_volume_annual",
-]
 
 const PROVISION_POLL_MS = 3000
 const PROVISION_POLL_ATTEMPTS = 20
@@ -251,6 +242,9 @@ export default function AccountPage() {
           return true
         }
 
+        // plan_type is stamped on the user at checkout, before Stripe is ever called,
+        // so it is the one signal available while the subscription row is still being
+        // provisioned by the webhook.
         const boughtSquadPlan = SQUAD_PLAN_TYPES.includes(metadata.plan_type)
         setSquadProvisioning(boughtSquadPlan)
         return !boughtSquadPlan
