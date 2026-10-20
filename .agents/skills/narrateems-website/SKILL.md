@@ -170,7 +170,7 @@ admin re-send and un-revoking an agency are not supported (manual DB; see `narra
 
 ## Local dev, build and lint
 
-- `npm install --legacy-peer-deps` (plain `npm install` fails; pnpm is not installed here).
+- `npx -y pnpm@9 install --frozen-lockfile` (pnpm-lock.yaml is the only lockfile; `npm install`/`npm ci` fail on peer deps).
 - Env needed: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_NARRATION_API_URL`,
   `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, all `NEXT_PUBLIC_STRIPE_PRICE_*`,
   `RESEND_API_KEY` (optional `EMAIL_FROM`, default `no-reply@narrateems.com`). Modules
@@ -180,8 +180,8 @@ admin re-send and un-revoking an agency are not supported (manual DB; see `narra
   `npm run start`. Guard against testing a stale bundle by grepping the built chunk for a new
   string, e.g. `grep -rl "Setting up your squad" .next/static/chunks/app/account/`.
 - `npx tsc --noEmit` is clean: the checkout route pins `apiVersion: '2025-12-15.clover'` with `subscription_data.billing_mode: { type: 'flexible' }`.
-- `npm run lint` (`eslint .`) has no config committed and `npx next lint` drops into an interactive
-  setup prompt - do not let it scaffold a config mid-task.
+- There is no lint script; the checks are `npx tsc --noEmit -p .` and `npx next build`. `npx next lint`
+  drops into an interactive setup prompt - do not let it scaffold a config mid-task.
 - A dev server launched from a one-shot shell must use `setsid npm run dev`; plain `nohup ... &`
   is terminated when the shell call returns.
 - Use the **sandbox** Stripe key for any checkout test and inline-assign it on the command that
