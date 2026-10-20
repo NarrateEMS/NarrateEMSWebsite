@@ -2,13 +2,8 @@
 
 import { useEffect, useRef, useState } from "react"
 import { h2, body, inkBtn } from "./shared"
+import { INDIVIDUAL_PLAN, SQUAD_PLANS } from "@/lib/plans"
 
-const SQUAD_PLANS = [
-  { id: "pilot_annual", name: "Pilot", blurb: "Small crews", price: "1,000", charts: 500, overage: "$2.50" },
-  { id: "small_squad_annual", name: "Small Squad", blurb: "Volunteer + small services", price: "3,000", charts: 2000, overage: "$1.90", popular: true },
-  { id: "large_squad_annual", name: "Large Squad", blurb: "City + county", price: "6,000", charts: 5000, overage: "$1.40" },
-  { id: "high_volume_annual", name: "High Volume", blurb: "Regional + 911", price: "10,000", charts: 10000, overage: "$1.15" },
-]
 const MAX_CHARTS = 10000
 const SQUAD_COLS = ["xl:col-start-3", "xl:col-start-4", "xl:col-start-5", "xl:col-start-6"]
 
@@ -56,9 +51,9 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
           </div>
 
           <article className={`${card} bg-paper md:grid md:grid-cols-2 md:gap-x-8 xl:col-start-1 xl:grid-cols-none xl:gap-x-0 ${enter(0).className}`} style={enter(0).style}>
-            <h4 className="text-[22px] font-semibold leading-tight md:col-start-1 xl:col-start-auto">Individual</h4>
+            <h4 className="text-[22px] font-semibold leading-tight md:col-start-1 xl:col-start-auto">{INDIVIDUAL_PLAN.name}</h4>
             <p className="md:col-start-1 xl:col-start-auto">
-              <span className={price}>$29.99</span>
+              <span className={price}>${INDIVIDUAL_PLAN.price}</span>
               <span className={body}>/mo</span>
             </p>
             <ul className="space-y-1.5 md:col-start-2 md:row-span-3 md:row-start-1 md:self-center xl:col-start-auto xl:row-span-1 xl:row-start-auto xl:self-auto">
@@ -66,7 +61,7 @@ export function Pricing({ onSelectPlan }: { onSelectPlan: (planType: string) => 
                 <li key={line} className="text-[17px] leading-snug">{line}</li>
               ))}
             </ul>
-            <button onClick={() => onSelectPlan("individual_monthly")} className={`${inkBtn} mt-auto w-full self-end md:col-start-1 xl:col-start-auto`}>
+            <button onClick={() => onSelectPlan(INDIVIDUAL_PLAN.id)} className={`${inkBtn} mt-auto w-full self-end md:col-start-1 xl:col-start-auto`}>
               Start trial
             </button>
           </article>
