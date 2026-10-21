@@ -44,11 +44,6 @@ const steps = [
   },
 ]
 
-const facts = [
-  ["Offline", "No signal? It records anyway and sends when you're back."],
-  ["24h", "Then it's gone. Or delete it yourself, on the phone or the laptop."],
-] as const
-
 export function Anywhere() {
   const ref = useRef<HTMLElement>(null)
   useReveal(ref)
@@ -60,7 +55,7 @@ export function Anywhere() {
             <img
               src="/photos/jump-bags.jpg"
               alt="Navy jump bags with reflective stripes in the back of a rig"
-              className="block aspect-[4/5] w-full object-cover sm:aspect-[5/4] lg:aspect-[4/5]"
+              className="block aspect-[2/3] w-full object-cover sm:aspect-[5/4] lg:aspect-[6/7]"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-ink/45" aria-hidden />
@@ -83,7 +78,7 @@ export function Anywhere() {
                   138 over 84, pulse 88, SpO2 98 percent on room air. Splinted the left wrist, transported BLS.
                   <span className="pulse-dot ml-0.5 inline-block h-4 w-0.5 translate-y-0.5 bg-ink motion-reduce:animate-none" />
                 </p>
-                <p className="px-4 pt-2 text-[12px] text-ink-muted">Saved. Deletes in 24 hours.</p>
+                <p className="px-4 pt-2 text-[12px] text-ink-muted">Saved.</p>
                 <div className="m-3 flex gap-2">
                   <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-recording py-2.5 font-semibold text-paper">
                     <span className="h-2 w-2 rounded-full bg-paper" />
@@ -104,7 +99,7 @@ export function Anywhere() {
               <span className="text-ink-muted">Your phone is the mic. The chart waits on the laptop.</span>
             </p>
 
-            <ol className="relative mt-12 space-y-9 before:absolute before:bottom-3 before:left-[5px] before:top-3 before:w-1 before:rounded-full before:bg-paper-tint">
+            <ol className="relative mt-12 space-y-9 lg:space-y-11 before:absolute before:bottom-3 before:left-[5px] before:top-3 before:w-1 before:rounded-full before:bg-paper-tint">
               {steps.map((s, i) => (
                 <li key={i} data-reveal style={{ transitionDelay: `${160 + i * 80}ms` }} className={`relative pl-9 ${reveal}`}>
                   <span aria-hidden className={`absolute left-0 top-2 h-3.5 w-3.5 rounded-full ring-4 ring-paper ${s.dot}`} />
@@ -114,15 +109,6 @@ export function Anywhere() {
                 </li>
               ))}
             </ol>
-
-            <dl data-reveal style={{ transitionDelay: "420ms" }} className={`mt-12 grid gap-8 rounded-card bg-ink p-7 text-paper sm:grid-cols-2 lg:p-8 ${reveal}`}>
-              {facts.map(([term, line]) => (
-                <div key={term}>
-                  <dt className="text-[44px] font-semibold leading-none tracking-tight">{term}</dt>
-                  <dd className="mt-3 text-[15px] leading-[1.5] text-paper/75">{line}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </div>
       </div>
