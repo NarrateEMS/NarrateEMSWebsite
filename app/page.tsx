@@ -37,14 +37,20 @@ const FIELDS = [
 ] as const
 
 const STATS = [
-  ["<10s", "Per chart page"],
+  ["70%", "Faster charting"],
   ["1hr+", "Saved per shift"],
   ["<3 min", "Narrate to signed chart"],
-  ["24h", "Phone narrations auto-delete"],
-  ["6+", "Years in the field, on the team"],
   ["7 days", "Free trial, every plan"],
-  ["70%", "Faster charting"],
+  ["6+", "Years in the field"],
 ] as const
+
+// Preview switch (?stats=a|b|c). rows: stats per row, [desktop, phone]; scroll: svh the stat phase takes.
+type StatsOption = "a" | "b" | "c"
+const OPTIONS = {
+  a: { count: 5, rows: [[3, 2], [1, 2, 2]], scroll: 80 },
+  b: { count: 5, rows: [[1, 4], [1, 2, 2]], scroll: 75 },
+  c: { count: 4, rows: [[4], [2, 2]], scroll: 100 },
+} as const
 
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
 const ease = (t: number) => t * t * (3 - 2 * t)
@@ -67,11 +73,39 @@ function at(p: number, frames: Frame[]): number[] {
   return frames[frames.length - 1].slice(1)
 }
 
-type Box = { w: number; h: number; objW: number; objH: number; cardW: number; cardH: number; heroBottom: number; bandBottom: number }
-type Card = { x: number; s: number; ry: number; rz: number; start: number }
+type Size = { w: number; h: number }
+type Box = { w: number; h: number; objW: number; objH: number; heroBottom: number; bandBottom: number; headBottom: number; sizes: Size[]; opt: StatsOption }
+// Poses are [x, y, rotateX, rotateY, rotateZ, scale].
+type Card = { from: number[]; to: number[]; start: number; dur: number }
+
+// Lay rows of boxes out centred across the area; returns each box's centre [x, y] (relative to c) and one shared fit scale.
+function layout(rows: readonly number[], sizes: Size[], gap: number, areaW: number, top: number, bottom: number, c: number) {
+  let i = 0
+  const lines = rows.map((n) => {
+    const items = sizes.slice(i, (i += n))
+    return { items, w: items.reduce((a, b) => a + b.w, 0) + gap * (n - 1), h: Math.max(...items.map((b) => b.h)) }
+  })
+  const fullH = lines.reduce((a, l) => a + l.h, 0) + gap * (lines.length - 1)
+  const fit = Math.min(1, areaW / Math.max(...lines.map((l) => l.w)), (bottom - top) / fullH)
+  // Sit a bit above centre so the block reads with the headline.
+  let y = top + (bottom - top - fullH * fit) * 0.35 - c
+  const slots: number[][] = []
+  for (const l of lines) {
+    let x = (-l.w * fit) / 2
+    for (const b of l.items) {
+      slots.push([x + (b.w * fit) / 2, y + (l.h * fit) / 2])
+      x += (b.w + gap) * fit
+    }
+    y += (l.h + gap) * fit
+  }
+  return { slots, fit }
+}
+
+// Stat phase runs from p = 0.55; v converts svh of scroll into timeline progress.
+const v = (svh: number) => 0.55 + svh / 300
 
 // Text owns the band above bandBottom; the object and cards only ever use the area below it.
-function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom }: Box) {
+function buildTimeline({ w, h, objW, objH, heroBottom, bandBottom, headBottom, sizes, opt }: Box) {
   const desk = w >= 1024
   const top = bandBottom + 16
   const areaH = h - (desk ? 32 : 16) - top
@@ -86,21 +120,20 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
     [c, 0, 0, 0, 0, 0, 1, 1],
     [d, 0, -dy, 0, 0, 0, 1, 0],
   ]
-  // Cards fly bottom to top in lanes that never overlap a neighbour in flight, and fade out under the text band.
-  const lanes = desk ? [-0.85, 0.3, -0.3, 0.85, -0.6, 0.6, 0] : [-1, 1, -1, 1, -1, 1, -1]
-  const sizes = desk ? [1, 0.92, 1.04, 0.94, 1, 0.96, 1.04] : lanes.map(() => 1)
-  const rz = [-4, 3, 5, -3, 4, -5, 3]
-  const rx = (w - 48 - cardW) / 2
-  const fly = { from: h + cardH * 0.75 - layerCenter, to: top + cardH * 0.55 - layerCenter }
-  // Each card starts once the previous one is a full card height plus a gap above it, so none ever touch.
-  const stagger = (FLY * (cardH * 1.04 + (desk ? 64 : 40))) / (fly.from - fly.to)
-  const cards: Card[] = lanes.map((f, i) => ({
-    x: f * rx,
-    s: sizes[i],
-    ry: -f * (desk ? 14 : 8),
-    rz: rz[i] * (desk ? 1 : 0.5),
-    start: 0.55 + i * stagger,
-  }))
+  // Stats land in rows under the headline, never above its bottom edge, and stay put.
+  const o = OPTIONS[opt]
+  const { slots, fit: cardFit } = layout(o.rows[desk ? 0 : 1], sizes, desk ? 24 : 12, w * 0.9, headBottom + (desk ? 40 : 24), h - (desk ? 48 : 24), layerCenter)
+  const below = h + Math.max(...sizes.map((b) => b.h)) * 0.75 - layerCenter
+  const cards: Card[] = slots.map(([x, y], i) => {
+    const to = [x, y, 0, 0, 0, cardFit]
+    // a: every card tips up from flat in its own slot, nearly together.
+    if (opt === "a") return { from: [x, y + 60, 70, 0, 0, cardFit * 0.92], to, start: v(12 + i * 6), dur: 0.1 }
+    // b: the lead number rises first, the supporting row follows.
+    if (opt === "b") return i === 0 ? { from: [x, y + 40, 0, 0, 0, cardFit * 0.9], to, start: v(10), dur: 0.08 } : { from: [x, y + 48, 18, 0, 0, cardFit], to, start: v(24 + (i - 1) * 5), dur: 0.073 }
+    // c: cards fly up from below the screen one after another, each in its own column.
+    const side = Math.sign(x) || 1
+    return { from: [x * 1.15, below, 26, -side * (desk ? 14 : 8), side * (desk ? 4 : 2), cardFit], to, start: v(10 + i * 12), dur: 0.133 }
+  })
   return {
     oy,
     hero: [[0, 0, 0, 0, 0, 0, 1, 1], [0.06, 0, -h * 0.08, 0, 0, 0, 1, 0]] as Frame[],
@@ -114,21 +147,23 @@ function buildTimeline({ w, h, objW, objH, cardW, cardH, heroBottom, bandBottom 
     ] as Frame[],
     steps: [fade(0.05, 0.08, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
     headline: fade(0.57, 0.6, 2, 3),
-    // Short screens need a longer card run; the story ends with the last card mid-flight.
-    end: 0.55 + (lanes.length - 1) * stagger + FLY / 2,
-    fly,
+    end: v(o.scroll),
+    count: [v(10), v(40)],
     cards,
   }
 }
 
-// Scroll progress -> timeline progress. Cards (p >= 0.55) get a shorter slice of the track so they move faster.
-const SPLIT = 0.71
-const remap = (q: number, end: number) => (q < SPLIT ? (q * 0.55) / SPLIT : 0.55 + ((q - SPLIT) * (end - 0.55)) / (1 - SPLIT))
-const FLY = 0.2
+// The hero-to-fill phases keep today's scroll length (0.71 of the old 760svh / 680svh tracks); the stat phase follows.
+const narrateSvh = (desk: boolean) => 0.71 * (desk ? 660 : 580)
+const remap = (q: number, split: number, end: number) => (q < split ? (q * 0.55) / split : 0.55 + ((q - split) * (end - 0.55)) / (1 - split))
 
-function cardAt(p: number, c: Card, fly: { from: number; to: number }): number[] {
-  const t = span(p, c.start, c.start + FLY)
-  return [c.x, lerp(fly.from, fly.to, t), lerp(26, -16, t), c.ry, c.rz, c.s, t > 0 ? 1 - span(t, 0.8, 1) : 0]
+// Position eases out; the tilt overshoots a touch so each card settles.
+const settle = (t: number) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2
+function cardAt(p: number, c: Card): number[] {
+  const t = span(p, c.start, c.start + c.dur)
+  const e = 1 - (1 - t) ** 3
+  const pose = c.from.map((f, j) => lerp(f, c.to[j], j >= 2 && j <= 4 ? settle(t) : e))
+  return [...pose, t > 0 ? clamp(t / 0.35) : 0]
 }
 
 function write(el: HTMLElement | null, v: number[]) {
@@ -257,11 +292,25 @@ function PhoneObject() {
   )
 }
 
-function StatCard({ figure, label }: { figure: string; label: string }) {
-  return (
-    <div data-ui className="flex h-[112px] w-[148px] flex-col justify-between rounded-ui bg-white p-3.5 text-ink sm:h-[160px] sm:w-[230px] sm:p-4 lg:h-[184px] lg:w-[280px] lg:p-5">
+function StatCard({ figure, label, compact }: { figure: string; label: string; compact?: boolean }) {
+  return compact ? (
+    <div data-ui className="flex h-[88px] w-[156px] flex-col justify-between rounded-card bg-white p-3 text-ink sm:h-[104px] sm:w-[200px] sm:p-4 lg:h-[120px] lg:w-[220px]">
+      <span className="text-[28px] font-semibold leading-none tracking-tight tabular-nums lg:text-[44px]">{figure}</span>
+      <span className="text-[13px] leading-snug text-ink-muted lg:text-[15px]">{label}</span>
+    </div>
+  ) : (
+    <div data-ui className="flex h-[112px] w-[148px] flex-col justify-between rounded-card bg-white p-3.5 text-ink sm:h-[160px] sm:w-[230px] sm:p-4 lg:h-[184px] lg:w-[280px] lg:p-5">
       <span className="text-[34px] font-semibold leading-none tracking-tight tabular-nums lg:text-[64px]">{figure}</span>
       <span className="text-[13px] leading-snug text-ink-muted lg:text-[17px]">{label}</span>
+    </div>
+  )
+}
+
+function LeadStat({ figure, label }: { figure: string; label: string }) {
+  return (
+    <div className="text-center text-paper">
+      <span data-count className="block text-[96px] font-semibold leading-none tracking-tight tabular-nums lg:text-[160px]">{figure}</span>
+      <span className="mt-2 block text-[17px] lg:text-[24px]">{label}</span>
     </div>
   )
 }
@@ -287,6 +336,12 @@ export default function HomePage() {
 
   // Demo video modal
   const [showVideoModal, setShowVideoModal] = useState(false)
+
+  const [statsOpt, setStatsOpt] = useState<StatsOption>("a")
+  useEffect(() => {
+    const o = new URLSearchParams(window.location.search).get("stats")
+    if (o === "b" || o === "c") setStatsOpt(o)
+  }, [])
 
   const storyRef = useRef<HTMLElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
@@ -394,21 +449,38 @@ export default function HomePage() {
     const actions = object.querySelector<HTMLElement>("[data-actions]")
     const fields = [...object.querySelectorAll<HTMLElement>("[data-field]")]
     const chips = [...object.querySelectorAll<HTMLElement>("[data-chip]")]
-    const firstCard = cardRefs.current[0]?.firstElementChild as HTMLElement | null
+    const cards = cardRefs.current.slice(0, OPTIONS[statsOpt].count)
+    const count = statsOpt === "b" ? cards[0]?.querySelector<HTMLElement>("[data-count]") : null
+    const how = stepRefs.current[0]
     // Layers start under the 64px nav; offsetTop/offsetHeight ignore the scrub transforms.
     const bottomOf = (el: HTMLElement | null) => (el ? 64 + el.offsetTop + el.offsetHeight : 0)
-    const measure = () =>
-      buildTimeline({
-        w: window.innerWidth,
-        h: window.innerHeight,
-        objW: object.offsetWidth,
-        objH: object.offsetHeight,
-        cardW: firstCard?.offsetWidth ?? 230,
-        cardH: firstCard?.offsetHeight ?? 160,
-        heroBottom: bottomOf(heroRef.current),
-        bandBottom: Math.max(...[...stepRefs.current, headlineRef.current].map(bottomOf)),
-      })
+    const measure = () => {
+      const w = window.innerWidth
+      const narrate = narrateSvh(w >= 1024)
+      const scroll = OPTIONS[statsOpt].scroll
+      story.style.height = `${100 + narrate + scroll}svh`
+      const split = narrate / (narrate + scroll)
+      if (how) how.dataset.progress = String((0.26 * split) / 0.71)
+      return {
+        split,
+        ...buildTimeline({
+          w,
+          h: window.innerHeight,
+          objW: object.offsetWidth,
+          objH: object.offsetHeight,
+          heroBottom: bottomOf(heroRef.current),
+          bandBottom: Math.max(...[...stepRefs.current, headlineRef.current].map(bottomOf)),
+          headBottom: bottomOf(headlineRef.current),
+          sizes: cards.map((el) => {
+            const box = el?.firstElementChild as HTMLElement | null
+            return { w: box?.offsetWidth ?? 230, h: box?.offsetHeight ?? 160 }
+          }),
+          opt: statsOpt,
+        }),
+      }
+    }
     let tl = measure()
+    let counted = -1
     let current = -1
     let typed = -1
     let spoken = -1
@@ -426,7 +498,12 @@ export default function HomePage() {
       write(object, at(p, tl.object))
       tl.steps.forEach((f, i) => write(stepRefs.current[i], at(p, f)))
       write(headlineRef.current, at(p, tl.headline))
-      tl.cards.forEach((c, i) => write(cardRefs.current[i], cardAt(p, c, tl.fly)))
+      tl.cards.forEach((c, i) => write(cards[i], cardAt(p, c)))
+      const n = Math.round(span(p, tl.count[0], tl.count[1]) * parseInt(STATS[0][0]))
+      if (count && n !== counted) {
+        counted = n
+        count.textContent = `${n}%`
+      }
 
       const said = Math.round(span(p, 0.11, 0.24) * TRANSCRIPT.length)
       if (phoneText && said !== spoken) {
@@ -459,7 +536,7 @@ export default function HomePage() {
       const next = current < 0 ? goal : current + (goal - current) * (1 - Math.exp(-dt / 160))
       const settled = Math.abs(goal - next) < 0.0004
       current = settled ? goal : next
-      render(remap(current, tl.end))
+      render(remap(current, tl.split, tl.end))
       if (visible || !settled) frame = requestAnimationFrame(tick)
     }
     const start = () => {
@@ -486,8 +563,16 @@ export default function HomePage() {
       io.disconnect()
       window.removeEventListener("resize", onResize)
       delete story.dataset.motion
+      story.style.height = ""
+      if (how) how.dataset.progress = "0.26"
+      if (count) count.textContent = STATS[0][0]
+      cards.forEach((el) => {
+        el?.style.removeProperty("--tf")
+        el?.style.removeProperty("--o")
+        if (el) el.style.visibility = ""
+      })
     }
-  }, [])
+  }, [statsOpt])
 
   const navLink = "text-[17px] text-paper hover:underline underline-offset-4"
   const steps = [
@@ -614,16 +699,23 @@ export default function HomePage() {
 
           <div className="story-layer" aria-hidden>
             <div className="story-cards">
-              {STATS.map(([figure, label], i) => (
+              {STATS.slice(0, OPTIONS[statsOpt].count).map(([figure, label], i) => (
                 <div
                   key={figure}
-                  className="story-card"
+                  className={statsOpt === "b" && i === 0 ? "story-card basis-full" : "story-card"}
+                  style={{ transformOrigin: "0 0" }}
                   ref={(el) => {
                     cardRefs.current[i] = el
                   }}
                   data-tl
                 >
-                  <StatCard figure={figure} label={label} />
+                  {statsOpt !== "b" ? (
+                    <StatCard figure={figure} label={label} />
+                  ) : i === 0 ? (
+                    <LeadStat figure={figure} label={label} />
+                  ) : (
+                    <StatCard figure={figure} label={label} compact />
+                  )}
                 </div>
               ))}
             </div>
