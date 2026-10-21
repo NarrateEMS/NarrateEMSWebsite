@@ -44,13 +44,8 @@ const STATS = [
   ["6+", "Years in the field"],
 ] as const
 
-// Preview switch (?stats=a|b|c). rows: stats per row, [desktop, phone]; scroll: svh the stat phase takes.
-type StatsOption = "a" | "b" | "c"
-const OPTIONS = {
-  a: { count: 5, rows: [[3, 2], [1, 2, 2]], scroll: 80 },
-  b: { count: 5, rows: [[1, 4], [1, 2, 2]], scroll: 75 },
-  c: { count: 4, rows: [[4], [2, 2]], scroll: 100 },
-} as const
+// Stats per row: the lead number alone, then the supporting cards.
+const STAT_ROWS = { desk: [1, 4], phone: [1, 2, 2] }
 
 const clamp = (n: number) => Math.min(1, Math.max(0, n))
 const ease = (t: number) => t * t * (3 - 2 * t)
@@ -74,7 +69,7 @@ function at(p: number, frames: Frame[]): number[] {
 }
 
 type Size = { w: number; h: number }
-type Box = { w: number; h: number; objW: number; objH: number; heroBottom: number; bandBottom: number; headBottom: number; sizes: Size[]; opt: StatsOption }
+type Box = { w: number; h: number; objW: number; objH: number; heroBottom: number; bandBottom: number; headBottom: number; sizes: Size[] }
 // Poses are [x, y, rotateX, rotateY, rotateZ, scale].
 type Card = { from: number[]; to: number[]; start: number; dur: number }
 
@@ -105,7 +100,7 @@ function layout(rows: readonly number[], sizes: Size[], gap: number, areaW: numb
 const v = (svh: number) => 0.55 + svh / 300
 
 // Text owns the band above bandBottom; the object and cards only ever use the area below it.
-function buildTimeline({ w, h, objW, objH, heroBottom, bandBottom, headBottom, sizes, opt }: Box) {
+function buildTimeline({ w, h, objW, objH, heroBottom, bandBottom, headBottom, sizes }: Box) {
   const desk = w >= 1024
   const top = bandBottom + 16
   const areaH = h - (desk ? 32 : 16) - top
@@ -121,18 +116,11 @@ function buildTimeline({ w, h, objW, objH, heroBottom, bandBottom, headBottom, s
     [d, 0, -dy, 0, 0, 0, 1, 0],
   ]
   // Stats land in rows under the headline, never above its bottom edge, and stay put.
-  const o = OPTIONS[opt]
-  const { slots, fit: cardFit } = layout(o.rows[desk ? 0 : 1], sizes, desk ? 24 : 12, w * 0.9, headBottom + (desk ? 40 : 24), h - (desk ? 48 : 24), layerCenter)
-  const below = h + Math.max(...sizes.map((b) => b.h)) * 0.75 - layerCenter
+  const { slots, fit: cardFit } = layout(STAT_ROWS[desk ? "desk" : "phone"], sizes, desk ? 24 : 12, w * 0.9, headBottom + (desk ? 40 : 24), h - (desk ? 48 : 24), layerCenter)
+  // The lead number rises first, the supporting row follows.
   const cards: Card[] = slots.map(([x, y], i) => {
     const to = [x, y, 0, 0, 0, cardFit]
-    // a: every card tips up from flat in its own slot, nearly together.
-    if (opt === "a") return { from: [x, y + 60, 70, 0, 0, cardFit * 0.92], to, start: v(12 + i * 6), dur: 0.1 }
-    // b: the lead number rises first, the supporting row follows.
-    if (opt === "b") return i === 0 ? { from: [x, y + 40, 0, 0, 0, cardFit * 0.9], to, start: v(10), dur: 0.08 } : { from: [x, y + 48, 18, 0, 0, cardFit], to, start: v(24 + (i - 1) * 5), dur: 0.073 }
-    // c: cards fly up from below the screen one after another, each in its own column.
-    const side = Math.sign(x) || 1
-    return { from: [x * 1.15, below, 26, -side * (desk ? 14 : 8), side * (desk ? 4 : 2), cardFit], to, start: v(10 + i * 12), dur: 0.133 }
+    return i === 0 ? { from: [x, y + 40, 0, 0, 0, cardFit * 0.9], to, start: v(10), dur: 0.08 } : { from: [x, y + 48, 18, 0, 0, cardFit], to, start: v(24 + (i - 1) * 5), dur: 0.073 }
   })
   return {
     oy,
@@ -147,14 +135,15 @@ function buildTimeline({ w, h, objW, objH, heroBottom, bandBottom, headBottom, s
     ] as Frame[],
     steps: [fade(0.05, 0.08, 0.27, 0.3), fade(0.3, 0.33, 0.43, 0.46), fade(0.46, 0.49, 0.54, 0.57)],
     headline: fade(0.57, 0.6, 2, 3),
-    end: v(o.scroll),
+    end: v(STAT_SVH),
     count: [v(10), v(40)],
     cards,
   }
 }
 
-// The hero-to-fill phases keep today's scroll length (0.71 of the old 760svh / 680svh tracks); the stat phase follows.
-const narrateSvh = (desk: boolean) => 0.71 * (desk ? 660 : 580)
+// Must match the .story track heights in globals.css: 100svh of stage + the hero-to-fill phases + the stat phase.
+const STAT_SVH = 75
+const narrateSvh = (desk: boolean) => (desk ? 644 : 587) - 100 - STAT_SVH
 const remap = (q: number, split: number, end: number) => (q < split ? (q * 0.55) / split : 0.55 + ((q - split) * (end - 0.55)) / (1 - split))
 
 // Position eases out; the tilt overshoots a touch so each card settles.
@@ -292,16 +281,11 @@ function PhoneObject() {
   )
 }
 
-function StatCard({ figure, label, compact }: { figure: string; label: string; compact?: boolean }) {
-  return compact ? (
+function StatCard({ figure, label }: { figure: string; label: string }) {
+  return (
     <div data-ui className="flex h-[88px] w-[156px] flex-col justify-between rounded-card bg-white p-3 text-ink sm:h-[104px] sm:w-[200px] sm:p-4 lg:h-[120px] lg:w-[220px]">
       <span className="text-[28px] font-semibold leading-none tracking-tight tabular-nums lg:text-[44px]">{figure}</span>
       <span className="text-[13px] leading-snug text-ink-muted lg:text-[15px]">{label}</span>
-    </div>
-  ) : (
-    <div data-ui className="flex h-[112px] w-[148px] flex-col justify-between rounded-card bg-white p-3.5 text-ink sm:h-[160px] sm:w-[230px] sm:p-4 lg:h-[184px] lg:w-[280px] lg:p-5">
-      <span className="text-[34px] font-semibold leading-none tracking-tight tabular-nums lg:text-[64px]">{figure}</span>
-      <span className="text-[13px] leading-snug text-ink-muted lg:text-[17px]">{label}</span>
     </div>
   )
 }
@@ -336,12 +320,6 @@ export default function HomePage() {
 
   // Demo video modal
   const [showVideoModal, setShowVideoModal] = useState(false)
-
-  const [statsOpt, setStatsOpt] = useState<StatsOption>("a")
-  useEffect(() => {
-    const o = new URLSearchParams(window.location.search).get("stats")
-    if (o === "b" || o === "c") setStatsOpt(o)
-  }, [])
 
   const storyRef = useRef<HTMLElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
@@ -449,17 +427,15 @@ export default function HomePage() {
     const actions = object.querySelector<HTMLElement>("[data-actions]")
     const fields = [...object.querySelectorAll<HTMLElement>("[data-field]")]
     const chips = [...object.querySelectorAll<HTMLElement>("[data-chip]")]
-    const cards = cardRefs.current.slice(0, OPTIONS[statsOpt].count)
-    const count = statsOpt === "b" ? cards[0]?.querySelector<HTMLElement>("[data-count]") : null
+    const cards = cardRefs.current
+    const count = cards[0]?.querySelector<HTMLElement>("[data-count]")
     const how = stepRefs.current[0]
     // Layers start under the 64px nav; offsetTop/offsetHeight ignore the scrub transforms.
     const bottomOf = (el: HTMLElement | null) => (el ? 64 + el.offsetTop + el.offsetHeight : 0)
     const measure = () => {
       const w = window.innerWidth
       const narrate = narrateSvh(w >= 1024)
-      const scroll = OPTIONS[statsOpt].scroll
-      story.style.height = `${100 + narrate + scroll}svh`
-      const split = narrate / (narrate + scroll)
+      const split = narrate / (narrate + STAT_SVH)
       if (how) how.dataset.progress = String((0.26 * split) / 0.71)
       return {
         split,
@@ -475,7 +451,6 @@ export default function HomePage() {
             const box = el?.firstElementChild as HTMLElement | null
             return { w: box?.offsetWidth ?? 230, h: box?.offsetHeight ?? 160 }
           }),
-          opt: statsOpt,
         }),
       }
     }
@@ -563,7 +538,6 @@ export default function HomePage() {
       io.disconnect()
       window.removeEventListener("resize", onResize)
       delete story.dataset.motion
-      story.style.height = ""
       if (how) how.dataset.progress = "0.26"
       if (count) count.textContent = STATS[0][0]
       cards.forEach((el) => {
@@ -572,7 +546,7 @@ export default function HomePage() {
         if (el) el.style.visibility = ""
       })
     }
-  }, [statsOpt])
+  }, [])
 
   const navLink = "text-[17px] text-paper hover:underline underline-offset-4"
   const steps = [
@@ -699,22 +673,20 @@ export default function HomePage() {
 
           <div className="story-layer" aria-hidden>
             <div className="story-cards">
-              {STATS.slice(0, OPTIONS[statsOpt].count).map(([figure, label], i) => (
+              {STATS.map(([figure, label], i) => (
                 <div
                   key={figure}
-                  className={statsOpt === "b" && i === 0 ? "story-card basis-full" : "story-card"}
+                  className={i === 0 ? "story-card basis-full" : "story-card"}
                   style={{ transformOrigin: "0 0" }}
                   ref={(el) => {
                     cardRefs.current[i] = el
                   }}
                   data-tl
                 >
-                  {statsOpt !== "b" ? (
-                    <StatCard figure={figure} label={label} />
-                  ) : i === 0 ? (
+                  {i === 0 ? (
                     <LeadStat figure={figure} label={label} />
                   ) : (
-                    <StatCard figure={figure} label={label} compact />
+                    <StatCard figure={figure} label={label} />
                   )}
                 </div>
               ))}
