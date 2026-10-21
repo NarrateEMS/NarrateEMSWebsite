@@ -638,8 +638,8 @@ export default function HomePage() {
       <Squads scrollToSection={scrollToSection} />
       <Pricing onSelectPlan={handlePlanSelect} />
       <Security />
-      <Faq />
       <Start />
+      <Faq />
 
       <Footer />
 

@@ -47,7 +47,7 @@ export function Faq() {
       <div className="mx-auto grid max-w-[1400px] gap-12 px-6 py-20 lg:grid-cols-12 lg:gap-10 lg:px-10 lg:py-28">
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-24">
-            <h2 className={`${h2} ${rv}`}>What medics ask us.</h2>
+            <h2 className={`${h2} ${rv}`}>FAQs</h2>
             <p className={`mt-5 ${body} ${rv} delay-75`}>
               Not here?{" "}
               <a href="mailto:narrateems@gmail.com" className="font-semibold underline underline-offset-4 focus-hi-vis">
