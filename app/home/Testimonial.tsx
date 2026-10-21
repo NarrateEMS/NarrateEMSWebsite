@@ -1,4 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react"
+import { Check } from "lucide-react"
+import { h2, body } from "./shared"
 
 export const reveal =
   "transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none data-[in=0]:opacity-0 data-[in=0]:translate-y-6"
@@ -29,23 +31,51 @@ export function useReveal(ref: RefObject<HTMLElement | null>) {
   }, [ref])
 }
 
+const points = ["Types into your Zoll ePCR", "No integration, no IT ticket", "HIPAA, encrypted, BAA"]
+
 export function Testimonial() {
   const ref = useRef<HTMLElement>(null)
   useReveal(ref)
   return (
     <section ref={ref} id="field" className="navy-tex bg-ink text-paper">
-      <figure className="mx-auto max-w-[1400px] px-6 pt-16 pb-14 lg:px-10 lg:pt-24 lg:pb-24">
-        <blockquote
+      <div className="mx-auto max-w-[1400px] px-6 pt-24 pb-16 lg:px-10 lg:pt-36 lg:pb-24">
+        <div className="lg:grid lg:grid-cols-12 lg:items-center lg:gap-10">
+          <div className="lg:col-span-7">
+            <h2 data-reveal className={`${h2} ${reveal}`}>
+              Talk through the call. <span className="sm:block">Zoll is charted.</span>
+            </h2>
+            <p data-reveal style={{ transitionDelay: "80ms" }} className={`mt-5 ${body} text-paper ${reveal}`}>
+              One narration fills every chart page.
+            </p>
+          </div>
+          <ul className="mt-12 space-y-5 lg:col-span-5 lg:mt-0 lg:space-y-6">
+            {points.map((point, i) => (
+              <li
+                key={point}
+                data-reveal
+                style={{ transitionDelay: `${160 + i * 80}ms` }}
+                className={`flex items-center gap-4 text-[20px] font-semibold leading-[1.15] tracking-tight lg:text-[24px] ${reveal}`}
+              >
+                <Check className="h-5 w-5 shrink-0 text-hi-vis lg:h-6 lg:w-6" strokeWidth={3} aria-hidden />
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <figure
           data-reveal
-          className={`text-[32px] sm:text-[64px] lg:text-[124px] font-semibold leading-[0.98] tracking-[-0.035em] text-balance ${reveal}`}
+          className={`mt-16 rounded-card bg-ink-2 p-7 lg:mt-24 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:p-10 ${reveal}`}
         >
-          &ldquo;Saved me hours of documentation.&rdquo;
-        </blockquote>
-        <figcaption data-reveal style={{ transitionDelay: "90ms" }} className={`mt-8 text-[17px] lg:mt-12 lg:text-[20px] ${reveal}`}>
-          <span className="font-semibold">Kendall Park First Aid Squad</span>
-          <span className="block text-paper/70">New Jersey EMS provider</span>
-        </figcaption>
-      </figure>
+          <blockquote className="text-[22px] font-medium leading-[1.25] tracking-tight lg:text-[28px]">
+            &ldquo;Saved me hours of documentation.&rdquo;
+          </blockquote>
+          <figcaption className="mt-5 text-[15px] lg:mt-0 lg:text-right lg:text-[17px]">
+            <span className="font-semibold">Kendall Park First Aid Squad</span>
+            <span className="block text-paper/70">New Jersey EMS provider</span>
+          </figcaption>
+        </figure>
+      </div>
       <div className="overflow-hidden">
         <img
           data-reveal
